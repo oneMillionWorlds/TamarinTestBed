@@ -1,0 +1,100 @@
+{
+  "action_manifest_version" : 0,
+  "bindings": {
+    "/actions/main": {
+      "haptics" : [
+        {
+          "output" : "/actions/main/out/hapticTest",
+          "path" : "/user/hand/left/output/haptic"
+        },
+        {
+          "output" : "/actions/main/out/hapticTest",
+          "path" : "/user/hand/right/output/haptic"
+        }
+      ],
+      "poses" : [
+        {
+          "output" : "/actions/main/in/HandPoseLeft",
+          "path" : "/user/hand/left/pose/raw"
+        },
+        {
+          "output" : "/actions/main/in/HandPoseRight",
+          "path" : "/user/hand/right/pose/raw"
+        }
+      ],
+      "skeleton": [
+        {
+          "output" : "/actions/main/in/HandSkeletonLeft",
+          "path" : "/user/hand/left/input/skeleton/left"
+        },
+        {
+          "output" : "/actions/main/in/HandSkeletonRight",
+          "path" : "/user/hand/right/input/skeleton/right"
+        }
+      ],
+      "sources" : [
+        {
+          "inputs" : {
+            "click" : {
+              "output" : "/actions/main/in/OpenInventory"
+            }
+          },
+          "mode" : "button",
+          "path" : "/user/hand/left/input/x"
+        },
+        {
+          "inputs" : {
+            "click" : {
+              "output" : "/actions/main/in/OpenInventory"
+            }
+          },
+          "mode" : "button",
+          "path" : "/user/hand/right/input/a"
+        },
+
+        {
+          "inputs" : {
+            "click" : {
+              "output" : "/actions/main/in/test2"
+            }
+          },
+          "mode" : "button",
+          "path" : "/user/hand/left/input/y"
+        },
+        {
+          "inputs" : {
+            "position" : {
+              "output" : "/actions/main/in/scroll"
+            }
+          },
+          "mode" : "joystick",
+          "path" : "/user/hand/left/input/joystick"
+        },
+        {
+          "inputs" : {
+            "pull" : {
+              "output" : "/actions/main/in/trigger"
+            }
+          },
+          "mode" : "trigger",
+          "path" : "/user/hand/left/input/trigger"
+        },
+        {
+          "inputs" : {
+            "pull" : {
+              "output" : "/actions/main/in/trigger"
+            }
+          },
+          "mode" : "trigger",
+          "path" : "/user/hand/right/input/trigger"
+        }
+      ]
+    }
+  },
+  "category" : "steamvr_input",
+  "controller_type" : "oculus_touch",
+  "description" : "Bindings for the OpenVR SDK \"hellovr_opengl\" demo for a oculusTouch controller",
+  "name" : "HelloVR bindings for a oculusTouch controller",
+  "options" : {},
+  "simulated_actions" : []
+}

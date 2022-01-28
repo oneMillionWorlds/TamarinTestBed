@@ -1,0 +1,68 @@
+{
+  "default_bindings": [
+    {
+      "controller_type": "oculus_touch",
+      "binding_url": "oculusTouchDefaults.json"
+    }
+  ],
+  "actions": [
+    {
+      "name": "/actions/main/in/OpenInventory",
+      "requirement": "mandatory",
+      "type": "boolean"
+    },
+    {
+      "name": "/actions/main/in/test2",
+      "requirement": "mandatory",
+      "type": "boolean"
+    },
+    {
+      "name": "/actions/main/in/scroll",
+      "type": "vector2",
+      "requirement": "mandatory"
+    },
+    {
+      "name": "/actions/main/out/hapticTest",
+      "type": "vibration",
+      "requirement": "optional"
+    }
+  ,
+    {
+      "name": "/actions/main/in/trigger",
+      "type": "vector1",
+      "requirement": "mandatory"
+    },
+    {
+      "name" : "/actions/main/in/HandSkeletonLeft",
+      "skeleton" : "/skeleton/hand/left",
+      "type" : "skeleton"
+    },
+    {
+      "name" : "/actions/main/in/HandPoseLeft",
+      "type" : "pose"
+    },
+    {
+      "name" : "/actions/main/in/HandSkeletonRight",
+      "skeleton" : "/skeleton/hand/right",
+      "type" : "skeleton"
+    },
+    {
+      "name" : "/actions/main/in/HandPoseRight",
+      "type" : "pose"
+    }
+
+  ],
+  "action_sets": [
+    {
+      "name": "/actions/main",
+      "usage": "leftright"
+    }
+  ],
+  "localization" : [
+    {
+      "language_tag": "en_us",
+      "/actions/main" : "My Game Actions",
+      "/actions/main/in/OpenInventory" : "Open Inventory"
+    }
+  ]
+}
