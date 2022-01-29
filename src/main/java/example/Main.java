@@ -10,16 +10,21 @@ import com.jme3.collision.CollisionResults;
 import com.jme3.export.binary.BinaryExporter;
 import com.jme3.material.Material;
 import com.jme3.math.ColorRGBA;
+import com.jme3.math.FastMath;
+import com.jme3.math.Quaternion;
 import com.jme3.math.Vector3f;
 import com.jme3.scene.Geometry;
 import com.jme3.scene.Spatial;
+import com.jme3.scene.shape.Box;
 import com.jme3.scene.shape.Line;
+import com.jme3.scene.shape.Quad;
 import com.jme3.system.AppSettings;
 import com.onemillionworlds.tamarin.compatibility.ActionBasedOpenVrState;
 import com.onemillionworlds.tamarin.compatibility.HandMode;
 import com.onemillionworlds.tamarin.vrhands.BoundHand;
 import com.onemillionworlds.tamarin.vrhands.HandSide;
 import com.onemillionworlds.tamarin.vrhands.VRHandsAppState;
+import com.onemillionworlds.tamarin.vrhands.grabbing.AutoMovingGrabControl;
 import com.simsilica.lemur.Button;
 import com.simsilica.lemur.Container;
 import com.simsilica.lemur.GuiGlobals;
@@ -63,42 +68,8 @@ public class Main extends SimpleApplication{
 
         actionBasedOpenVrState.registerActionManifest(actionManifestLocation.getAbsolutePath(), "/actions/main" );
 
-        VRHandsAppState vrHandsAppState = new VRHandsAppState(assetManager);
-        getStateManager().attach(vrHandsAppState);
-
-        Spatial handLeft =assetManager.loadModel("Tamarin/Models/basicHands_left.j3o");
-        boundHandLeft = vrHandsAppState.bindHandModel("/actions/main/in/HandPoseLeft", "/actions/main/in/HandSkeletonLeft", handLeft, HandSide.LEFT);
-        boundHandLeft.setHandMode(HandMode.WITH_CONTROLLER);
-
-
-        Material mat = new Material(assetManager, "Common/MatDefs/Misc/Unshaded.j3md");
-        mat.setTexture("ColorMap", assetManager.loadTexture("Tamarin/Textures/basicHands_left_referenceTexture.png"));
-
-        boundHandLeft.setMaterial(mat);
-        boundHandLeft.debugPalmCoordinateSystem();
-        
-        Spatial rightHand =assetManager.loadModel("Tamarin/Models/basicHands_right.j3o");
-
-        boundHandRight= vrHandsAppState.bindHandModel("/actions/main/in/HandPoseRight", "/actions/main/in/HandSkeletonRight", rightHand, HandSide.RIGHT);
-        boundHandRight.debugPalmCoordinateSystem();
-
-        Material matRight = new Material(assetManager, "Common/MatDefs/Misc/Unshaded.j3md");
-        matRight.setTexture("ColorMap", assetManager.loadTexture("Tamarin/Textures/basicHands_right_referenceTexture.png"));
-        boundHandRight.setMaterial(matRight);
-
-        GuiGlobals.initialize(this);
-        BaseStyles.loadGlassStyle();
-        GuiGlobals.getInstance().getStyles().setDefaultStyle("glass");
-
-        Container myWindow = new Container();
-        myWindow.setLocalScale(0.05f);
-        Label label = new Label("Hello, World.");
-
-        myWindow.addChild(label);
-        Button clickMe = myWindow.addChild(new Button("Click Me"));
-        clickMe.addClickCommands(source -> System.out.println("The world is yours."));
-
-        rootNode.attachChild(myWindow);
+        initialiseHands();
+        initialiseScene();
     }
 
     @Override
@@ -120,15 +91,52 @@ public class Main extends SimpleApplication{
 
     }
 
-    private Geometry line(Vector3f vector, ColorRGBA color){
-        Line line = new Line(new Vector3f(0, 0, 0), vector);
-        Geometry geometry = new Geometry("Bullet", line);
-        Material orange = new Material(assetManager, "Common/MatDefs/Misc/Unshaded.j3md");
-        orange.setColor("Color", color);
-        geometry.setMaterial(orange);
-        return geometry;
+    private void initialiseHands(){
+        VRHandsAppState vrHandsAppState = new VRHandsAppState(assetManager, getStateManager().getState(ActionBasedOpenVrState.class));
+        getStateManager().attach(vrHandsAppState);
+
+        Spatial handLeft =assetManager.loadModel("Tamarin/Models/basicHands_left.j3o");
+        boundHandLeft = vrHandsAppState.bindHandModel("/actions/main/in/HandPoseLeft", "/actions/main/in/HandSkeletonLeft", handLeft, HandSide.LEFT);
+        boundHandLeft.setHandMode(HandMode.WITH_CONTROLLER);
+        boundHandLeft.debugPickLines();
+
+        Material mat = new Material(assetManager, "Common/MatDefs/Misc/Unshaded.j3md");
+        mat.setTexture("ColorMap", assetManager.loadTexture("Tamarin/Textures/basicHands_left_referenceTexture.png"));
+
+        boundHandLeft.setMaterial(mat);
+        boundHandLeft.setGrabAction("/actions/main/in/grip", rootNode);
+
+        Spatial rightHand =assetManager.loadModel("Tamarin/Models/basicHands_right.j3o");
+
+        boundHandRight= vrHandsAppState.bindHandModel("/actions/main/in/HandPoseRight", "/actions/main/in/HandSkeletonRight", rightHand, HandSide.RIGHT);
+        boundHandRight.setGrabAction("/actions/main/in/grip", rootNode);
+        boundHandRight.debugPickLines();
+
+        Material matRight = new Material(assetManager, "Common/MatDefs/Misc/Unshaded.j3md");
+        matRight.setTexture("ColorMap", assetManager.loadTexture("Tamarin/Textures/basicHands_right_referenceTexture.png"));
+        boundHandRight.setMaterial(matRight);
     }
 
+    private void initialiseScene(){
+        Quad floorQuad = new Quad(100,100);
+        Geometry floor = new Geometry("floor", floorQuad);
+        Material mat = new Material(assetManager,"Common/MatDefs/Misc/Unshaded.j3md");
+        mat.setTexture("ColorMap", assetManager.loadTexture("Textures/checkerBoard.png"));
+        floor.setMaterial(mat);
+        Quaternion floorRotate = new Quaternion();
+        floorRotate.fromAngleAxis(FastMath.HALF_PI, Vector3f.UNIT_Z);
+        floor.setLocalRotation(floorRotate);
+        floor.setLocalTranslation(-50,0,-50);
+        rootNode.attachChild(floor);
 
 
+        Box box = new Box(0.05f, 0.05f, 0.05f);
+        Geometry boxGeometry = new Geometry("box", box);
+        Material boxMat = new Material(assetManager,"Common/MatDefs/Misc/Unshaded.j3md");
+        boxGeometry.setMaterial(boxMat);
+        boxGeometry.setLocalTranslation(0,1f, 9.5f);
+        AutoMovingGrabControl grabControl = new AutoMovingGrabControl(new Vector3f(-0.025f,0,0), 0.05f);
+        boxGeometry.addControl(grabControl);
+        rootNode.attachChild(boxGeometry);
+    }
 }

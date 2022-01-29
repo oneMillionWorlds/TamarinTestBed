@@ -7,26 +7,15 @@
   ],
   "actions": [
     {
-      "name": "/actions/main/in/OpenInventory",
+      "name": "/actions/main/in/grip",
       "requirement": "mandatory",
-      "type": "boolean"
+      "type": "vector1"
     },
     {
-      "name": "/actions/main/in/test2",
-      "requirement": "mandatory",
-      "type": "boolean"
-    },
-    {
-      "name": "/actions/main/in/scroll",
-      "type": "vector2",
-      "requirement": "mandatory"
-    },
-    {
-      "name": "/actions/main/out/hapticTest",
+      "name": "/actions/main/out/haptic",
       "type": "vibration",
       "requirement": "optional"
-    }
-  ,
+    },
     {
       "name": "/actions/main/in/trigger",
       "type": "vector1",

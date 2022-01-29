@@ -4,11 +4,11 @@
     "/actions/main": {
       "haptics" : [
         {
-          "output" : "/actions/main/out/hapticTest",
+          "output" : "/actions/main/out/haptic",
           "path" : "/user/hand/left/output/haptic"
         },
         {
-          "output" : "/actions/main/out/hapticTest",
+          "output" : "/actions/main/out/haptic",
           "path" : "/user/hand/right/output/haptic"
         }
       ],
@@ -36,57 +36,20 @@
         {
           "inputs" : {
             "click" : {
-              "output" : "/actions/main/in/OpenInventory"
+              "output" : "/actions/main/in/grip"
             }
           },
-          "mode" : "button",
-          "path" : "/user/hand/left/input/x"
+          "mode" : "trigger",
+          "path" : "/user/hand/left/input/grip"
         },
         {
           "inputs" : {
             "click" : {
-              "output" : "/actions/main/in/OpenInventory"
-            }
-          },
-          "mode" : "button",
-          "path" : "/user/hand/right/input/a"
-        },
-
-        {
-          "inputs" : {
-            "click" : {
-              "output" : "/actions/main/in/test2"
-            }
-          },
-          "mode" : "button",
-          "path" : "/user/hand/left/input/y"
-        },
-        {
-          "inputs" : {
-            "position" : {
-              "output" : "/actions/main/in/scroll"
-            }
-          },
-          "mode" : "joystick",
-          "path" : "/user/hand/left/input/joystick"
-        },
-        {
-          "inputs" : {
-            "pull" : {
-              "output" : "/actions/main/in/trigger"
+              "output" : "/actions/main/in/grip"
             }
           },
           "mode" : "trigger",
-          "path" : "/user/hand/left/input/trigger"
-        },
-        {
-          "inputs" : {
-            "pull" : {
-              "output" : "/actions/main/in/trigger"
-            }
-          },
-          "mode" : "trigger",
-          "path" : "/user/hand/right/input/trigger"
+          "path" : "/user/hand/right/input/grip"
         }
       ]
     }
