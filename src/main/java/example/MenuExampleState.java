@@ -65,7 +65,10 @@ public class MenuExampleState extends BaseAppState{
         });
 
         //get the left hand and add a pick line to it
-        vrHands.getHandControls().stream().filter(h -> h.getHandSide() == HandSide.LEFT).forEach(h -> h.attachPickLine(pickLine()));
+        vrHands.getHandControls().forEach(h -> {
+            h.attachPickLine(pickLine());
+            h.setPickMarkerContinuous(rootNodeDelegate);
+        });
     }
 
     @Override
@@ -82,7 +85,11 @@ public class MenuExampleState extends BaseAppState{
     @Override
     protected void cleanup(Application app){
         rootNodeDelegate.removeFromParent();
-        vrHands.getHandControls().forEach(BoundHand::removePickLine);
+        vrHands.getHandControls().forEach(boundHand -> {
+            boundHand.clearPickMarkerContinuous();
+            boundHand.removePickLine();
+        });
+
     }
 
     @Override protected void onEnable(){}
@@ -103,7 +110,7 @@ public class MenuExampleState extends BaseAppState{
         rotate.fromAngleAxis(FastMath.HALF_PI, Vector3f.UNIT_Y);
         geometry.setLocalRotation(rotate);
         geometry.setLocalTranslation(length/2, 0,0);
-        geometry.getMaterial().getAdditionalRenderState().setBlendMode(RenderState.BlendMode.Alpha); // activate transparency
+        geometry.getMaterial().getAdditionalRenderState().setBlendMode(RenderState.BlendMode.Alpha);
         geometry.setQueueBucket(RenderQueue.Bucket.Transparent);
 
         return geometry;
