@@ -23,6 +23,8 @@ import com.onemillionworlds.tamarin.vrhands.BoundHand;
 import com.onemillionworlds.tamarin.vrhands.HandSide;
 import com.onemillionworlds.tamarin.vrhands.VRHandsAppState;
 import com.onemillionworlds.tamarin.vrhands.grabbing.AutoMovingGrabControl;
+import com.simsilica.lemur.GuiGlobals;
+import com.simsilica.lemur.style.BaseStyles;
 
 import java.io.File;
 
@@ -55,13 +57,17 @@ public class Main extends SimpleApplication{
     public void simpleInitApp(){
         ActionBasedOpenVrState actionBasedOpenVrState = new ActionBasedOpenVrState();
         getStateManager().attach(actionBasedOpenVrState);
-
         File actionManifestLocation = new File("openVr/actionManifest.json");
-
         actionBasedOpenVrState.registerActionManifest(actionManifestLocation.getAbsolutePath(), "/actions/main" );
 
+        getStateManager().attach(new MenuExampleState());
+
+
+        GuiGlobals.initialize(this);
+        BaseStyles.loadGlassStyle();
+        GuiGlobals.getInstance().getStyles().setDefaultStyle("glass");
+
         initialiseHands();
-        initialiseScene();
     }
 
     @Override
@@ -71,15 +77,6 @@ public class Main extends SimpleApplication{
         VRAppState vrAppState = getStateManager().getState(VRAppState.class);
         vrAppState.getLeftViewPort().setBackgroundColor(ColorRGBA.Brown);
         vrAppState.getRightViewPort().setBackgroundColor(ColorRGBA.Brown);
-
-        ActionBasedOpenVrState openVr = getStateManager().getState(ActionBasedOpenVrState.class);
-
-        if (openVr.getAnalogActionState("/actions/main/in/trigger", null).x>0.5){
-            CollisionResults pick = boundHandLeft.pickBulkHand(rootNode);
-
-            boundHandLeft.click_lemurSupport(rootNode);
-            int a=0;
-        }
 
     }
 
@@ -106,36 +103,4 @@ public class Main extends SimpleApplication{
         boundHandRight.setMaterial(matRight);
     }
 
-    private void initialiseScene(){
-        Quad floorQuad = new Quad(10,10);
-        Geometry floor = new Geometry("floor", floorQuad);
-        Texture floorTexture = assetManager.loadTexture("Textures/checkerBoard.png");
-        floorTexture.setMagFilter(Texture.MagFilter.Nearest);
-        Material mat = new Material(assetManager,"Common/MatDefs/Misc/Unshaded.j3md");
-        mat.setTexture("ColorMap", floorTexture);
-
-        floor.setMaterial(mat);
-        Quaternion floorRotate = new Quaternion();
-        floorRotate.fromAngleAxis(-FastMath.HALF_PI, Vector3f.UNIT_X);
-        floor.setLocalRotation(floorRotate);
-        floor.setLocalTranslation(-5,0,15);
-        rootNode.attachChild(floor);
-
-        grabbableBox(new Vector3f(0,1f, 9.5f));
-        grabbableBox(new Vector3f(0.2f,1.2f, 9.5f));
-        grabbableBox(new Vector3f(-0.2f,0.9f, 9.5f));
-        grabbableBox(new Vector3f(0.3f,1.1f, 9.6f));
-    }
-
-    private void grabbableBox(Vector3f location){
-        Box box = new Box(0.05f, 0.05f, 0.05f);
-        Geometry boxGeometry = new Geometry("box", box);
-        Material boxMat = new Material(assetManager,"Common/MatDefs/Misc/Unshaded.j3md");
-        boxMat.setColor("Color", ColorRGBA.randomColor());
-        boxGeometry.setMaterial(boxMat);
-        boxGeometry.setLocalTranslation(location);
-        AutoMovingGrabControl grabControl = new AutoMovingGrabControl(new Vector3f(0.025f,0,0), 0.05f);
-        boxGeometry.addControl(grabControl);
-        rootNode.attachChild(boxGeometry);
-    }
 }
