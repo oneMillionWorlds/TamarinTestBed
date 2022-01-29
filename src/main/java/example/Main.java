@@ -7,7 +7,6 @@ import com.jme3.app.VRConstants;
 import com.jme3.app.VREnvironment;
 import com.jme3.app.state.AppState;
 import com.jme3.collision.CollisionResults;
-import com.jme3.export.binary.BinaryExporter;
 import com.jme3.material.Material;
 import com.jme3.math.ColorRGBA;
 import com.jme3.math.FastMath;
@@ -16,23 +15,16 @@ import com.jme3.math.Vector3f;
 import com.jme3.scene.Geometry;
 import com.jme3.scene.Spatial;
 import com.jme3.scene.shape.Box;
-import com.jme3.scene.shape.Line;
 import com.jme3.scene.shape.Quad;
 import com.jme3.system.AppSettings;
+import com.jme3.texture.Texture;
 import com.onemillionworlds.tamarin.compatibility.ActionBasedOpenVrState;
-import com.onemillionworlds.tamarin.compatibility.HandMode;
 import com.onemillionworlds.tamarin.vrhands.BoundHand;
 import com.onemillionworlds.tamarin.vrhands.HandSide;
 import com.onemillionworlds.tamarin.vrhands.VRHandsAppState;
 import com.onemillionworlds.tamarin.vrhands.grabbing.AutoMovingGrabControl;
-import com.simsilica.lemur.Button;
-import com.simsilica.lemur.Container;
-import com.simsilica.lemur.GuiGlobals;
-import com.simsilica.lemur.Label;
-import com.simsilica.lemur.style.BaseStyles;
 
 import java.io.File;
-import java.io.IOException;
 
 public class Main extends SimpleApplication{
 
@@ -97,8 +89,6 @@ public class Main extends SimpleApplication{
 
         Spatial handLeft =assetManager.loadModel("Tamarin/Models/basicHands_left.j3o");
         boundHandLeft = vrHandsAppState.bindHandModel("/actions/main/in/HandPoseLeft", "/actions/main/in/HandSkeletonLeft", handLeft, HandSide.LEFT);
-        boundHandLeft.setHandMode(HandMode.WITH_CONTROLLER);
-        boundHandLeft.debugPickLines();
 
         Material mat = new Material(assetManager, "Common/MatDefs/Misc/Unshaded.j3md");
         mat.setTexture("ColorMap", assetManager.loadTexture("Tamarin/Textures/basicHands_left_referenceTexture.png"));
@@ -110,7 +100,6 @@ public class Main extends SimpleApplication{
 
         boundHandRight= vrHandsAppState.bindHandModel("/actions/main/in/HandPoseRight", "/actions/main/in/HandSkeletonRight", rightHand, HandSide.RIGHT);
         boundHandRight.setGrabAction("/actions/main/in/grip", rootNode);
-        boundHandRight.debugPickLines();
 
         Material matRight = new Material(assetManager, "Common/MatDefs/Misc/Unshaded.j3md");
         matRight.setTexture("ColorMap", assetManager.loadTexture("Tamarin/Textures/basicHands_right_referenceTexture.png"));
@@ -118,24 +107,34 @@ public class Main extends SimpleApplication{
     }
 
     private void initialiseScene(){
-        Quad floorQuad = new Quad(100,100);
+        Quad floorQuad = new Quad(10,10);
         Geometry floor = new Geometry("floor", floorQuad);
+        Texture floorTexture = assetManager.loadTexture("Textures/checkerBoard.png");
+        floorTexture.setMagFilter(Texture.MagFilter.Nearest);
         Material mat = new Material(assetManager,"Common/MatDefs/Misc/Unshaded.j3md");
-        mat.setTexture("ColorMap", assetManager.loadTexture("Textures/checkerBoard.png"));
+        mat.setTexture("ColorMap", floorTexture);
+
         floor.setMaterial(mat);
         Quaternion floorRotate = new Quaternion();
-        floorRotate.fromAngleAxis(FastMath.HALF_PI, Vector3f.UNIT_Z);
+        floorRotate.fromAngleAxis(-FastMath.HALF_PI, Vector3f.UNIT_X);
         floor.setLocalRotation(floorRotate);
-        floor.setLocalTranslation(-50,0,-50);
+        floor.setLocalTranslation(-5,0,15);
         rootNode.attachChild(floor);
 
+        grabbableBox(new Vector3f(0,1f, 9.5f));
+        grabbableBox(new Vector3f(0.2f,1.2f, 9.5f));
+        grabbableBox(new Vector3f(-0.2f,0.9f, 9.5f));
+        grabbableBox(new Vector3f(0.3f,1.1f, 9.6f));
+    }
 
+    private void grabbableBox(Vector3f location){
         Box box = new Box(0.05f, 0.05f, 0.05f);
         Geometry boxGeometry = new Geometry("box", box);
         Material boxMat = new Material(assetManager,"Common/MatDefs/Misc/Unshaded.j3md");
+        boxMat.setColor("Color", ColorRGBA.randomColor());
         boxGeometry.setMaterial(boxMat);
-        boxGeometry.setLocalTranslation(0,1f, 9.5f);
-        AutoMovingGrabControl grabControl = new AutoMovingGrabControl(new Vector3f(-0.025f,0,0), 0.05f);
+        boxGeometry.setLocalTranslation(location);
+        AutoMovingGrabControl grabControl = new AutoMovingGrabControl(new Vector3f(0.025f,0,0), 0.05f);
         boxGeometry.addControl(grabControl);
         rootNode.attachChild(boxGeometry);
     }
