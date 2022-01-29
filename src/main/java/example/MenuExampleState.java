@@ -90,7 +90,7 @@ public class MenuExampleState extends BaseAppState{
     @Override protected void onDisable(){}
 
     private Spatial pickLine(){
-        float length = 3;
+        float length = 1;
 
         Cylinder pickCylinder = new Cylinder(10,10, 0.01f, length, true);
 
