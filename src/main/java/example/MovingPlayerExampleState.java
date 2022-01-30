@@ -2,6 +2,7 @@ package example;
 
 import com.jme3.app.Application;
 import com.jme3.app.SimpleApplication;
+import com.jme3.app.VRAppState;
 import com.jme3.app.state.BaseAppState;
 import com.jme3.input.event.MouseButtonEvent;
 import com.jme3.input.event.MouseMotionEvent;
@@ -17,6 +18,7 @@ import com.jme3.scene.Node;
 import com.jme3.scene.Spatial;
 import com.jme3.scene.shape.Box;
 import com.onemillionworlds.tamarin.compatibility.ActionBasedOpenVrState;
+import com.onemillionworlds.tamarin.compatibility.AnalogActionState;
 import com.onemillionworlds.tamarin.compatibility.DigitalActionState;
 import com.onemillionworlds.tamarin.vrhands.BoundHand;
 import com.onemillionworlds.tamarin.vrhands.VRHandsAppState;
@@ -33,6 +35,7 @@ public class MovingPlayerExampleState extends BaseAppState{
 
     Node rootNodeDelegate = new Node("BlockMovingExampleState");
 
+    VRAppState vrAppState;
     ActionBasedOpenVrState openVr;
     VRHandsAppState vrHands;
 
@@ -42,6 +45,7 @@ public class MovingPlayerExampleState extends BaseAppState{
     @Override
     protected void initialize(Application app){
         ((SimpleApplication)app).getRootNode().attachChild(rootNodeDelegate);
+        vrAppState = getState(VRAppState.class);
         openVr = getState(ActionBasedOpenVrState.class);
         vrHands = getState(VRHandsAppState.class);
         initialiseScene();
@@ -99,7 +103,17 @@ public class MovingPlayerExampleState extends BaseAppState{
             }
         }
 
+        //nausea inducing but nonetheless popular. Normal walking about
+        AnalogActionState analogActionState = openVr.getAnalogActionState("/actions/main/in/walk");
+        //we'll want the joystick to move the player relative to the head face direction, not the hand pointing direction
+        Vector3f walkingDirectionRaw = new Vector3f(-analogActionState.x, 0, analogActionState.y);
 
+        Vector3f playerRelativeWalkDirection = vrAppState.getVRViewManager().getLeftCamera().getRotation().mult(walkingDirectionRaw);
+        playerRelativeWalkDirection.y = 0;
+        if (playerRelativeWalkDirection.length()>0.01){
+            playerRelativeWalkDirection.normalizeLocal();
+        }
+        observer.setLocation(observer.getLocation().add(playerRelativeWalkDirection.mult(2f*tpf)));
 
     }
 

@@ -51,8 +51,12 @@
     {
       "name" : "/actions/main/in/turnRight",
       "type" : "boolean"
+    },
+    {
+      "name": "/actions/main/in/walk",
+      "type": "vector2",
+      "requirement": "mandatory"
     }
-
   ],
   "action_sets": [
     {
