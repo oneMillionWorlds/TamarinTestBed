@@ -55,6 +55,7 @@ public class MovingPlayerExampleState extends BaseAppState{
     protected void cleanup(Application app){
         rootNodeDelegate.removeFromParent();
         getApplication().getCamera().setLocation(new Vector3f(0,0,10));
+        getApplication().getCamera().lookAt(new Vector3f(0,0,0), Vector3f.UNIT_Y );
     }
 
     @Override
@@ -100,6 +101,13 @@ public class MovingPlayerExampleState extends BaseAppState{
                 Vector3f pointingDirection = boundHand.getBulkPointingDirection();
                 pointingDirection.y=0;
                 observer.setLocation(observer.getLocation().add(pointingDirection.mult(2)));
+
+                Vector3f observerLocation = observer.getLocation();
+                if (observerLocation.x < -5 || observerLocation.x > 5 ||  observerLocation.z < 5 || observerLocation.z > 15 ){
+                    getStateManager().detach(this);
+                    getStateManager().attach(new MenuExampleState());
+                }
+
             }
         }
 
@@ -131,7 +139,7 @@ public class MovingPlayerExampleState extends BaseAppState{
         lemurWindow.setLocalScale(0.02f); //lemur defaults to 1 meter == 1 pixel (because that make sense for 2D, scale it down, so it's not huge in 3d)
         Label label = new Label("Use the left hat forward to teleport forwards, left and right to sharply turn\n\nUse the right hat forward to walk (very nausea inducing)\n\nIn a real game you'd want some indicator to show where you were teleporting to. \n\nThe turn left and right is to help with seated experiences where physically turning 360 may be annoying or impossible. \n\n Teleport off the checkerboard to exit");
         lemurWindow.addChild(label);
-        lemurWindow.setLocalTranslation(-5,2,0);
+        lemurWindow.setLocalTranslation(-5,4,0);
         rootNodeDelegate.attachChild(lemurWindow);
     }
 
