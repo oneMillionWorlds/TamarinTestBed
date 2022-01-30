@@ -54,7 +54,7 @@ public class MenuExampleState extends BaseAppState{
         });
         lemurWindow.addChild(label);
 
-        lemurWindow.setLocalTranslation(0,1,7);
+        lemurWindow.setLocalTranslation(-0.5f,1,7);
 
         rootNodeDelegate.attachChild(lemurWindow);
 
