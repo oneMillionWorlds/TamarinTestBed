@@ -40,8 +40,8 @@ public class MenuExampleState extends BaseAppState{
         openVr = getState(ActionBasedOpenVrState.class);
         vrHands = getState(VRHandsAppState.class);
 
-        Container myWindow = new Container();
-        myWindow.setLocalScale(0.005f); //lemur defaults to 1 meter == 1 pixel (because that make sense for 2D, scale it down, so it's not huge in 3d)
+        Container lemurWindow = new Container();
+        lemurWindow.setLocalScale(0.005f); //lemur defaults to 1 meter == 1 pixel (because that make sense for 2D, scale it down, so it's not huge in 3d)
         Label label = new Label("Example application using Tamarin & Lemur");
         label.addMouseListener(new MouseListener(){
             @Override
@@ -52,16 +52,27 @@ public class MenuExampleState extends BaseAppState{
             @Override public void mouseExited(MouseMotionEvent event, Spatial target, Spatial capture){}
             @Override public void mouseMoved(MouseMotionEvent event, Spatial target, Spatial capture){}
         });
-        myWindow.addChild(label);
+        lemurWindow.addChild(label);
 
-        myWindow.setLocalTranslation(0,1,7);
+        lemurWindow.setLocalTranslation(0,1,7);
 
-        rootNodeDelegate.attachChild(myWindow);
+        rootNodeDelegate.attachChild(lemurWindow);
 
-        Button movingBlocksExampleButton = myWindow.addChild(new Button("Start block moving example"));
+        Button movingBlocksExampleButton = lemurWindow.addChild(new Button("Start block moving example"));
         movingBlocksExampleButton.addClickCommands(source -> {
             app.getStateManager().detach(this);
             app.getStateManager().attach(new BlockMovingExampleState());
+        });
+
+        Button movingExampleButton = lemurWindow.addChild(new Button("Start moving and teleporting example"));
+        movingExampleButton.addClickCommands(source -> {
+            app.getStateManager().detach(this);
+            app.getStateManager().attach(new MovingPlayerExampleState());
+        });
+
+        Button exitButton = lemurWindow.addChild(new Button("Exit"));
+        exitButton.addClickCommands(source -> {
+            getApplication().stop();
         });
 
         //get the left hand and add a pick line to it
@@ -99,7 +110,7 @@ public class MenuExampleState extends BaseAppState{
     private Spatial pickLine(){
         float length = 1;
 
-        Cylinder pickCylinder = new Cylinder(10,10, 0.01f, length, true);
+        Cylinder pickCylinder = new Cylinder(10,10, 0.002f, length, true);
 
         Geometry geometry = new Geometry("debugHandLine", pickCylinder);
         Material material = new Material(getApplication().getAssetManager(), "Common/MatDefs/Misc/Unshaded.j3md");

@@ -38,6 +38,19 @@
     {
       "name" : "/actions/main/in/HandPoseRight",
       "type" : "pose"
+    },
+    {
+      "name" : "/actions/main/in/Teleport",
+      "requirement" : "mandatory",
+      "type" : "boolean"
+    },
+    {
+      "name" : "/actions/main/in/turnLeft",
+      "type" : "boolean"
+    },
+    {
+      "name" : "/actions/main/in/turnRight",
+      "type" : "boolean"
     }
 
   ],
