@@ -19,6 +19,7 @@ import com.jme3.scene.shape.Quad;
 import com.jme3.system.AppSettings;
 import com.jme3.texture.Texture;
 import com.onemillionworlds.tamarin.compatibility.ActionBasedOpenVrState;
+import com.onemillionworlds.tamarin.compatibility.HandMode;
 import com.onemillionworlds.tamarin.vrhands.BoundHand;
 import com.onemillionworlds.tamarin.vrhands.HandSide;
 import com.onemillionworlds.tamarin.vrhands.VRHandsAppState;
@@ -57,9 +58,8 @@ public class Main extends SimpleApplication{
     public void simpleInitApp(){
         ActionBasedOpenVrState actionBasedOpenVrState = new ActionBasedOpenVrState();
         getStateManager().attach(actionBasedOpenVrState);
-        File actionManifestLocation = new File("openVr/actionManifest.json");
-        actionBasedOpenVrState.registerActionManifest(actionManifestLocation.getAbsolutePath(), "/actions/main" );
-
+        actionBasedOpenVrState.registerActionManifest(new File("openVr/actionManifest.json").getAbsolutePath(), "/actions/main" );
+        actionBasedOpenVrState.setActiveActionSet("/actions/main");
         getStateManager().attach(new MenuExampleState());
 
 
