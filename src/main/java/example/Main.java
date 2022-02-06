@@ -6,24 +6,14 @@ import com.jme3.app.VRAppState;
 import com.jme3.app.VRConstants;
 import com.jme3.app.VREnvironment;
 import com.jme3.app.state.AppState;
-import com.jme3.collision.CollisionResults;
 import com.jme3.material.Material;
 import com.jme3.math.ColorRGBA;
-import com.jme3.math.FastMath;
-import com.jme3.math.Quaternion;
-import com.jme3.math.Vector3f;
-import com.jme3.scene.Geometry;
 import com.jme3.scene.Spatial;
-import com.jme3.scene.shape.Box;
-import com.jme3.scene.shape.Quad;
 import com.jme3.system.AppSettings;
-import com.jme3.texture.Texture;
 import com.onemillionworlds.tamarin.compatibility.ActionBasedOpenVrState;
-import com.onemillionworlds.tamarin.compatibility.HandMode;
 import com.onemillionworlds.tamarin.vrhands.BoundHand;
 import com.onemillionworlds.tamarin.vrhands.HandSide;
 import com.onemillionworlds.tamarin.vrhands.VRHandsAppState;
-import com.onemillionworlds.tamarin.vrhands.grabbing.AutoMovingGrabControl;
 import com.simsilica.lemur.GuiGlobals;
 import com.simsilica.lemur.style.BaseStyles;
 
@@ -59,7 +49,7 @@ public class Main extends SimpleApplication{
         ActionBasedOpenVrState actionBasedOpenVrState = new ActionBasedOpenVrState();
         getStateManager().attach(actionBasedOpenVrState);
         actionBasedOpenVrState.registerActionManifest(new File("openVr/actionManifest.json").getAbsolutePath(), "/actions/main" );
-        actionBasedOpenVrState.setActiveActionSet("/actions/main");
+
         getStateManager().attach(new MenuExampleState());
 
 

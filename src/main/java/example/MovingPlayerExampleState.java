@@ -74,7 +74,7 @@ public class MovingPlayerExampleState extends BaseAppState{
         //the "camera" is not the real camera, it is acting as the origin on the VR space (that the player then walks about in)
         Camera observer = getApplication().getCamera();
 
-        DigitalActionState leftAction = openVr.getDigitalActionState("/actions/main/in/turnLeft", null);
+        DigitalActionState leftAction = openVr.getDigitalActionState("/actions/main/in/turnLeft");
         if (leftAction.changed && leftAction.state){
             Quaternion currentRotation = getApplication().getCamera().getRotation();
             Quaternion leftTurn = new Quaternion();
