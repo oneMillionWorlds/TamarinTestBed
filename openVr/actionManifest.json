@@ -3,6 +3,22 @@
     {
       "controller_type": "oculus_touch",
       "binding_url": "oculusTouchDefaults.json"
+    },
+    {
+      "controller_type": "vive_controller",
+      "binding_url": "viveDefaults.json"
+    },
+    {
+      "controller_type": "vive_cosmos_controller",
+      "binding_url": "viveCosmosDefaults.json"
+    },
+    {
+      "controller_type": "knuckles",
+      "binding_url": "knucklesDefaults.json"
+    },
+    {
+      "controller_type": "holographic_controller",
+      "binding_url": "holographicDefaults.json"
     }
   ],
   "actions": [
