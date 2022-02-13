@@ -24,6 +24,8 @@ import com.simsilica.lemur.Button;
 import com.simsilica.lemur.Container;
 import com.simsilica.lemur.Label;
 import com.simsilica.lemur.TextField;
+import com.simsilica.lemur.core.GuiControl;
+import com.simsilica.lemur.core.GuiControlListener;
 import com.simsilica.lemur.event.MouseListener;
 
 /**
@@ -41,39 +43,64 @@ public class KeyboardTestState extends BaseAppState{
         openVr = getState(ActionBasedOpenVrState.class);
         vrHands = getState(VRHandsAppState.class);
 
-        Container lemurWindow = new Container();
-        lemurWindow.setLocalScale(0.005f); //lemur defaults to 1 meter == 1 pixel (because that make sense for 2D, scale it down, so it's not huge in 3d)
-        lemurWindow.addChild(new Label("Example of a keyboard based text entry"));
-
-        lemurWindow.setLocalTranslation(-0.5f,1,6);
-
-        rootNodeDelegate.attachChild(lemurWindow);
+        addPrimaryKeyboard();
+        addSecondaryKeyboard();
 
         //get the left hand and add a pick line to it
         vrHands.getHandControls().forEach(h -> {
             h.attachPickLine(pickLine());
             h.setPickMarkerContinuous(rootNodeDelegate);
+            h.setClickAction_lemurSupport("/actions/main/in/trigger", rootNodeDelegate);
+        });
+    }
+
+
+    private void addPrimaryKeyboard(){
+        Container lemurWindow = new Container();
+        lemurWindow.setLocalScale(0.005f); //lemur defaults to 1 meter == 1 pixel (because that make sense for 2D, scale it down, so it's not huge in 3d)
+        lemurWindow.addChild(new Label("Example of a keyboard based text entry\nThe below is a text field, click into it to start typing"));
+        TextField textField = lemurWindow.addChild(new TextField(""));
+        lemurWindow.addChild(new Label("Type `Exit` to exit"));
+
+        textField.getControl(GuiControl.class).addListener(new GuiControlListener(){
+            @Override public void reshape(GuiControl source, Vector3f pos, Vector3f size){}
+            @Override public void focusGained(GuiControl source){}
+
+            @Override
+            public void focusLost(GuiControl source){
+                if (textField.getText().trim().equalsIgnoreCase("exit")){
+                    getStateManager().detach(KeyboardTestState.this);
+                    getStateManager().attach(new MenuExampleState());
+                }
+            }
         });
 
-        getStateManager().attach(new LemurKeyboard(
-                (key) -> System.out.println(key),
-                (event,obj) -> System.out.println(event +":" +obj),
-                "/actions/main/in/trigger",
-                new SimpleQwertyStyle(),
-                2,
-                true
-        ));
+        lemurWindow.setLocalTranslation(-0.5f,1,6);
+
+        rootNodeDelegate.attachChild(lemurWindow);
+    }
+
+    private void addSecondaryKeyboard(){
+        Container lemurWindow = new Container();
+        lemurWindow.setLocalScale(0.005f); //lemur defaults to 1 meter == 1 pixel (because that make sense for 2D, scale it down, so it's not huge in 3d)
+        lemurWindow.addChild(new Label("This form is for testing the behaviour of multiple text fields and the keyboard"));
+        lemurWindow.addChild(new TextField(""));
+        lemurWindow.addChild(new Label("There is a second text field"));
+        lemurWindow.addChild(new TextField(""));
+        lemurWindow.addChild(new Label("This form is also not at the default rotation\nSo also tests that that works ok"));
+
+        lemurWindow.setLocalTranslation(2,1,7);
+
+        Quaternion rotation = new Quaternion();
+        rotation.fromAngleAxis(-FastMath.QUARTER_PI, Vector3f.UNIT_Y);
+        lemurWindow.setLocalRotation(rotation);
+
+        rootNodeDelegate.attachChild(lemurWindow);
     }
 
     @Override
     public void update(float tpf){
         super.update(tpf);
-
-        vrHands.getHandControls().forEach(hand -> {
-            if (openVr.getAnalogActionState("/actions/main/in/trigger", hand.getHandSide().restrictToInputString).x>0.5){
-                hand.click_lemurSupport(rootNodeDelegate);
-            }
-        });
     }
 
     @Override
@@ -82,6 +109,7 @@ public class KeyboardTestState extends BaseAppState{
         vrHands.getHandControls().forEach(boundHand -> {
             boundHand.clearPickMarkerContinuous();
             boundHand.removePickLine();
+            boundHand.clearClickAction_lemurSupport();
         });
 
     }
