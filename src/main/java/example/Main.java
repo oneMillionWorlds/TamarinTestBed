@@ -13,6 +13,7 @@ import com.jme3.system.AppSettings;
 import com.onemillionworlds.tamarin.compatibility.ActionBasedOpenVrState;
 import com.onemillionworlds.tamarin.vrhands.BoundHand;
 import com.onemillionworlds.tamarin.vrhands.HandSide;
+import com.onemillionworlds.tamarin.vrhands.HandSpec;
 import com.onemillionworlds.tamarin.vrhands.VRHandsAppState;
 import com.simsilica.lemur.GuiGlobals;
 import com.simsilica.lemur.style.BaseStyles;
@@ -20,9 +21,6 @@ import com.simsilica.lemur.style.BaseStyles;
 import java.io.File;
 
 public class Main extends SimpleApplication{
-
-    BoundHand boundHandLeft;
-    BoundHand boundHandRight;
 
     public static void main(String[] args) {
         AppSettings settings = new AppSettings(true);
@@ -32,7 +30,7 @@ public class Main extends SimpleApplication{
         if (env.isInitialized()){
             VRAppState vrAppState = new VRAppState(settings, env);
 
-            Main app = new Main(vrAppState);
+            Main app = new Main(vrAppState, new ActionBasedOpenVrState());
             app.setLostFocusBehavior(LostFocusBehavior.Disabled);
             app.setSettings(settings);
             app.setShowSettings(false);
@@ -46,18 +44,16 @@ public class Main extends SimpleApplication{
 
     @Override
     public void simpleInitApp(){
-        ActionBasedOpenVrState actionBasedOpenVrState = new ActionBasedOpenVrState();
-        getStateManager().attach(actionBasedOpenVrState);
+        ActionBasedOpenVrState actionBasedOpenVrState = getStateManager().getState(ActionBasedOpenVrState.class);
         actionBasedOpenVrState.registerActionManifest(new File("openVr/actionManifest.json").getAbsolutePath(), "/actions/main" );
 
+        getStateManager().attach(new VRHandsAppState(handSpec()));
         getStateManager().attach(new MenuExampleState());
-
 
         GuiGlobals.initialize(this);
         BaseStyles.loadGlassStyle();
         GuiGlobals.getInstance().getStyles().setDefaultStyle("glass");
 
-        initialiseHands();
     }
 
     @Override
@@ -70,27 +66,20 @@ public class Main extends SimpleApplication{
 
     }
 
-    private void initialiseHands(){
-        VRHandsAppState vrHandsAppState = new VRHandsAppState(assetManager, getStateManager().getState(ActionBasedOpenVrState.class));
-        getStateManager().attach(vrHandsAppState);
+    private HandSpec handSpec(){
+        return HandSpec.builder(
+                "/actions/main/in/HandPoseLeft",
+                "/actions/main/in/HandSkeletonLeft",
+                "/actions/main/in/HandPoseRight",
+                "/actions/main/in/HandSkeletonRight")
+                .postBindLeft(leftHand -> {
+                    leftHand.setGrabAction("/actions/main/in/grip", rootNode);
+                })
+                .postBindRight(rightHand -> {
+                    rightHand.setGrabAction("/actions/main/in/grip", rootNode);
+                })
+                .build();
 
-        Spatial handLeft =assetManager.loadModel("Tamarin/Models/basicHands_left.j3o");
-        boundHandLeft = vrHandsAppState.bindHandModel("/actions/main/in/HandPoseLeft", "/actions/main/in/HandSkeletonLeft", handLeft, HandSide.LEFT);
-
-        Material mat = new Material(assetManager, "Common/MatDefs/Misc/Unshaded.j3md");
-        mat.setTexture("ColorMap", assetManager.loadTexture("Tamarin/Textures/basicHands_left_referenceTexture.png"));
-
-        boundHandLeft.setMaterial(mat);
-        boundHandLeft.setGrabAction("/actions/main/in/grip", rootNode);
-
-        Spatial rightHand =assetManager.loadModel("Tamarin/Models/basicHands_right.j3o");
-
-        boundHandRight= vrHandsAppState.bindHandModel("/actions/main/in/HandPoseRight", "/actions/main/in/HandSkeletonRight", rightHand, HandSide.RIGHT);
-        boundHandRight.setGrabAction("/actions/main/in/grip", rootNode);
-
-        Material matRight = new Material(assetManager, "Common/MatDefs/Misc/Unshaded.j3md");
-        matRight.setTexture("ColorMap", assetManager.loadTexture("Tamarin/Textures/basicHands_right_referenceTexture.png"));
-        boundHandRight.setMaterial(matRight);
     }
 
 }

@@ -17,20 +17,21 @@ import com.jme3.scene.Node;
 import com.jme3.scene.Spatial;
 import com.jme3.scene.shape.Cylinder;
 import com.onemillionworlds.tamarin.compatibility.ActionBasedOpenVrState;
-import com.onemillionworlds.tamarin.vrhands.BoundHand;
-import com.onemillionworlds.tamarin.vrhands.HandSide;
+import com.onemillionworlds.tamarin.lemursupport.LemurKeyboard;
+import com.onemillionworlds.tamarin.lemursupport.keyboardstyles.bundledkeyboards.SimpleQwertyStyle;
 import com.onemillionworlds.tamarin.vrhands.VRHandsAppState;
 import com.simsilica.lemur.Button;
 import com.simsilica.lemur.Container;
 import com.simsilica.lemur.Label;
+import com.simsilica.lemur.TextField;
 import com.simsilica.lemur.event.MouseListener;
 
 /**
  * This app state gives a basic menu, implemented in lemur that can be interacted with via either hand
  */
-public class MenuExampleState extends BaseAppState{
+public class KeyboardTestState extends BaseAppState{
 
-    Node rootNodeDelegate = new Node("MenuExampleState");
+    Node rootNodeDelegate = new Node("KeyboardExampleState");
     ActionBasedOpenVrState openVr;
     VRHandsAppState vrHands;
 
@@ -42,52 +43,37 @@ public class MenuExampleState extends BaseAppState{
 
         Container lemurWindow = new Container();
         lemurWindow.setLocalScale(0.005f); //lemur defaults to 1 meter == 1 pixel (because that make sense for 2D, scale it down, so it's not huge in 3d)
-        Label label = new Label("Example application using Tamarin & Lemur");
-        label.addMouseListener(new MouseListener(){
-            @Override
-            public void mouseButtonEvent(MouseButtonEvent event, Spatial target, Spatial capture){
-                System.out.println("Tamarin supports mouse listener click events (but only the fact they happened, no other details)");
-            }
-            @Override public void mouseEntered(MouseMotionEvent event, Spatial target, Spatial capture){}
-            @Override public void mouseExited(MouseMotionEvent event, Spatial target, Spatial capture){}
-            @Override public void mouseMoved(MouseMotionEvent event, Spatial target, Spatial capture){}
-        });
-        lemurWindow.addChild(label);
+        lemurWindow.addChild(new Label("Example of a keyboard based text entry"));
 
-        lemurWindow.setLocalTranslation(-0.5f,1,7);
+        lemurWindow.setLocalTranslation(-0.5f,1,6);
 
         rootNodeDelegate.attachChild(lemurWindow);
-
-        lemurWindow.addChild(new Button("Start block moving example")).addClickCommands(source -> {
-            app.getStateManager().detach(this);
-            app.getStateManager().attach(new BlockMovingExampleState());
-        });
-
-        lemurWindow.addChild(new Button("Start moving and teleporting example")).addClickCommands(source -> {
-            app.getStateManager().detach(this);
-            app.getStateManager().attach(new MovingPlayerExampleState());
-        });
-
-        lemurWindow.addChild(new Button("Start keyboard example")).addClickCommands(source -> {
-            app.getStateManager().detach(this);
-            app.getStateManager().attach(new KeyboardTestState());
-        });
-
-        lemurWindow.addChild(new Button("Exit")).addClickCommands(source -> {
-            getApplication().stop();
-        });
 
         //get the left hand and add a pick line to it
         vrHands.getHandControls().forEach(h -> {
             h.attachPickLine(pickLine());
             h.setPickMarkerContinuous(rootNodeDelegate);
-            h.setClickAction_lemurSupport("/actions/main/in/trigger", rootNodeDelegate);
         });
+
+        getStateManager().attach(new LemurKeyboard(
+                (key) -> System.out.println(key),
+                (event,obj) -> System.out.println(event +":" +obj),
+                "/actions/main/in/trigger",
+                new SimpleQwertyStyle(),
+                2,
+                true
+        ));
     }
 
     @Override
     public void update(float tpf){
         super.update(tpf);
+
+        vrHands.getHandControls().forEach(hand -> {
+            if (openVr.getAnalogActionState("/actions/main/in/trigger", hand.getHandSide().restrictToInputString).x>0.5){
+                hand.click_lemurSupport(rootNodeDelegate);
+            }
+        });
     }
 
     @Override
@@ -96,7 +82,6 @@ public class MenuExampleState extends BaseAppState{
         vrHands.getHandControls().forEach(boundHand -> {
             boundHand.clearPickMarkerContinuous();
             boundHand.removePickLine();
-            boundHand.clearClickAction_lemurSupport();
         });
 
     }
