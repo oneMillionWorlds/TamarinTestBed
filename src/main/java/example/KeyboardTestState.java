@@ -21,12 +21,17 @@ import com.onemillionworlds.tamarin.lemursupport.LemurKeyboard;
 import com.onemillionworlds.tamarin.lemursupport.keyboardstyles.bundledkeyboards.SimpleQwertyStyle;
 import com.onemillionworlds.tamarin.vrhands.VRHandsAppState;
 import com.simsilica.lemur.Button;
+import com.simsilica.lemur.Checkbox;
 import com.simsilica.lemur.Container;
 import com.simsilica.lemur.Label;
+import com.simsilica.lemur.ListBox;
 import com.simsilica.lemur.TextField;
 import com.simsilica.lemur.core.GuiControl;
 import com.simsilica.lemur.core.GuiControlListener;
+import com.simsilica.lemur.core.VersionedList;
 import com.simsilica.lemur.event.MouseListener;
+
+import java.util.List;
 
 /**
  * This app state gives a basic menu, implemented in lemur that can be interacted with via either hand
@@ -88,6 +93,10 @@ public class KeyboardTestState extends BaseAppState{
         lemurWindow.addChild(new Label("There is a second text field"));
         lemurWindow.addChild(new TextField(""));
         lemurWindow.addChild(new Label("This form is also not at the default rotation\nSo also tests that that works ok"));
+        lemurWindow.addChild(new Checkbox("Example Checkbox"));
+        lemurWindow.addChild(new Label("Example ListBox (partial support only):"));
+        VersionedList<String> dropDownExamples = new VersionedList<>(List.of("Alpha","Beta", "Gamma", "Delta", "Epsilon", "Zeta", "Eta", "Theta", "Iota", "Kappa"));
+        lemurWindow.addChild(new ListBox<>(dropDownExamples));
 
         lemurWindow.setLocalTranslation(2,1,7);
 
