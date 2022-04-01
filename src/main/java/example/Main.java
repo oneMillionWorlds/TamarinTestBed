@@ -8,9 +8,12 @@ import com.jme3.app.VREnvironment;
 import com.jme3.app.state.AppState;
 import com.jme3.material.Material;
 import com.jme3.math.ColorRGBA;
+import com.jme3.math.Vector3f;
+import com.jme3.scene.Node;
 import com.jme3.scene.Spatial;
 import com.jme3.system.AppSettings;
 import com.onemillionworlds.tamarin.compatibility.ActionBasedOpenVrState;
+import com.onemillionworlds.tamarin.compatibility.ApplicationRegistration;
 import com.onemillionworlds.tamarin.vrhands.BoundHand;
 import com.onemillionworlds.tamarin.vrhands.HandSide;
 import com.onemillionworlds.tamarin.vrhands.HandSpec;
@@ -22,9 +25,12 @@ import java.io.File;
 
 public class Main extends SimpleApplication{
 
+    Node observerNode = new Node();
+
     public static void main(String[] args) {
         AppSettings settings = new AppSettings(true);
         settings.put(VRConstants.SETTING_VRAPI, VRConstants.SETTING_VRAPI_OPENVR_LWJGL_VALUE);
+
         VREnvironment env = new VREnvironment(settings);
         env.initialize();
         if (env.isInitialized()){
@@ -45,6 +51,13 @@ public class Main extends SimpleApplication{
     @Override
     public void simpleInitApp(){
         ActionBasedOpenVrState actionBasedOpenVrState = getStateManager().getState(ActionBasedOpenVrState.class);
+        VRAppState vrAppState = getStateManager().getState(VRAppState.class);
+        rootNode.attachChild(observerNode);
+
+        observerNode.setLocalTranslation(0,0,10);
+        observerNode.lookAt(new Vector3f(0,0,0), Vector3f.UNIT_Y);
+        vrAppState.setObserver(observerNode);
+
         actionBasedOpenVrState.registerActionManifest(new File("openVr/actionManifest.json").getAbsolutePath(), "/actions/main" );
 
         getStateManager().attach(new VRHandsAppState(handSpec()));

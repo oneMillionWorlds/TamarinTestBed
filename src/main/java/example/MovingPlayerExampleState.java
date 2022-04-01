@@ -4,28 +4,21 @@ import com.jme3.app.Application;
 import com.jme3.app.SimpleApplication;
 import com.jme3.app.VRAppState;
 import com.jme3.app.state.BaseAppState;
-import com.jme3.input.event.MouseButtonEvent;
-import com.jme3.input.event.MouseMotionEvent;
 import com.jme3.material.Material;
 import com.jme3.math.ColorRGBA;
 import com.jme3.math.FastMath;
 import com.jme3.math.Quaternion;
-import com.jme3.math.Vector2f;
 import com.jme3.math.Vector3f;
-import com.jme3.renderer.Camera;
 import com.jme3.scene.Geometry;
 import com.jme3.scene.Node;
-import com.jme3.scene.Spatial;
 import com.jme3.scene.shape.Box;
 import com.onemillionworlds.tamarin.compatibility.ActionBasedOpenVrState;
 import com.onemillionworlds.tamarin.compatibility.AnalogActionState;
 import com.onemillionworlds.tamarin.compatibility.DigitalActionState;
 import com.onemillionworlds.tamarin.vrhands.BoundHand;
 import com.onemillionworlds.tamarin.vrhands.VRHandsAppState;
-import com.onemillionworlds.tamarin.vrhands.grabbing.AutoMovingGrabControl;
 import com.simsilica.lemur.Container;
 import com.simsilica.lemur.Label;
-import com.simsilica.lemur.event.MouseListener;
 
 /**
  * This is not actually anything to do with tamarin, its core JME movement, but it is provided to demonstrate
@@ -51,11 +44,17 @@ public class MovingPlayerExampleState extends BaseAppState{
         initialiseScene();
     }
 
+    private Node getObserver(){
+        return (Node)vrAppState.getObserver();
+    }
+
     @Override
     protected void cleanup(Application app){
         rootNodeDelegate.removeFromParent();
-        getApplication().getCamera().setLocation(new Vector3f(0,0,10));
-        getApplication().getCamera().lookAt(new Vector3f(0,0,0), Vector3f.UNIT_Y );
+        Node observer = getObserver();
+
+        observer.setLocalTranslation(new Vector3f(0,0,10));
+        observer.lookAt(new Vector3f(0,0,0), Vector3f.UNIT_Y );
     }
 
     @Override
@@ -71,26 +70,26 @@ public class MovingPlayerExampleState extends BaseAppState{
     @Override
     public void update(float tpf){
         super.update(tpf);
-        //the "camera" is not the real camera, it is acting as the origin on the VR space (that the player then walks about in)
-        Camera observer = getApplication().getCamera();
+        //the observer is the origin on the VR space (that the player then walks about in)
+        Node observer = getObserver();
 
         DigitalActionState leftAction = openVr.getDigitalActionState("/actions/main/in/turnLeft");
         if (leftAction.changed && leftAction.state){
-            Quaternion currentRotation = getApplication().getCamera().getRotation();
+            Quaternion currentRotation = getObserver().getLocalRotation();
             Quaternion leftTurn = new Quaternion();
             leftTurn.fromAngleAxis(0.2f*FastMath.PI, Vector3f.UNIT_Y);
 
-            observer.setRotation(leftTurn.mult(currentRotation));
+            observer.setLocalRotation(leftTurn.mult(currentRotation));
         }
 
         DigitalActionState rightAction = openVr.getDigitalActionState("/actions/main/in/turnRight", null);
         if (rightAction.changed && rightAction.state){
 
-            Quaternion currentRotation = getApplication().getCamera().getRotation();
+            Quaternion currentRotation = getObserver().getLocalRotation();
             Quaternion leftTurn = new Quaternion();
             leftTurn.fromAngleAxis(-0.2f*FastMath.PI, Vector3f.UNIT_Y);
 
-            observer.setRotation(leftTurn.mult(currentRotation));
+            observer.setLocalRotation(leftTurn.mult(currentRotation));
         }
 
         //although we have by default bound teleport to the left hand the player may have redefined it, so check both
@@ -100,9 +99,9 @@ public class MovingPlayerExampleState extends BaseAppState{
                 //teleport in the direction the hand that requested it is pointing
                 Vector3f pointingDirection = boundHand.getBulkPointingDirection();
                 pointingDirection.y=0;
-                observer.setLocation(observer.getLocation().add(pointingDirection.mult(2)));
+                observer.setLocalTranslation(observer.getWorldTranslation().add(pointingDirection.mult(2)));
 
-                Vector3f observerLocation = observer.getLocation();
+                Vector3f observerLocation = observer.getWorldTranslation();
                 if (observerLocation.x < -5 || observerLocation.x > 5 ||  observerLocation.z < 5 || observerLocation.z > 15 ){
                     getStateManager().detach(this);
                     getStateManager().attach(new MenuExampleState());
@@ -121,7 +120,7 @@ public class MovingPlayerExampleState extends BaseAppState{
         if (playerRelativeWalkDirection.length()>0.01){
             playerRelativeWalkDirection.normalizeLocal();
         }
-        observer.setLocation(observer.getLocation().add(playerRelativeWalkDirection.mult(2f*tpf)));
+        observer.setLocalTranslation(observer.getWorldTranslation().add(playerRelativeWalkDirection.mult(2f*tpf)));
 
     }
 

@@ -98,7 +98,6 @@ public class MenuExampleState extends BaseAppState{
             boundHand.removePickLine();
             boundHand.clearClickAction_lemurSupport();
         });
-
     }
 
     @Override protected void onEnable(){}
