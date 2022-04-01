@@ -12,11 +12,13 @@ import com.jme3.math.Vector3f;
 import com.jme3.scene.Geometry;
 import com.jme3.scene.Node;
 import com.jme3.scene.shape.Box;
+import com.jme3.texture.Texture;
 import com.onemillionworlds.tamarin.compatibility.ActionBasedOpenVrState;
 import com.onemillionworlds.tamarin.compatibility.AnalogActionState;
 import com.onemillionworlds.tamarin.compatibility.DigitalActionState;
 import com.onemillionworlds.tamarin.vrhands.BoundHand;
 import com.onemillionworlds.tamarin.vrhands.VRHandsAppState;
+import com.onemillionworlds.tamarin.vrhands.grabbing.GrabEventControl;
 import com.simsilica.lemur.Container;
 import com.simsilica.lemur.Label;
 
@@ -31,6 +33,8 @@ public class MovingPlayerExampleState extends BaseAppState{
     VRAppState vrAppState;
     ActionBasedOpenVrState openVr;
     VRHandsAppState vrHands;
+
+    Geometry observerBox;
 
     public MovingPlayerExampleState(){
     }
@@ -52,7 +56,7 @@ public class MovingPlayerExampleState extends BaseAppState{
     protected void cleanup(Application app){
         rootNodeDelegate.removeFromParent();
         Node observer = getObserver();
-
+        observerBox.removeFromParent();
         observer.setLocalTranslation(new Vector3f(0,0,10));
         observer.lookAt(new Vector3f(0,0,0), Vector3f.UNIT_Y );
     }
@@ -140,6 +144,10 @@ public class MovingPlayerExampleState extends BaseAppState{
         lemurWindow.addChild(label);
         lemurWindow.setLocalTranslation(-5,4,0);
         rootNodeDelegate.attachChild(lemurWindow);
+
+        observerBox = observerBox();
+
+        getObserver().attachChild(observerBox);
     }
 
     private void pillar(float x, float z, ColorRGBA colorRGBA){
@@ -151,6 +159,17 @@ public class MovingPlayerExampleState extends BaseAppState{
         pillarGeometry.setMaterial(boxMat);
         pillarGeometry.setLocalTranslation(new Vector3f(x, pillarHeight/2, z));
         rootNodeDelegate.attachChild(pillarGeometry);
+    }
+
+    private Geometry observerBox(){
+        Box box = new Box(0.10f, 0.10f, 0.10f);
+        Geometry boxGeometry = new Geometry("box", box);
+        Texture exitTexture = getApplication().getAssetManager().loadTexture("Textures/observer.png");
+        Material boxMat = new Material(getApplication().getAssetManager(),"Common/MatDefs/Misc/Unshaded.j3md");
+        boxMat.setTexture("ColorMap", exitTexture);
+        boxGeometry.setMaterial(boxMat);
+
+        return boxGeometry;
     }
 
 }
