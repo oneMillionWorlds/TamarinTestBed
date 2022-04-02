@@ -11,32 +11,41 @@ import com.jme3.math.Quaternion;
 import com.jme3.math.Vector3f;
 import com.jme3.scene.Geometry;
 import com.jme3.scene.Node;
+import com.jme3.scene.Spatial;
 import com.jme3.scene.shape.Box;
 import com.jme3.texture.Texture;
 import com.onemillionworlds.tamarin.compatibility.ActionBasedOpenVrState;
 import com.onemillionworlds.tamarin.compatibility.AnalogActionState;
 import com.onemillionworlds.tamarin.compatibility.DigitalActionState;
+import com.onemillionworlds.tamarin.math.RotationalVelocity;
 import com.onemillionworlds.tamarin.vrhands.BoundHand;
 import com.onemillionworlds.tamarin.vrhands.VRHandsAppState;
-import com.onemillionworlds.tamarin.vrhands.grabbing.GrabEventControl;
+import com.onemillionworlds.tamarin.vrhands.grabbing.AutoMovingGrabControl;
 import com.simsilica.lemur.Container;
 import com.simsilica.lemur.Label;
 
-/**
- * This is not actually anything to do with tamarin, its core JME movement, but it is provided to demonstrate
- * functionality.
- */
-public class MovingPlayerExampleState extends BaseAppState{
+import java.util.ArrayList;
+import java.util.List;
 
-    Node rootNodeDelegate = new Node("PlayerMovingExampleState");
+/**
+ * This demonstrates how the hand's velocity can be used (perhaps for throwing grenades)
+ */
+public class HandVelocityExampleState extends BaseAppState{
+
+    Node rootNodeDelegate = new Node("HandVelocityExampleState");
 
     VRAppState vrAppState;
     ActionBasedOpenVrState openVr;
     VRHandsAppState vrHands;
 
-    Geometry observerBox;
+    Vector3f stoneCentre = new Vector3f(0,0.75f, 9.4f);
+    Vector3f stoneTarget = new Vector3f(5,1.5f, 5);
 
-    public MovingPlayerExampleState(){
+    float targetHalfSize = 0.4f;
+
+    List<Geometry> stones = new ArrayList<>();
+
+    public HandVelocityExampleState(){
     }
 
     @Override
@@ -56,7 +65,7 @@ public class MovingPlayerExampleState extends BaseAppState{
     protected void cleanup(Application app){
         rootNodeDelegate.removeFromParent();
         Node observer = getObserver();
-        observerBox.removeFromParent();
+
         observer.setLocalTranslation(new Vector3f(0,0,10));
         observer.lookAt(new Vector3f(0,0,0), Vector3f.UNIT_Y );
     }
@@ -104,13 +113,6 @@ public class MovingPlayerExampleState extends BaseAppState{
                 Vector3f pointingDirection = boundHand.getBulkPointingDirection();
                 pointingDirection.y=0;
                 observer.setLocalTranslation(observer.getWorldTranslation().add(pointingDirection.mult(2)));
-
-                Vector3f observerLocation = observer.getWorldTranslation();
-                if (observerLocation.x < -5 || observerLocation.x > 5 ||  observerLocation.z < 5 || observerLocation.z > 15 ){
-                    getStateManager().detach(this);
-                    getStateManager().attach(new MenuExampleState());
-                }
-
             }
         }
 
@@ -126,48 +128,108 @@ public class MovingPlayerExampleState extends BaseAppState{
         }
         observer.setLocalTranslation(observer.getWorldTranslation().add(playerRelativeWalkDirection.mult(2f*tpf)));
 
+        eliminateExcessiveStones();
+        ensureStonesAvailableToThrow();
+        exitIfHitTarget();
+    }
+
+    private void ensureStonesAvailableToThrow(){
+
+        boolean needNewStones = stones.stream().noneMatch(s -> s.getWorldTranslation().distance(stoneCentre) < 2);
+
+        if (needNewStones){
+            for(int i = -2; i <= 2; i++){
+                for(int j = 0; j < 2; j++){
+                    Geometry stone = createStoneToPickUp(stoneCentre.add(i * 0.2f, j*0.2f, 0));
+                    rootNodeDelegate.attachChild(stone);
+                    stones.add(stone);
+                }
+            }
+        }
+    }
+
+    private void exitIfHitTarget(){
+        if (stones.stream().anyMatch(s -> {
+            Vector3f stoneLocation = s.getWorldTranslation();
+            Vector3f relativePosition = stoneLocation.subtract(stoneTarget);
+            return (Math.abs(relativePosition.x)<targetHalfSize && Math.abs(relativePosition.y)<targetHalfSize && Math.abs(relativePosition.z)<targetHalfSize);
+        })){
+            getStateManager().detach(this);
+            getStateManager().attach(new MenuExampleState());
+        }
+    }
+
+    private void eliminateExcessiveStones(){
+        while (stones.size() > 20){
+            stones.remove(0).removeFromParent();
+        }
     }
 
     private void initialiseScene(){
         rootNodeDelegate.attachChild(BlockMovingExampleState.checkerboardFloor(getApplication().getAssetManager()));
 
-        //add some pillars just to add visual references
-        pillar(-4.5f,5.5f, ColorRGBA.Red);
-        pillar(4.5f,5.5f, ColorRGBA.Black);
-        pillar(-4.5f,14.5f, ColorRGBA.Yellow);
-        pillar(4.5f,14.5f, ColorRGBA.Blue);
-
         //a lemur UI with text explaining what to do
         Container lemurWindow = new Container();
         lemurWindow.setLocalScale(0.02f); //lemur defaults to 1 meter == 1 pixel (because that make sense for 2D, scale it down, so it's not huge in 3d)
-        Label label = new Label("Use the left hat forward to teleport forwards, left and right to sharply turn\n\nUse the right hat forward to walk (very nausea inducing)\n\nIn a real game you'd want some indicator to show where you were teleporting to. \n\nThe turn left and right is to help with seated experiences where physically turning 360 may be annoying or impossible. \n\n Teleport off the checkerboard to exit");
+        Label label = new Label("Try throwing 'stones', you can also apply spin to them. Try moving (joysticks) while holding a stone \n\nBe careful not to throw the controller though ;)\n\nTo exit throw a stone at the red box");
         lemurWindow.addChild(label);
         lemurWindow.setLocalTranslation(-5,4,0);
         rootNodeDelegate.attachChild(lemurWindow);
-
-        observerBox = observerBox();
-
-        getObserver().attachChild(observerBox);
+        rootNodeDelegate.attachChild(exitBox());
     }
 
-    private void pillar(float x, float z, ColorRGBA colorRGBA){
-        float pillarHeight = 2;
-        Box pillar = new Box(0.25f, pillarHeight/2,  0.25f);
-        Geometry pillarGeometry = new Geometry("pillar", pillar);
-        Material boxMat = new Material(getApplication().getAssetManager(),"Common/MatDefs/Misc/Unshaded.j3md");
-        boxMat.setColor("Color", colorRGBA);
-        pillarGeometry.setMaterial(boxMat);
-        pillarGeometry.setLocalTranslation(new Vector3f(x, pillarHeight/2, z));
-        rootNodeDelegate.attachChild(pillarGeometry);
-    }
-
-    private Geometry observerBox(){
-        Box box = new Box(0.10f, 0.10f, 0.10f);
+    /**
+     * This forms a "stone" geometry that reacts to being released by accessing the hands velocity and moving
+     * from then on
+     * @return a Geometry that is a stone
+     */
+    private Geometry createStoneToPickUp(Vector3f location){
+        Box box = new Box(0.05f, 0.05f, 0.05f);
         Geometry boxGeometry = new Geometry("box", box);
-        Texture exitTexture = getApplication().getAssetManager().loadTexture("Textures/observer.png");
         Material boxMat = new Material(getApplication().getAssetManager(),"Common/MatDefs/Misc/Unshaded.j3md");
-        boxMat.setTexture("ColorMap", exitTexture);
+        boxMat.setTexture("ColorMap", getApplication().getAssetManager().loadTexture("Textures/stone.png"));
         boxGeometry.setMaterial(boxMat);
+
+        boxGeometry.setLocalTranslation(location);
+        AutoMovingGrabControl grabAndThrowControl = new AutoMovingGrabControl(new Vector3f(0.025f,0,0), 0.05f){
+            Vector3f velocity = new Vector3f();
+            RotationalVelocity angularVelocity = new RotationalVelocity(new Vector3f());
+
+            @Override
+            protected void controlUpdate(float tpf){
+                super.controlUpdate(tpf);
+                Spatial spatial = getSpatial();
+                if (spatial.getWorldTranslation().y<0){
+                    spatial.removeFromParent();
+                    stones.remove(spatial);
+                }
+
+                spatial.setLocalTranslation(spatial.getLocalTranslation().add(velocity.mult(tpf)));
+
+                Quaternion deltaRotation = new Quaternion();
+                deltaRotation.fromAngleAxis(angularVelocity.getAngularVelocity()*tpf, angularVelocity.getAxis());
+                spatial.setLocalRotation(deltaRotation.mult(spatial.getLocalRotation()));
+            }
+
+            @Override
+            public void onRelease(BoundHand handUnbindingFrom){
+                super.onRelease(handUnbindingFrom);
+                velocity = handUnbindingFrom.getVelocity_world();
+                angularVelocity = handUnbindingFrom.getRotationalVelocity_world();
+            }
+        };
+        boxGeometry.addControl(grabAndThrowControl);
+
+        return boxGeometry;
+    }
+
+    private Geometry exitBox(){
+        Box box = new Box(targetHalfSize, targetHalfSize, targetHalfSize);
+        Geometry boxGeometry = new Geometry("box", box);
+        Material boxMat = new Material(getApplication().getAssetManager(),"Common/MatDefs/Misc/Unshaded.j3md");
+        boxMat.setColor("Color", ColorRGBA.Red);
+        boxGeometry.setMaterial(boxMat);
+        boxGeometry.setLocalTranslation(stoneTarget);
 
         return boxGeometry;
     }
