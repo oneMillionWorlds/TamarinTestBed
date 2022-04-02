@@ -39,7 +39,7 @@ public class HandVelocityExampleState extends BaseAppState{
     VRHandsAppState vrHands;
 
     Vector3f stoneCentre = new Vector3f(0,0.75f, 9.4f);
-    Vector3f stoneTarget = new Vector3f(4,1.5f, 4);
+    Vector3f stoneTarget = new Vector3f(3,1.5f, 6);
 
     float targetHalfSize = 0.5f;
 
