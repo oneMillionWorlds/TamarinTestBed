@@ -28,7 +28,11 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * This demonstrates how the hand's velocity can be used (perhaps for throwing grenades)
+ * This demonstrates how the ClimbingPointGrabControl can be used to support climbing.
+ *
+ * You may want to use a different (physics based) mechanism for climbing but this produces
+ * simple climbing easily by marking any spatial that's usable for climbing with a
+ * ClimbingPointGrabControl control
  */
 public class ClimbingExampleState extends BaseAppState{
 

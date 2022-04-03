@@ -25,6 +25,9 @@ import com.simsilica.lemur.Label;
 /**
  * This is not actually anything to do with tamarin, its core JME movement, but it is provided to demonstrate
  * functionality.
+ *
+ * This example makes heavy use of the observer, see https://github.com/oneMillionWorlds/Tamarin/wiki/Understanding-the-observer
+ * for more details
  */
 public class MovingPlayerExampleState extends BaseAppState{
 
@@ -79,21 +82,12 @@ public class MovingPlayerExampleState extends BaseAppState{
 
         DigitalActionState leftAction = openVr.getDigitalActionState("/actions/main/in/turnLeft");
         if (leftAction.changed && leftAction.state){
-            Quaternion currentRotation = getObserver().getLocalRotation();
-            Quaternion leftTurn = new Quaternion();
-            leftTurn.fromAngleAxis(0.2f*FastMath.PI, Vector3f.UNIT_Y);
-
-            observer.setLocalRotation(leftTurn.mult(currentRotation));
+            rotateObserverWithoutMovingPlayer(getObserver(), vrAppState, 0.2f*FastMath.PI);
         }
 
         DigitalActionState rightAction = openVr.getDigitalActionState("/actions/main/in/turnRight", null);
         if (rightAction.changed && rightAction.state){
-
-            Quaternion currentRotation = getObserver().getLocalRotation();
-            Quaternion leftTurn = new Quaternion();
-            leftTurn.fromAngleAxis(-0.2f*FastMath.PI, Vector3f.UNIT_Y);
-
-            observer.setLocalRotation(leftTurn.mult(currentRotation));
+            rotateObserverWithoutMovingPlayer(getObserver(), vrAppState, -0.2f*FastMath.PI);
         }
 
         //although we have by default bound teleport to the left hand the player may have redefined it, so check both
@@ -170,6 +164,34 @@ public class MovingPlayerExampleState extends BaseAppState{
         boxGeometry.setMaterial(boxMat);
 
         return boxGeometry;
+    }
+
+    /**
+     * Often you'll want to programatically turn the player, which should be done by rotating the observer.
+     *
+     * However, if the player isn't standing directly above the observer this rotation will induce motion.
+     *
+     * TODO; after Tamarin 1.2.3 move over to TamarinUtilities
+     * This method corrects for that and gives the impression the player is just turning
+     * @param observerNode the node that represents the observer (see tamarin wiki for explanation on observer node)
+     * @param vrAppState the VRAppState
+     * @param angleAboutYAxis the requested turn angle. Positive numbers turn left, negative numbers turn right
+     */
+    public static void rotateObserverWithoutMovingPlayer(Node observerNode, VRAppState vrAppState, float angleAboutYAxis){
+        Quaternion currentRotation = observerNode.getLocalRotation();
+        Quaternion leftTurn = new Quaternion();
+        leftTurn.fromAngleAxis(angleAboutYAxis, Vector3f.UNIT_Y);
+
+        /* Because the player may be a short distance from the observer rotating the observer may move the
+         * player. This requires that a small movement in the observer occur along with the rotation
+         */
+        Vector3f playerStartPosition = vrAppState.getVRViewManager().getLeftCamera().getLocation().add(vrAppState.getVRViewManager().getRightCamera().getLocation()).mult(0.5f);
+        Vector3f playerStartPositionObserverRelative = observerNode.worldToLocal(playerStartPosition, null);
+        observerNode.setLocalRotation(leftTurn.mult(currentRotation));
+        Vector3f playerPositionAfterRotation = observerNode.localToWorld(playerStartPositionObserverRelative, null);
+
+        Vector3f inducedError = playerPositionAfterRotation.subtract(playerStartPosition);
+        observerNode.setLocalTranslation(observerNode.getLocalTranslation().subtract(inducedError));
     }
 
 }
