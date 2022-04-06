@@ -45,7 +45,7 @@ public class HardPhysicsExampleState extends BaseAppState{
     float capsuleRadius = 0.35f;
 
     CapsuleCollisionShape capsule = new CapsuleCollisionShape(capsuleRadius, playerRequestedHeight);
-    CharacterControl playerControl = new CharacterControl(capsule,0.2f);
+    CharacterControl playerControl = new CharacterControl(capsule,0.3f);
 
     float playersTrueCapsuleHeight = playerRequestedHeight + 2 * capsuleRadius; //the shape (insanely) is not the height actually asked for, thats just the cylindrical portion height
 
@@ -79,10 +79,10 @@ public class HardPhysicsExampleState extends BaseAppState{
 
     private void initialiseScene(){
         BulletAppState appState = new BulletAppState();
-        //appState.setDebugEnabled(true);
+
         getStateManager().attach(appState);
         PhysicsSpace physicsSpace = appState.getPhysicsSpace();
-
+        physicsSpace.setMaxTimeStep(1f/90);
         rootNodeDelegate.attachChild(checkerboardFloor(getApplication().getAssetManager(), physicsSpace));
 
         //grabbableBox(new Vector3f(0,1f, 9.5f), physicsSpace);
@@ -101,9 +101,12 @@ public class HardPhysicsExampleState extends BaseAppState{
         lastTickPhysicsFeetPosition = playerControl.getPhysicsLocation().subtract(0, playersTrueCapsuleHeight/2,0);
 
         //add some stairs to walk up
-        step(new Vector3f(-2,0, 4), new Vector3f(2,0.1f, 8), ColorRGBA.Red, physicsSpace);
-        step(new Vector3f(-2,0.1f, 4), new Vector3f(2,0.2f, 7), ColorRGBA.Blue, physicsSpace);
-        step(new Vector3f(-2,0.2f, 4), new Vector3f(2,0.3f, 6), ColorRGBA.Green, physicsSpace);
+        step(new Vector3f(-1,0, 5), new Vector3f(1,0.2f, 8), ColorRGBA.Red, physicsSpace);
+        step(new Vector3f(-1,0.2f, 5), new Vector3f(1,0.4f, 7.5f), ColorRGBA.Blue, physicsSpace);
+        step(new Vector3f(-1,0.4f, 5), new Vector3f(1,0.6f, 7), ColorRGBA.Green, physicsSpace);
+        step(new Vector3f(-1,0.6f, 5), new Vector3f(1,0.8f, 6.5f), ColorRGBA.Red, physicsSpace);
+        step(new Vector3f(-1,0.8f, 5), new Vector3f(1,1f, 6.0f), ColorRGBA.Blue, physicsSpace);
+        step(new Vector3f(-1,1f, 5), new Vector3f(1,1.2f, 5.5f), ColorRGBA.Green, physicsSpace);
 
         getObserver().attachChild(debugBox(ColorRGBA.Red));
 
@@ -122,7 +125,7 @@ public class HardPhysicsExampleState extends BaseAppState{
         //the engine only moves the body if something went wrong(e.g. collisions, falling), this should lead to observer slip to correct observer to physics (rather than the normal other way round)
         Vector3f currentPhysicsChange = physicsFeetLocation.subtract(lastTickPhysicsFeetPosition);
         getObserver().setLocalTranslation(getObserver().getLocalTranslation().add(currentPhysicsChange));
-        vrFeetPosition.add(currentPhysicsChange);
+        vrFeetPosition.addLocal(currentPhysicsChange); //need to let the feet know they have been updated or else the normal correction tries to "uncorrect" it
 
         //this is the normal behaviour; physics follows the VR headset
         //where the vrFeetPosition and physicsFeetLocation are not aligned and this isn't due to a physics correction move the physics object to align them
@@ -207,6 +210,8 @@ public class HardPhysicsExampleState extends BaseAppState{
         boxGeometry.setLocalTranslation(min.add(max).multLocal(0.5f));
         Material boxMat = new Material(getApplication().getAssetManager(),"Common/MatDefs/Misc/Unshaded.j3md");
         boxMat.setColor("Color", colour);
+        boxMat.setTexture("ColorMap", getApplication().getAssetManager().loadTexture("Textures/backboard.png"));
+
         boxGeometry.setMaterial(boxMat);
 
         RigidBodyControl rigidBodyControl = new RigidBodyControl(0);
