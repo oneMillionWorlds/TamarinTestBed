@@ -17,8 +17,6 @@ import com.jme3.scene.Node;
 import com.jme3.scene.Spatial;
 import com.jme3.scene.shape.Cylinder;
 import com.onemillionworlds.tamarin.compatibility.ActionBasedOpenVrState;
-import com.onemillionworlds.tamarin.vrhands.BoundHand;
-import com.onemillionworlds.tamarin.vrhands.HandSide;
 import com.onemillionworlds.tamarin.vrhands.VRHandsAppState;
 import com.simsilica.lemur.Button;
 import com.simsilica.lemur.Container;
@@ -81,6 +79,11 @@ public class MenuExampleState extends BaseAppState{
         lemurWindow.addChild(new Button("Start climbing example")).addClickCommands(source -> {
             app.getStateManager().detach(this);
             app.getStateManager().attach(new ClimbingExampleState());
+        });
+        
+        lemurWindow.addChild(new Button("Start physics movement example")).addClickCommands(source -> {
+            app.getStateManager().detach(this);
+            app.getStateManager().attach(new HardPhysicsExampleState());
         });
 
         lemurWindow.addChild(new Button("Exit")).addClickCommands(source -> {
