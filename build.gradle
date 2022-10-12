@@ -23,8 +23,8 @@ dependencies {
     implementation "org.jmonkeyengine:jme3-vr:$jmonkeyengine_version"
     implementation "org.jmonkeyengine:jme3-plugins:$jmonkeyengine_version"
 
-    implementation "com.simsilica:lemur:1.14.0"
-    implementation "com.simsilica:lemur-proto:1.11.0"
+    implementation "com.simsilica:lemur:1.16.0"
+    implementation "com.simsilica:lemur-proto:1.13.0"
     implementation group: 'org.codehaus.groovy', name: 'groovy-all', version: '3.0.9'
 
     testImplementation 'org.junit.jupiter:junit-jupiter-api:5.7.0'
