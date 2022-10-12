@@ -2,6 +2,7 @@ package example;
 
 import com.jme3.app.Application;
 import com.jme3.app.SimpleApplication;
+import com.jme3.app.VRAppState;
 import com.jme3.app.state.BaseAppState;
 import com.jme3.input.event.MouseButtonEvent;
 import com.jme3.input.event.MouseMotionEvent;
@@ -16,10 +17,12 @@ import com.jme3.scene.Geometry;
 import com.jme3.scene.Node;
 import com.jme3.scene.Spatial;
 import com.jme3.scene.shape.Cylinder;
+import com.onemillionworlds.tamarin.TamarinUtilities;
 import com.onemillionworlds.tamarin.compatibility.ActionBasedOpenVrState;
 import com.onemillionworlds.tamarin.lemursupport.LemurKeyboard;
 import com.onemillionworlds.tamarin.lemursupport.keyboardstyles.bundledkeyboards.SimpleQwertyStyle;
 import com.onemillionworlds.tamarin.vrhands.VRHandsAppState;
+import com.onemillionworlds.tamarin.vrhands.functions.FunctionRegistration;
 import com.simsilica.lemur.Button;
 import com.simsilica.lemur.Checkbox;
 import com.simsilica.lemur.Container;
@@ -31,6 +34,7 @@ import com.simsilica.lemur.core.GuiControlListener;
 import com.simsilica.lemur.core.VersionedList;
 import com.simsilica.lemur.event.MouseListener;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -42,6 +46,8 @@ public class KeyboardTestState extends BaseAppState{
     ActionBasedOpenVrState openVr;
     VRHandsAppState vrHands;
 
+    List<FunctionRegistration> functionsToCloseOnExit = new ArrayList<>();
+
     @Override
     protected void initialize(Application app){
         ((SimpleApplication)app).getRootNode().attachChild(rootNodeDelegate);
@@ -50,12 +56,13 @@ public class KeyboardTestState extends BaseAppState{
 
         addPrimaryKeyboard();
         addSecondaryKeyboard();
+        addFingerKeyboard(); //<-- adds its own finger picking
 
         //get the left hand and add a pick line to it
         vrHands.getHandControls().forEach(h -> {
-            h.attachPickLine(pickLine());
-            h.setPickMarkerContinuous(rootNodeDelegate);
-            h.setClickAction_lemurSupport("/actions/main/in/trigger", rootNodeDelegate);
+            functionsToCloseOnExit.add(h.attachPickLine(pickLine()));
+            functionsToCloseOnExit.add(h.setPickMarkerContinuous(rootNodeDelegate));
+            functionsToCloseOnExit.add(h.setClickAction_lemurSupport("/actions/main/in/trigger", rootNodeDelegate));
         });
     }
 
@@ -107,6 +114,35 @@ public class KeyboardTestState extends BaseAppState{
         rootNodeDelegate.attachChild(lemurWindow);
     }
 
+    /**
+     * This is a keyboard that has both finger and pointer interaction (and is positioned close to the player so they
+     * can interact with it by finger
+     */
+    private void addFingerKeyboard(){
+        Container lemurWindow = new Container();
+        lemurWindow.setLocalScale(0.001f); //lemur defaults to 1 meter == 1 pixel (because that make sense for 2D, scale it down, so it's not huge in 3d)
+        lemurWindow.addChild(new Label("This form is for testing touching the buttons and fields with a finger"));
+        lemurWindow.addChild(new TextField(""));
+        lemurWindow.addChild(new Label("There is a second text field"));
+        lemurWindow.addChild(new TextField(""));
+        lemurWindow.addChild(new Checkbox("Example Checkbox"));
+        lemurWindow.addChild(new Label("Example ListBox (partial support only):"));
+        VersionedList<String> dropDownExamples = new VersionedList<>(List.of("Alpha","Beta", "Gamma", "Delta", "Epsilon", "Zeta", "Eta", "Theta", "Iota", "Kappa"));
+        lemurWindow.addChild(new ListBox<>(dropDownExamples));
+
+        vrHands.getHandControls().forEach(h -> {
+            functionsToCloseOnExit.add(h.setFingerTipPressDetection(lemurWindow, false, "/actions/main/out/haptic", 0.5f));
+        });
+
+        Vector3f playerCameraPosition = TamarinUtilities.getVrCameraPosition(getStateManager().getState(VRAppState.class));
+
+        lemurWindow.setLocalTranslation(playerCameraPosition.add(-0.35f,0,-0.35f));
+        lemurWindow.lookAt(playerCameraPosition, Vector3f.UNIT_Y);
+        System.out.println(TamarinUtilities.getVrCameraPosition(getStateManager().getState(VRAppState.class)));
+
+        rootNodeDelegate.attachChild(lemurWindow);
+    }
+
     @Override
     public void update(float tpf){
         super.update(tpf);
@@ -115,12 +151,7 @@ public class KeyboardTestState extends BaseAppState{
     @Override
     protected void cleanup(Application app){
         rootNodeDelegate.removeFromParent();
-        vrHands.getHandControls().forEach(boundHand -> {
-            boundHand.clearPickMarkerContinuous();
-            boundHand.removePickLine();
-            boundHand.clearClickAction_lemurSupport();
-        });
-
+        functionsToCloseOnExit.forEach(FunctionRegistration::endFunction);
     }
 
     @Override protected void onEnable(){}
