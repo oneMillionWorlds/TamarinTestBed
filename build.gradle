@@ -7,28 +7,34 @@ version '1.0-SNAPSHOT'
 
 repositories {
     jcenter()
-    //mavenLocal()
+    mavenLocal()
     mavenCentral()
 }
 
 ext {
-    jmonkeyengine_version = '3.4.1-stable'
+    jmonkeyengine_version = '3.5.2-SNAPSHOT'
 }
 
 dependencies {
-    implementation 'com.onemillionworlds:tamarin:1.2.2'
+    implementation 'com.onemillionworlds:tamarin:1.2.3'
 
     implementation "org.jmonkeyengine:jme3-core:$jmonkeyengine_version"
     implementation "org.jmonkeyengine:jme3-lwjgl3:$jmonkeyengine_version"
     implementation "org.jmonkeyengine:jme3-vr:$jmonkeyengine_version"
     implementation "org.jmonkeyengine:jme3-plugins:$jmonkeyengine_version"
 
-    implementation "com.simsilica:lemur:1.14.0"
-    implementation "com.simsilica:lemur-proto:1.11.0"
+    implementation 'com.simsilica:lemur:1.16.0'
+    implementation 'com.simsilica:lemur-proto:1.13.0'
     implementation group: 'org.codehaus.groovy', name: 'groovy-all', version: '3.0.9'
 
-    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.7.0'
-    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.7.0'
+    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.8.2'
+    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.8.2'
+
+    implementation 'org.joml:joml:1.10.4'
+    implementation "org.lwjgl:lwjgl-openxr:3.3.1"
+    runtimeOnly "org.lwjgl:lwjgl-openxr:3.3.1:natives-windows"
+    runtimeOnly "org.lwjgl:lwjgl-openxr:3.3.1:natives-linux"
+    //runtimeOnly "org.lwjgl:lwjgl-openxr:3.3.1:natives-macos"
 }
 
 test {
