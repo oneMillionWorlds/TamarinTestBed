@@ -42,7 +42,7 @@ public class HardPhysicsExampleState extends BaseAppState{
 
     //the fact the capsule cannot have its height updated is a problem. The height should be constantly updated to be the human players current camera height relative to observer
     float playerRequestedHeight = 1.0f;
-    float capsuleRadius = 0.35f;
+    float capsuleRadius = 0.30f;
 
     CapsuleCollisionShape capsule = new CapsuleCollisionShape(capsuleRadius, playerRequestedHeight);
     CharacterControl playerControl = new CharacterControl(capsule,0.3f);
