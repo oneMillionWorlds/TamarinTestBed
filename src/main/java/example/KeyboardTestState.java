@@ -48,6 +48,8 @@ public class KeyboardTestState extends BaseAppState{
 
     List<FunctionRegistration> functionsToCloseOnExit = new ArrayList<>();
 
+    int clickMeButtonCounter = 0;
+
     @Override
     protected void initialize(Application app){
         ((SimpleApplication)app).getRootNode().attachChild(rootNodeDelegate);
@@ -130,13 +132,19 @@ public class KeyboardTestState extends BaseAppState{
         VersionedList<String> dropDownExamples = new VersionedList<>(List.of("Alpha","Beta", "Gamma", "Delta", "Epsilon", "Zeta", "Eta", "Theta", "Iota", "Kappa"));
         lemurWindow.addChild(new ListBox<>(dropDownExamples));
 
+        Button clickMeButton = lemurWindow.addChild(new Button("Click me, I've been clicked 0 times"));
+        clickMeButton.addClickCommands(event -> {
+            clickMeButtonCounter++;
+            clickMeButton.setText("Click me, I've been clicked" + clickMeButtonCounter + "times");
+        });
+
         vrHands.getHandControls().forEach(h -> {
             functionsToCloseOnExit.add(h.setFingerTipPressDetection(lemurWindow, false, "/actions/main/out/haptic", 0.5f));
         });
 
         Vector3f playerCameraPosition = TamarinUtilities.getVrCameraPosition(getStateManager().getState(VRAppState.class));
 
-        lemurWindow.setLocalTranslation(playerCameraPosition.add(-0.35f,0,-0.35f));
+        lemurWindow.setLocalTranslation(playerCameraPosition.add(-0.45f,0,-0.25f));
         lemurWindow.lookAt(playerCameraPosition, Vector3f.UNIT_Y);
         System.out.println(TamarinUtilities.getVrCameraPosition(getStateManager().getState(VRAppState.class)));
 
