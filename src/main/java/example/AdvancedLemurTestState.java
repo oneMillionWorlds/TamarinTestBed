@@ -4,8 +4,6 @@ import com.jme3.app.Application;
 import com.jme3.app.SimpleApplication;
 import com.jme3.app.VRAppState;
 import com.jme3.app.state.BaseAppState;
-import com.jme3.input.event.MouseButtonEvent;
-import com.jme3.input.event.MouseMotionEvent;
 import com.jme3.material.Material;
 import com.jme3.material.RenderState;
 import com.jme3.math.ColorRGBA;
@@ -19,8 +17,6 @@ import com.jme3.scene.Spatial;
 import com.jme3.scene.shape.Cylinder;
 import com.onemillionworlds.tamarin.TamarinUtilities;
 import com.onemillionworlds.tamarin.compatibility.ActionBasedOpenVrState;
-import com.onemillionworlds.tamarin.lemursupport.LemurKeyboard;
-import com.onemillionworlds.tamarin.lemursupport.keyboardstyles.bundledkeyboards.SimpleQwertyStyle;
 import com.onemillionworlds.tamarin.vrhands.VRHandsAppState;
 import com.onemillionworlds.tamarin.vrhands.functions.FunctionRegistration;
 import com.simsilica.lemur.Button;
@@ -28,11 +24,12 @@ import com.simsilica.lemur.Checkbox;
 import com.simsilica.lemur.Container;
 import com.simsilica.lemur.Label;
 import com.simsilica.lemur.ListBox;
+import com.simsilica.lemur.Selector;
 import com.simsilica.lemur.TextField;
 import com.simsilica.lemur.core.GuiControl;
 import com.simsilica.lemur.core.GuiControlListener;
 import com.simsilica.lemur.core.VersionedList;
-import com.simsilica.lemur.event.MouseListener;
+import com.google.common.base.Function;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -40,7 +37,7 @@ import java.util.List;
 /**
  * This app state gives a basic menu, implemented in lemur that can be interacted with via either hand
  */
-public class KeyboardTestState extends BaseAppState{
+public class AdvancedLemurTestState extends BaseAppState{
 
     Node rootNodeDelegate = new Node("KeyboardExampleState");
     ActionBasedOpenVrState openVr;
@@ -83,7 +80,7 @@ public class KeyboardTestState extends BaseAppState{
             @Override
             public void focusLost(GuiControl source){
                 if (textField.getText().trim().equalsIgnoreCase("exit")){
-                    getStateManager().detach(KeyboardTestState.this);
+                    getStateManager().detach(AdvancedLemurTestState.this);
                     getStateManager().attach(new MenuExampleState());
                 }
             }
@@ -106,7 +103,7 @@ public class KeyboardTestState extends BaseAppState{
         lemurWindow.addChild(new Label("Example ListBox (partial support only):"));
         VersionedList<String> dropDownExamples = new VersionedList<>(List.of("Alpha","Beta", "Gamma", "Delta", "Epsilon", "Zeta", "Eta", "Theta", "Iota", "Kappa"));
         lemurWindow.addChild(new ListBox<>(dropDownExamples));
-
+        lemurWindow.addChild(new Selector<>(dropDownExamples));
         lemurWindow.setLocalTranslation(2,1,7);
 
         Quaternion rotation = new Quaternion();
@@ -122,14 +119,14 @@ public class KeyboardTestState extends BaseAppState{
      */
     private void addFingerKeyboard(){
         Container lemurWindow = new Container();
-        lemurWindow.setLocalScale(0.001f); //lemur defaults to 1 meter == 1 pixel (because that make sense for 2D, scale it down, so it's not huge in 3d)
+        lemurWindow.setLocalScale(0.0015f); //lemur defaults to 1 meter == 1 pixel (because that make sense for 2D, scale it down, so it's not huge in 3d)
         lemurWindow.addChild(new Label("This form is for testing touching the buttons and fields with a finger"));
         lemurWindow.addChild(new TextField(""));
         lemurWindow.addChild(new Label("There is a second text field"));
         lemurWindow.addChild(new TextField(""));
         lemurWindow.addChild(new Checkbox("Example Checkbox"));
         lemurWindow.addChild(new Label("Example ListBox (partial support only):"));
-        VersionedList<String> dropDownExamples = new VersionedList<>(List.of("Alpha","Beta", "Gamma", "Delta", "Epsilon", "Zeta", "Eta", "Theta", "Iota", "Kappa"));
+        VersionedList<String> dropDownExamples = new VersionedList<>(List.of("Alpha", "Beta", "Gamma", "Delta", "Epsilon", "Zeta", "Eta", "Theta", "Iota", "Kappa"));
         lemurWindow.addChild(new ListBox<>(dropDownExamples));
 
         Button clickMeButton = lemurWindow.addChild(new Button("Click me, I've been clicked 0 times"));
@@ -146,7 +143,6 @@ public class KeyboardTestState extends BaseAppState{
 
         lemurWindow.setLocalTranslation(playerCameraPosition.add(-0.45f,0,-0.25f));
         lemurWindow.lookAt(playerCameraPosition, Vector3f.UNIT_Y);
-        System.out.println(TamarinUtilities.getVrCameraPosition(getStateManager().getState(VRAppState.class)));
 
         rootNodeDelegate.attachChild(lemurWindow);
     }

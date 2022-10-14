@@ -12,7 +12,7 @@ repositories {
 }
 
 ext {
-    jmonkeyengine_version = '3.4.1-stable'
+    jmonkeyengine_version = '3.5.2-stable'
 }
 
 dependencies {
@@ -25,6 +25,7 @@ dependencies {
 
     implementation "com.simsilica:lemur:1.16.0"
     implementation "com.simsilica:lemur-proto:1.13.0"
+    implementation "com.google.guava:guava:19.0" // <-- I don't understand why this is necessary as lemur brings it in, but the Selector dropdown won't work with out this
     implementation group: 'org.codehaus.groovy', name: 'groovy-all', version: '3.0.9'
 
     testImplementation 'org.junit.jupiter:junit-jupiter-api:5.7.0'

@@ -17,13 +17,12 @@ import com.jme3.scene.Node;
 import com.jme3.scene.Spatial;
 import com.jme3.scene.shape.Cylinder;
 import com.onemillionworlds.tamarin.compatibility.ActionBasedOpenVrState;
-import com.onemillionworlds.tamarin.vrhands.BoundHand;
-import com.onemillionworlds.tamarin.vrhands.HandSide;
 import com.onemillionworlds.tamarin.vrhands.VRHandsAppState;
 import com.simsilica.lemur.Button;
 import com.simsilica.lemur.Container;
 import com.simsilica.lemur.Label;
 import com.simsilica.lemur.event.MouseListener;
+
 
 /**
  * This app state gives a basic menu, implemented in lemur that can be interacted with via either hand
@@ -68,9 +67,9 @@ public class MenuExampleState extends BaseAppState{
             app.getStateManager().attach(new MovingPlayerExampleState());
         });
 
-        lemurWindow.addChild(new Button("Start keyboard example")).addClickCommands(source -> {
+        lemurWindow.addChild(new Button("Start advanced Lemur example (inc keyboards)")).addClickCommands(source -> {
             app.getStateManager().detach(this);
-            app.getStateManager().attach(new KeyboardTestState());
+            app.getStateManager().attach(new AdvancedLemurTestState());
         });
 
         lemurWindow.addChild(new Button("Start hand velocity example (throwing)")).addClickCommands(source -> {
