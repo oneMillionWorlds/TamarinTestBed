@@ -98,6 +98,22 @@
           },
           "mode" : "joystick",
           "path" : "/user/hand/right/input/joystick"
+        },
+        { "inputs" : {
+            "click" : {
+              "output" : "/actions/main/in/openHandMenu"
+            }
+          },
+          "mode" : "joystick",
+          "path" : "/user/hand/left/input/joystick"
+        },
+        { "inputs" : {
+            "click" : {
+              "output" : "/actions/main/in/openHandMenu"
+            }
+          },
+          "mode" : "joystick",
+          "path" : "/user/hand/right/input/joystick"
         }
       ]
     }

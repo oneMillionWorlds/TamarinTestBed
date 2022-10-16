@@ -82,6 +82,11 @@ public class MenuExampleState extends BaseAppState{
             app.getStateManager().attach(new ClimbingExampleState());
         });
 
+        lemurWindow.addChild(new Button("Start hand menu example")).addClickCommands(source -> {
+            app.getStateManager().detach(this);
+            app.getStateManager().attach(new HandMenuExampleState());
+        });
+
         lemurWindow.addChild(new Button("Exit")).addClickCommands(source -> {
             getApplication().stop();
         });

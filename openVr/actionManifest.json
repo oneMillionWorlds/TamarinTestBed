@@ -72,6 +72,11 @@
       "name": "/actions/main/in/walk",
       "type": "vector2",
       "requirement": "mandatory"
+    },
+    {
+      "name" : "/actions/main/in/openHandMenu",
+      "requirement" : "mandatory",
+      "type" : "boolean"
     }
   ],
   "action_sets": [
