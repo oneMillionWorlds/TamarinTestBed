@@ -19,12 +19,10 @@ import com.jme3.scene.shape.Sphere;
 import com.jme3.texture.Texture;
 import com.onemillionworlds.tamarin.vrhands.VRHandsAppState;
 import com.onemillionworlds.tamarin.vrhands.functions.FunctionRegistration;
-import com.onemillionworlds.tamarin.vrhands.functions.handmenu.HandMenuFunction;
+import com.onemillionworlds.tamarin.vrhands.functions.handmenu.HandRingMenuFunction;
 import com.onemillionworlds.tamarin.vrhands.functions.handmenu.MenuBranch;
 import com.onemillionworlds.tamarin.vrhands.functions.handmenu.MenuItem;
 import com.onemillionworlds.tamarin.vrhands.functions.handmenu.MenuLeaf;
-import com.onemillionworlds.tamarin.vrhands.grabbing.AutoMovingGrabControl;
-import com.onemillionworlds.tamarin.vrhands.grabbing.GrabEventControl;
 import com.simsilica.lemur.Container;
 import com.simsilica.lemur.Label;
 
@@ -119,8 +117,8 @@ public class HandMenuExampleState extends BaseAppState{
 
             topMenuItems.add(new MenuLeaf<>(colouredBox(ColorRGBA.Cyan), "Cyan Box"));
 
-            HandMenuFunction<String> handMenuFunction = new HandMenuFunction<>(topMenuItems, this::acceptSelection, "/actions/main/in/openHandMenu");
-            FunctionRegistration functionRegistration = hand.addFunction(handMenuFunction);
+            HandRingMenuFunction<String> handRingMenuFunction = new HandRingMenuFunction<>(topMenuItems, this::acceptSelection, "/actions/main/in/openHandMenu");
+            FunctionRegistration functionRegistration = hand.addFunction(handRingMenuFunction);
             activeFunctionRegistrations.add(functionRegistration);
         });
 
