@@ -102,7 +102,7 @@
         {
           "inputs" : {
             "north" : {
-              "output" : "/actions/weapon/in/showinventory"
+              "output" : "/actions/main/in/openHandMenu"
             }
           },
           "mode" : "dpad",
@@ -116,7 +116,7 @@
         {
           "inputs" : {
             "north" : {
-              "output" : "/actions/weapon/in/showinventory"
+              "output" : "/actions/main/in/openHandMenu"
             }
           },
           "mode" : "dpad",
