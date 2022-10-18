@@ -30,6 +30,10 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
+/**
+ * This example demonstrates the HandRingMenuFunction; a menu that extends around the hands, and is selected by sweeping
+ * the hand through it
+ */
 public class HandMenuExampleState extends BaseAppState{
 
     Node rootNodeDelegate = new Node("HandMenuExampleState");

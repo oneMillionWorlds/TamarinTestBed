@@ -11,21 +11,15 @@ import com.jme3.math.Quaternion;
 import com.jme3.math.Vector3f;
 import com.jme3.scene.Geometry;
 import com.jme3.scene.Node;
-import com.jme3.scene.Spatial;
 import com.jme3.scene.shape.Box;
 import com.onemillionworlds.tamarin.compatibility.ActionBasedOpenVrState;
 import com.onemillionworlds.tamarin.compatibility.AnalogActionState;
 import com.onemillionworlds.tamarin.compatibility.DigitalActionState;
-import com.onemillionworlds.tamarin.math.RotationalVelocity;
 import com.onemillionworlds.tamarin.vrhands.BoundHand;
 import com.onemillionworlds.tamarin.vrhands.VRHandsAppState;
-import com.onemillionworlds.tamarin.vrhands.grabbing.AutoMovingGrabControl;
 import com.onemillionworlds.tamarin.vrhands.grabbing.ClimbingPointGrabControl;
 import com.simsilica.lemur.Container;
 import com.simsilica.lemur.Label;
-
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * This demonstrates how the ClimbingPointGrabControl can be used to support climbing.

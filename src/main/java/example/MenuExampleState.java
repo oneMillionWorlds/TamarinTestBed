@@ -18,10 +18,14 @@ import com.jme3.scene.Spatial;
 import com.jme3.scene.shape.Cylinder;
 import com.onemillionworlds.tamarin.compatibility.ActionBasedOpenVrState;
 import com.onemillionworlds.tamarin.vrhands.VRHandsAppState;
+import com.onemillionworlds.tamarin.vrhands.functions.FunctionRegistration;
 import com.simsilica.lemur.Button;
 import com.simsilica.lemur.Container;
 import com.simsilica.lemur.Label;
 import com.simsilica.lemur.event.MouseListener;
+
+import java.util.ArrayList;
+import java.util.List;
 
 
 /**
@@ -32,6 +36,11 @@ public class MenuExampleState extends BaseAppState{
     Node rootNodeDelegate = new Node("MenuExampleState");
     ActionBasedOpenVrState openVr;
     VRHandsAppState vrHands;
+
+    /**
+     * This is a list of active hand functions that should be autoremoved when this state is exited
+     */
+    List<FunctionRegistration> functionRegistrations = new ArrayList<>();
 
     @Override
     protected void initialize(Application app){
@@ -87,15 +96,15 @@ public class MenuExampleState extends BaseAppState{
             app.getStateManager().attach(new HandMenuExampleState());
         });
 
-        lemurWindow.addChild(new Button("Exit")).addClickCommands(source -> {
-            getApplication().stop();
-        });
+        lemurWindow.addChild(new Button("Exit")).addClickCommands(source ->
+            getApplication().stop()
+        );
 
         //get the left hand and add a pick line to it
         vrHands.getHandControls().forEach(h -> {
-            h.attachPickLine(pickLine());
-            h.setPickMarkerContinuous(rootNodeDelegate);
-            h.setClickAction_lemurSupport("/actions/main/in/trigger", rootNodeDelegate);
+            functionRegistrations.add(h.attachPickLine(pickLine()));
+            functionRegistrations.add(h.setPickMarkerContinuous(rootNodeDelegate));
+            functionRegistrations.add(h.setClickAction_lemurSupport("/actions/main/in/trigger", rootNodeDelegate));
         });
     }
 
@@ -107,17 +116,14 @@ public class MenuExampleState extends BaseAppState{
     @Override
     protected void cleanup(Application app){
         rootNodeDelegate.removeFromParent();
-        vrHands.getHandControls().forEach(boundHand -> {
-            boundHand.clearPickMarkerContinuous();
-            boundHand.removePickLine();
-            boundHand.clearClickAction_lemurSupport();
-        });
+        functionRegistrations.forEach(FunctionRegistration::endFunction);
     }
 
     @Override protected void onEnable(){}
 
     @Override protected void onDisable(){}
 
+    @SuppressWarnings("DuplicatedCode") //as the examples are supposed to be self-contained accept some duplication
     private Spatial pickLine(){
         float length = 1;
 

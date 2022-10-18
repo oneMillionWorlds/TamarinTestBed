@@ -21,6 +21,7 @@ import com.onemillionworlds.tamarin.math.RotationalVelocity;
 import com.onemillionworlds.tamarin.vrhands.BoundHand;
 import com.onemillionworlds.tamarin.vrhands.VRHandsAppState;
 import com.onemillionworlds.tamarin.vrhands.grabbing.AutoMovingGrabControl;
+import com.onemillionworlds.tamarin.vrhands.grabbing.SnapToHandGrabControl;
 import com.simsilica.lemur.Container;
 import com.simsilica.lemur.Label;
 
@@ -195,7 +196,7 @@ public class HandVelocityExampleState extends BaseAppState{
         boxGeometry.setMaterial(boxMat);
 
         boxGeometry.setLocalTranslation(location);
-        AutoMovingGrabControl grabAndThrowControl = new AutoMovingGrabControl(new Vector3f(0.025f,0,0), 0.05f){
+        SnapToHandGrabControl grabAndThrowControl = new SnapToHandGrabControl(new Vector3f(0.025f,0,0), 0.05f){
             boolean physicsActivated = false;
 
             Vector3f velocity = new Vector3f();

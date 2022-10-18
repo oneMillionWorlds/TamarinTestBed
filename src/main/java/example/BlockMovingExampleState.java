@@ -16,6 +16,7 @@ import com.jme3.scene.shape.Quad;
 import com.jme3.texture.Texture;
 import com.onemillionworlds.tamarin.vrhands.grabbing.AutoMovingGrabControl;
 import com.onemillionworlds.tamarin.vrhands.grabbing.GrabEventControl;
+import com.onemillionworlds.tamarin.vrhands.grabbing.SnapToHandGrabControl;
 
 public class BlockMovingExampleState extends BaseAppState{
 
@@ -53,6 +54,7 @@ public class BlockMovingExampleState extends BaseAppState{
         exitBox(new Vector3f(-0.5f,1f, 9.6f));
     }
 
+    @SuppressWarnings("DuplicatedCode") //each example is supposed to be mostly stand along so allow some duplication
     public static Geometry checkerboardFloor(AssetManager assetManager){
         Quad floorQuad = new Quad(10,10);
         Geometry floor = new Geometry("floor", floorQuad);
@@ -93,7 +95,7 @@ public class BlockMovingExampleState extends BaseAppState{
         boxMat.setColor("Color", ColorRGBA.randomColor());
         boxGeometry.setMaterial(boxMat);
         boxGeometry.setLocalTranslation(location);
-        AutoMovingGrabControl grabControl = new AutoMovingGrabControl(new Vector3f(0.025f,0,0), 0.05f);
+        SnapToHandGrabControl grabControl = new SnapToHandGrabControl(new Vector3f(0.025f,0,0), 0.05f);
         boxGeometry.addControl(grabControl);
         rootNodeDelegate.attachChild(boxGeometry);
     }

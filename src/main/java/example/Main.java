@@ -6,16 +6,11 @@ import com.jme3.app.VRAppState;
 import com.jme3.app.VRConstants;
 import com.jme3.app.VREnvironment;
 import com.jme3.app.state.AppState;
-import com.jme3.material.Material;
 import com.jme3.math.ColorRGBA;
 import com.jme3.math.Vector3f;
 import com.jme3.scene.Node;
-import com.jme3.scene.Spatial;
 import com.jme3.system.AppSettings;
 import com.onemillionworlds.tamarin.compatibility.ActionBasedOpenVrState;
-import com.onemillionworlds.tamarin.compatibility.ApplicationRegistration;
-import com.onemillionworlds.tamarin.vrhands.BoundHand;
-import com.onemillionworlds.tamarin.vrhands.HandSide;
 import com.onemillionworlds.tamarin.vrhands.HandSpec;
 import com.onemillionworlds.tamarin.vrhands.VRHandsAppState;
 import com.simsilica.lemur.GuiGlobals;
@@ -85,12 +80,12 @@ public class Main extends SimpleApplication{
                 "/actions/main/in/HandSkeletonLeft",
                 "/actions/main/in/HandPoseRight",
                 "/actions/main/in/HandSkeletonRight")
-                .postBindLeft(leftHand -> {
-                    leftHand.setGrabAction("/actions/main/in/grip", rootNode);
-                })
-                .postBindRight(rightHand -> {
-                    rightHand.setGrabAction("/actions/main/in/grip", rootNode);
-                })
+                .postBindLeft(leftHand ->
+                    leftHand.setGrabAction("/actions/main/in/grip", rootNode)
+                )
+                .postBindRight(rightHand ->
+                    rightHand.setGrabAction("/actions/main/in/grip", rootNode)
+                )
                 .build();
 
     }
