@@ -54,6 +54,8 @@ public class RestrictedLineGrabMovement extends BaseAppState{
         grabbableBoxOnLine(new Vector3f(0,1f, 9.5f), new Vector3f(0,0.8f, 9.5f), new Vector3f(0,1.2f, 9.5f), false, ColorRGBA.Blue);
         grabbableBoxOnLine(new Vector3f(0.3f,1.1f, 9.6f), new Vector3f(-0.1f,1.1f, 9.6f), new Vector3f(0.6f,1.1f, 9.6f), true, ColorRGBA.Red);
         grabbablePointsOnParent(new Vector3f(-0.4f, 0.9f, 9.7f ));
+        chainedParent(new Vector3f(0.5f, 0.9f, 9.9f));
+
         exitBox(new Vector3f(-0.5f,1f, 10f));
 
         //a lemur UI with text explaining what to do
@@ -101,11 +103,7 @@ public class RestrictedLineGrabMovement extends BaseAppState{
     }
 
     private void grabbableBoxOnLine(Vector3f location, Vector3f minPosition, Vector3f maxPosition, boolean canRotate, ColorRGBA colour){
-        Box box = new Box(0.05f, 0.05f, 0.05f);
-        Geometry boxGeometry = new Geometry("box", box);
-        Material boxMat = new Material(getApplication().getAssetManager(),"Common/MatDefs/Misc/Unshaded.j3md");
-        boxMat.setColor("Color", colour);
-        boxGeometry.setMaterial(boxMat);
+        Geometry boxGeometry = box(colour, 0.05f);
         boxGeometry.setLocalTranslation(location);
 
         RelativeMovingGrabControl relativeGrabControl = new RelativeMovingGrabControl();
@@ -115,34 +113,55 @@ public class RestrictedLineGrabMovement extends BaseAppState{
         boxGeometry.addControl(relativeGrabControl);
         rootNodeDelegate.attachChild(boxGeometry);
 
-        Line line = new Line(minPosition, maxPosition);
-        Geometry lineGeometry = new Geometry("line", line);
-        Material lineMat = new Material(getApplication().getAssetManager(),"Common/MatDefs/Misc/Unshaded.j3md");
-        lineMat.setColor("Color", colour);
-        lineMat.getAdditionalRenderState().setLineWidth(10);
-        lineGeometry.setMaterial(lineMat);
+        Geometry lineGeometry = line(minPosition, maxPosition, colour);
+
         rootNodeDelegate.attachChild(lineGeometry);
+    }
+
+    /**
+     * An example showing how the parented movements can be chained. Allowing grab motion on a larger entity that is
+     * itself grab movable.
+     * <p>
+     * This also shows how the parent of a grabbable doesn't have to be the root node; it all just works itself out
+     */
+    private void chainedParent(Vector3f location){
+
+        Node parent = new Node("chainedParent");
+        parent.setLocalTranslation(location);
+
+        parent.attachChild( line(new Vector3f(0,0,0), new Vector3f(0,0.3f,0), ColorRGBA.Orange));
+        Geometry box1Geometry = box(ColorRGBA.Orange, 0.05f);
+
+        Node node1 = new Node("node1");
+        parent.attachChild(node1);
+        node1.attachChild(box1Geometry);
+        ParentRelativeMovingGrabControl relative1 = new ParentRelativeMovingGrabControl(node1);
+        relative1.restrictToPath(new Vector3f(0,0,0), new Vector3f(0,0.3f,0));
+        box1Geometry.addControl(relative1);
+
+        node1.attachChild( line(new Vector3f(0,0,0), new Vector3f(0.3f,0,0), ColorRGBA.White));
+        Geometry box2Geometry = box(ColorRGBA.White, 0.04f);
+        RelativeMovingGrabControl relative2 = new RelativeMovingGrabControl();
+        relative2.restrictToPath(new Vector3f(0,0,0), new Vector3f(0.3f,0,0)); //note the way the path is relative to the parent
+        box2Geometry.setLocalTranslation(new Vector3f(0.3f,0,0));
+        box2Geometry.addControl(relative2);
+        node1.attachChild(box2Geometry);
+
+        rootNodeDelegate.attachChild(parent);
     }
 
     private void grabbablePointsOnParent(Vector3f location){
         Node parentNode = new Node();
         parentNode.setLocalTranslation(location);
 
-        Box mainBox = new Box(0.15f, 0.15f, 0.15f);
-        Geometry boxGeometry = new Geometry("parent", mainBox);
-        Material boxMat = new Material(getApplication().getAssetManager(),"Common/MatDefs/Misc/Unshaded.j3md");
-        boxMat.setColor("Color", ColorRGBA.Black);
-        boxGeometry.setMaterial(boxMat);
+        Geometry boxGeometry = box(ColorRGBA.Black, 0.15f);
+
         parentNode.attachChild(boxGeometry);
 
         for(float dx : List.of(-0.15f, 0.15f)){
             for(float dy : List.of(-0.15f, 0.15f)){
                 for(float dz : List.of(-0.15f, 0.15f)){
-                    Box grabBox = new Box(0.03f, 0.03f, 0.03f);
-                    Geometry grabGeometry = new Geometry("box", grabBox);
-                    Material grabMat = new Material(getApplication().getAssetManager(),"Common/MatDefs/Misc/Unshaded.j3md");
-                    grabMat.setColor("Color", ColorRGBA.Pink);
-                    grabGeometry.setMaterial(grabMat);
+                    Geometry grabGeometry = box(ColorRGBA.Pink, 0.03f);
                     grabGeometry.setLocalTranslation(new Vector3f(dx, dy, dz));
                     parentNode.attachChild(grabGeometry);
                     ParentRelativeMovingGrabControl parentRelativeMovingGrabControl = new ParentRelativeMovingGrabControl(parentNode);
@@ -151,5 +170,25 @@ public class RestrictedLineGrabMovement extends BaseAppState{
             }
         }
         rootNodeDelegate.attachChild(parentNode);
+    }
+
+    private Geometry box(ColorRGBA colour, float halfSize){
+        Box mainBox = new Box(halfSize, halfSize, halfSize);
+        Geometry boxGeometry = new Geometry("parent", mainBox);
+        Material boxMat = new Material(getApplication().getAssetManager(),"Common/MatDefs/Misc/Unshaded.j3md");
+        boxMat.setColor("Color", colour);
+        boxGeometry.setMaterial(boxMat);
+
+        return boxGeometry;
+    }
+
+    private Geometry line(Vector3f localMin, Vector3f localMax, ColorRGBA colour){
+        Line line = new Line(localMin, localMax);
+        Geometry lineGeometry = new Geometry("line", line);
+        Material lineMat = new Material(getApplication().getAssetManager(),"Common/MatDefs/Misc/Unshaded.j3md");
+        lineMat.setColor("Color", colour);
+        lineMat.getAdditionalRenderState().setLineWidth(10);
+        lineGeometry.setMaterial(lineMat);
+        return lineGeometry;
     }
 }
