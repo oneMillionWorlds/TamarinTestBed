@@ -135,17 +135,36 @@ public class RestrictedLineGrabMovement extends BaseAppState{
         Node node1 = new Node("node1");
         parent.attachChild(node1);
         node1.attachChild(box1Geometry);
-        ParentRelativeMovingGrabControl relative1 = new ParentRelativeMovingGrabControl(node1);
+        RelativeMovingGrabControl relative1 = new RelativeMovingGrabControl();
         relative1.restrictToPath(new Vector3f(0,0,0), new Vector3f(0,0.3f,0));
-        box1Geometry.addControl(relative1);
+        node1.addControl(relative1);
 
         node1.attachChild( line(new Vector3f(0,0,0), new Vector3f(0.3f,0,0), ColorRGBA.White));
-        Geometry box2Geometry = box(ColorRGBA.White, 0.04f);
-        RelativeMovingGrabControl relative2 = new RelativeMovingGrabControl();
-        relative2.restrictToPath(new Vector3f(0,0,0), new Vector3f(0.3f,0,0)); //note the way the path is relative to the parent
-        box2Geometry.setLocalTranslation(new Vector3f(0.3f,0,0));
-        box2Geometry.addControl(relative2);
-        node1.attachChild(box2Geometry);
+        Node node2a = new Node("node2b");
+        Geometry box2aGeometry = box(ColorRGBA.White, 0.04f);
+        RelativeMovingGrabControl relative2a = new RelativeMovingGrabControl();
+        relative2a.restrictToPath(new Vector3f(0,0,0), new Vector3f(0.3f,0,0)); //note the way the path is relative to the parent
+        node2a.setLocalTranslation(new Vector3f(0.3f,0,0));
+        node2a.addControl(relative2a);
+        node2a.attachChild(box2aGeometry);
+        node1.attachChild(node2a);
+
+        node2a.attachChild(line(new Vector3f(0,0,0), new Vector3f(0,0,0.2f), ColorRGBA.Cyan));
+        Geometry box3Geometry = box(ColorRGBA.Cyan, 0.03f);
+        RelativeMovingGrabControl relative3 = new RelativeMovingGrabControl();
+        relative3.restrictToPath(new Vector3f(0,0,0), new Vector3f(0,0,0.2f));
+        box3Geometry.setLocalTranslation(0,0,0.2f);
+        box3Geometry.addControl(relative3);
+        node2a.attachChild(box3Geometry);
+
+        //a separate, simpler chain coming off the main cube
+        node1.attachChild( line(new Vector3f(0,0,0), new Vector3f(-0.3f,0,0), ColorRGBA.Black));
+        Geometry box2bGeometry = box(ColorRGBA.Black, 0.04f);
+        RelativeMovingGrabControl relative2b = new RelativeMovingGrabControl();
+        relative2b.restrictToPath(new Vector3f(0,0,0), new Vector3f(-0.3f,0,0));
+        box2bGeometry.setLocalTranslation(new Vector3f(-0.3f,0,0));
+        box2bGeometry.addControl(relative2b);
+        node1.attachChild(box2bGeometry);
 
         rootNodeDelegate.attachChild(parent);
     }
