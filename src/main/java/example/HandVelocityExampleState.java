@@ -13,14 +13,13 @@ import com.jme3.scene.Geometry;
 import com.jme3.scene.Node;
 import com.jme3.scene.Spatial;
 import com.jme3.scene.shape.Box;
-import com.jme3.texture.Texture;
 import com.onemillionworlds.tamarin.compatibility.ActionBasedOpenVrState;
 import com.onemillionworlds.tamarin.compatibility.AnalogActionState;
 import com.onemillionworlds.tamarin.compatibility.DigitalActionState;
 import com.onemillionworlds.tamarin.math.RotationalVelocity;
 import com.onemillionworlds.tamarin.vrhands.BoundHand;
 import com.onemillionworlds.tamarin.vrhands.VRHandsAppState;
-import com.onemillionworlds.tamarin.vrhands.grabbing.AutoMovingGrabControl;
+import com.onemillionworlds.tamarin.vrhands.functions.FunctionRegistration;
 import com.onemillionworlds.tamarin.vrhands.grabbing.SnapToHandGrabControl;
 import com.simsilica.lemur.Container;
 import com.simsilica.lemur.Label;
@@ -46,6 +45,8 @@ public class HandVelocityExampleState extends BaseAppState{
 
     List<Geometry> stones = new ArrayList<>();
 
+    List<FunctionRegistration> closeHandBindings = new ArrayList<>();
+
     public HandVelocityExampleState(){
     }
 
@@ -55,6 +56,10 @@ public class HandVelocityExampleState extends BaseAppState{
         vrAppState = getState(VRAppState.class);
         openVr = getState(ActionBasedOpenVrState.class);
         vrHands = getState(VRHandsAppState.class);
+
+        vrHands.getHandControls().forEach(boundHand ->
+                closeHandBindings.add(boundHand.setGrabAction("/actions/main/in/grip", rootNodeDelegate)));
+
         initialiseScene();
     }
 
@@ -69,6 +74,9 @@ public class HandVelocityExampleState extends BaseAppState{
 
         observer.setLocalTranslation(new Vector3f(0,0,10));
         observer.lookAt(new Vector3f(0,0,0), Vector3f.UNIT_Y );
+
+        closeHandBindings.forEach(FunctionRegistration::endFunction);
+        closeHandBindings.clear();
     }
 
     @Override

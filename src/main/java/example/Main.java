@@ -80,12 +80,6 @@ public class Main extends SimpleApplication{
                 "/actions/main/in/HandSkeletonLeft",
                 "/actions/main/in/HandPoseRight",
                 "/actions/main/in/HandSkeletonRight")
-                .postBindLeft(leftHand ->
-                    leftHand.setGrabAction("/actions/main/in/grip", rootNode)
-                )
-                .postBindRight(rightHand ->
-                    rightHand.setGrabAction("/actions/main/in/grip", rootNode)
-                )
                 .build();
 
     }

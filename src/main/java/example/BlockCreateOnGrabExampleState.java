@@ -16,11 +16,15 @@ import com.jme3.scene.shape.Quad;
 import com.jme3.texture.Texture;
 import com.onemillionworlds.tamarin.compatibility.ActionBasedOpenVrState;
 import com.onemillionworlds.tamarin.vrhands.VRHandsAppState;
+import com.onemillionworlds.tamarin.vrhands.functions.FunctionRegistration;
 import com.onemillionworlds.tamarin.vrhands.functions.GrabPickingFunction;
 import com.onemillionworlds.tamarin.vrhands.grabbing.GrabEventControl;
 import com.onemillionworlds.tamarin.vrhands.grabbing.RelativeMovingGrabControl;
 import com.simsilica.lemur.Container;
 import com.simsilica.lemur.Label;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * This demonstrates how a grab control can be added to an already clenched hand.
@@ -34,17 +38,25 @@ public class BlockCreateOnGrabExampleState extends BaseAppState{
 
     ActionBasedOpenVrState actionBasedOpenVrState;
 
+    List<FunctionRegistration> closeHandBindings = new ArrayList<>();
+
     @Override
     protected void initialize(Application app){
         ((SimpleApplication)app).getRootNode().attachChild(rootNodeDelegate);
         vrHandsAppState = getStateManager().getState(VRHandsAppState.ID, VRHandsAppState.class);
         actionBasedOpenVrState = getStateManager().getState(ActionBasedOpenVrState.ID, ActionBasedOpenVrState.class);
+
+        vrHandsAppState.getHandControls().forEach(boundHand ->
+                closeHandBindings.add(boundHand.setGrabAction("/actions/main/in/grip", rootNodeDelegate)));
+
         initialiseScene();
     }
 
     @Override
     protected void cleanup(Application app){
         rootNodeDelegate.removeFromParent();
+        closeHandBindings.forEach(FunctionRegistration::endFunction);
+        closeHandBindings.clear();
     }
 
     @Override
@@ -75,7 +87,8 @@ public class BlockCreateOnGrabExampleState extends BaseAppState{
     public void update(float tpf){
         super.update(tpf);
         vrHandsAppState.getHandControls().forEach(hand -> {
-            if (actionBasedOpenVrState.getAnalogActionState("/actions/main/in/grip", hand.getHandSide().restrictToInputString).x>0.6f){
+
+            if (hand.getAnalogActionState("/actions/main/in/grip").x>0.6f){
                 //see if the hand is already grabbing anything, if not magic up a new block and give it to the hand
                 GrabPickingFunction grabFunction = hand.getFunction(GrabPickingFunction.class);
                 if (!grabFunction.isCurrentlyHoldingSomething()){

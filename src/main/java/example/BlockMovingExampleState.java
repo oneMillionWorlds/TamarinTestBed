@@ -14,23 +14,35 @@ import com.jme3.scene.Node;
 import com.jme3.scene.shape.Box;
 import com.jme3.scene.shape.Quad;
 import com.jme3.texture.Texture;
-import com.onemillionworlds.tamarin.vrhands.grabbing.AutoMovingGrabControl;
+import com.onemillionworlds.tamarin.vrhands.VRHandsAppState;
+import com.onemillionworlds.tamarin.vrhands.functions.FunctionRegistration;
 import com.onemillionworlds.tamarin.vrhands.grabbing.GrabEventControl;
 import com.onemillionworlds.tamarin.vrhands.grabbing.SnapToHandGrabControl;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class BlockMovingExampleState extends BaseAppState{
 
     Node rootNodeDelegate = new Node("BlockMovingExampleState");
 
+    List<FunctionRegistration> closeHandBindings = new ArrayList<>();
+
     @Override
     protected void initialize(Application app){
         ((SimpleApplication)app).getRootNode().attachChild(rootNodeDelegate);
+
+        getState(VRHandsAppState.ID, VRHandsAppState.class).getHandControls().forEach(boundHand ->
+                closeHandBindings.add(boundHand.setGrabAction("/actions/main/in/grip", rootNodeDelegate)));
+
         initialiseScene();
     }
 
     @Override
     protected void cleanup(Application app){
         rootNodeDelegate.removeFromParent();
+        closeHandBindings.forEach(FunctionRegistration::endFunction);
+        closeHandBindings.clear();
     }
 
     @Override

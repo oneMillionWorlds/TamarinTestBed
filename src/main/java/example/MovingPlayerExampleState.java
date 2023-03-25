@@ -24,8 +24,8 @@ import com.simsilica.lemur.Label;
 /**
  * This is not actually anything to do with tamarin, its core JME movement, but it is provided to demonstrate
  * functionality.
- *
- * This example makes heavy use of the observer, see https://github.com/oneMillionWorlds/Tamarin/wiki/Understanding-the-observer
+ * <p>
+ * This example makes heavy use of the observer, see <a href="https://github.com/oneMillionWorlds/Tamarin/wiki/Understanding-the-observer">Understanding-the-observer</a>
  * for more details
  */
 public class MovingPlayerExampleState extends BaseAppState{
@@ -93,7 +93,7 @@ public class MovingPlayerExampleState extends BaseAppState{
 
         //although we have by default bound teleport to the left hand the player may have redefined it, so check both
         for(BoundHand boundHand : vrHands.getHandControls()){
-            DigitalActionState teleportAction = openVr.getDigitalActionState("/actions/main/in/teleport", boundHand.getHandSide().restrictToInputString);
+            DigitalActionState teleportAction = boundHand.getDigitalActionState("/actions/main/in/teleport");
             if (teleportAction.changed && teleportAction.state){
                 //teleport in the direction the hand that requested it is pointing
                 Vector3f pointingDirection = boundHand.getBulkPointingDirection();

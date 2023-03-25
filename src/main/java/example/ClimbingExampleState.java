@@ -17,13 +17,17 @@ import com.onemillionworlds.tamarin.compatibility.AnalogActionState;
 import com.onemillionworlds.tamarin.compatibility.DigitalActionState;
 import com.onemillionworlds.tamarin.vrhands.BoundHand;
 import com.onemillionworlds.tamarin.vrhands.VRHandsAppState;
+import com.onemillionworlds.tamarin.vrhands.functions.FunctionRegistration;
 import com.onemillionworlds.tamarin.vrhands.grabbing.ClimbingPointGrabControl;
 import com.simsilica.lemur.Container;
 import com.simsilica.lemur.Label;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * This demonstrates how the ClimbingPointGrabControl can be used to support climbing.
- *
+ * <p>
  * You may want to use a different (physics based) mechanism for climbing but this produces
  * simple climbing easily by marking any spatial that's usable for climbing with a
  * ClimbingPointGrabControl control
@@ -36,6 +40,8 @@ public class ClimbingExampleState extends BaseAppState{
     ActionBasedOpenVrState openVr;
     VRHandsAppState vrHands;
 
+    List<FunctionRegistration> closeHandBindings = new ArrayList<>();
+
     public ClimbingExampleState(){
     }
 
@@ -43,8 +49,12 @@ public class ClimbingExampleState extends BaseAppState{
     protected void initialize(Application app){
         ((SimpleApplication)app).getRootNode().attachChild(rootNodeDelegate);
         vrAppState = getState(VRAppState.class);
-        openVr = getState(ActionBasedOpenVrState.class);
-        vrHands = getState(VRHandsAppState.class);
+        openVr = getState(ActionBasedOpenVrState.ID, ActionBasedOpenVrState.class);
+        vrHands = getState(VRHandsAppState.ID, VRHandsAppState.class);
+
+        vrHands.getHandControls().forEach(boundHand ->
+                closeHandBindings.add(boundHand.setGrabAction("/actions/main/in/grip", rootNodeDelegate)));
+
         initialiseScene();
     }
 
@@ -59,6 +69,9 @@ public class ClimbingExampleState extends BaseAppState{
         vrHands.forceTerminateClimbing();
         observer.setLocalTranslation(new Vector3f(0,0,10));
         observer.lookAt(new Vector3f(0,0,0), Vector3f.UNIT_Y );
+
+        closeHandBindings.forEach(FunctionRegistration::endFunction);
+        closeHandBindings.clear();
     }
 
     @Override
@@ -98,7 +111,7 @@ public class ClimbingExampleState extends BaseAppState{
 
         //although we have by default bound teleport to the left hand the player may have redefined it, so check both
         for(BoundHand boundHand : vrHands.getHandControls()){
-            DigitalActionState teleportAction = openVr.getDigitalActionState("/actions/main/in/teleport", boundHand.getHandSide().restrictToInputString);
+            DigitalActionState teleportAction = boundHand.getDigitalActionState("/actions/main/in/teleport");
             if (teleportAction.changed && teleportAction.state){
                 //teleport in the direction the hand that requested it is pointing
                 Vector3f pointingDirection = boundHand.getBulkPointingDirection();
