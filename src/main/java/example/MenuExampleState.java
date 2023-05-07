@@ -2,6 +2,7 @@ package example;
 
 import com.jme3.app.Application;
 import com.jme3.app.SimpleApplication;
+import com.jme3.app.VRAppState;
 import com.jme3.app.state.BaseAppState;
 import com.jme3.input.event.MouseButtonEvent;
 import com.jme3.input.event.MouseMotionEvent;
@@ -16,6 +17,7 @@ import com.jme3.scene.Geometry;
 import com.jme3.scene.Node;
 import com.jme3.scene.Spatial;
 import com.jme3.scene.shape.Cylinder;
+import com.onemillionworlds.tamarin.TamarinUtilities;
 import com.onemillionworlds.tamarin.compatibility.ActionBasedOpenVrState;
 import com.onemillionworlds.tamarin.vrhands.VRHandsAppState;
 import com.onemillionworlds.tamarin.vrhands.functions.FunctionRegistration;
@@ -66,42 +68,42 @@ public class MenuExampleState extends BaseAppState{
 
         rootNodeDelegate.attachChild(lemurWindow);
 
-        lemurWindow.addChild(new Button("Start block moving example")).addClickCommands(source -> {
+        lemurWindow.addChild(new Button("Block moving example")).addClickCommands(source -> {
             app.getStateManager().detach(this);
             app.getStateManager().attach(new BlockMovingExampleState());
         });
 
-        lemurWindow.addChild(new Button("Start moving and teleporting example")).addClickCommands(source -> {
+        lemurWindow.addChild(new Button("Moving and teleporting example")).addClickCommands(source -> {
             app.getStateManager().detach(this);
             app.getStateManager().attach(new MovingPlayerExampleState());
         });
 
-        lemurWindow.addChild(new Button("Start advanced Lemur example (inc keyboards)")).addClickCommands(source -> {
+        lemurWindow.addChild(new Button("Advanced Lemur example (inc keyboards)")).addClickCommands(source -> {
             app.getStateManager().detach(this);
             app.getStateManager().attach(new AdvancedLemurTestState());
         });
 
-        lemurWindow.addChild(new Button("Start hand velocity example (throwing)")).addClickCommands(source -> {
+        lemurWindow.addChild(new Button("Hand velocity example (throwing)")).addClickCommands(source -> {
             app.getStateManager().detach(this);
             app.getStateManager().attach(new HandVelocityExampleState());
         });
 
-        lemurWindow.addChild(new Button("Start climbing example")).addClickCommands(source -> {
+        lemurWindow.addChild(new Button("Climbing example")).addClickCommands(source -> {
             app.getStateManager().detach(this);
             app.getStateManager().attach(new ClimbingExampleState());
         });
 
-        lemurWindow.addChild(new Button("Start hand menu example")).addClickCommands(source -> {
+        lemurWindow.addChild(new Button("Hand menu example")).addClickCommands(source -> {
             app.getStateManager().detach(this);
             app.getStateManager().attach(new HandMenuExampleState());
         });
 
-        lemurWindow.addChild(new Button("Start advanced grabbing example")).addClickCommands(source -> {
+        lemurWindow.addChild(new Button("Advanced grabbing example")).addClickCommands(source -> {
             app.getStateManager().detach(this);
             app.getStateManager().attach(new RestrictedLineGrabMovement());
         });
 
-        lemurWindow.addChild(new Button("Start item given to hand on hand clench example")).addClickCommands(source -> {
+        lemurWindow.addChild(new Button("Item given to hand on hand clench example")).addClickCommands(source -> {
             app.getStateManager().detach(this);
             app.getStateManager().attach(new BlockCreateOnGrabExampleState());
         });
@@ -109,6 +111,8 @@ public class MenuExampleState extends BaseAppState{
         lemurWindow.addChild(new Button("Exit")).addClickCommands(source ->
             getApplication().stop()
         );
+
+        TamarinUtilities.playerLookAtPosition(getState(VRAppState.ID, VRAppState.class), lemurWindow.getWorldTranslation());
 
         //get the left hand and add a pick line to it
         vrHands.getHandControls().forEach(h -> {
