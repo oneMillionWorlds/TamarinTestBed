@@ -2,7 +2,6 @@ package example;
 
 import com.jme3.app.Application;
 import com.jme3.app.SimpleApplication;
-import com.jme3.app.VRAppState;
 import com.jme3.app.state.BaseAppState;
 import com.jme3.input.event.MouseButtonEvent;
 import com.jme3.input.event.MouseMotionEvent;
@@ -17,7 +16,6 @@ import com.jme3.scene.Geometry;
 import com.jme3.scene.Node;
 import com.jme3.scene.Spatial;
 import com.jme3.scene.shape.Cylinder;
-import com.onemillionworlds.tamarin.TamarinUtilities;
 import com.onemillionworlds.tamarin.compatibility.ActionBasedOpenVrState;
 import com.onemillionworlds.tamarin.vrhands.VRHandsAppState;
 import com.onemillionworlds.tamarin.vrhands.functions.FunctionRegistration;
@@ -100,7 +98,7 @@ public class MenuExampleState extends BaseAppState{
 
         lemurWindow.addChild(new Button("Advanced grabbing example")).addClickCommands(source -> {
             app.getStateManager().detach(this);
-            app.getStateManager().attach(new RestrictedLineGrabMovement());
+            app.getStateManager().attach(new PreciseGrabExampleState());
         });
 
         lemurWindow.addChild(new Button("Item given to hand on hand clench example")).addClickCommands(source -> {
@@ -108,11 +106,16 @@ public class MenuExampleState extends BaseAppState{
             app.getStateManager().attach(new BlockCreateOnGrabExampleState());
         });
 
+        lemurWindow.addChild(new Button("Precise grabbing Test")).addClickCommands(source -> {
+            app.getStateManager().detach(this);
+            app.getStateManager().attach(new PreciseGrabExampleState());
+        });
+
         lemurWindow.addChild(new Button("Exit")).addClickCommands(source ->
             getApplication().stop()
         );
 
-        TamarinUtilities.playerLookAtPosition(getState(VRAppState.ID, VRAppState.class), lemurWindow.getWorldTranslation());
+        //TamarinUtilities.playerLookAtPosition(getState(VRAppState.ID, VRAppState.class), lemurWindow.getWorldTranslation());
 
         //get the left hand and add a pick line to it
         vrHands.getHandControls().forEach(h -> {
