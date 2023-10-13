@@ -75,7 +75,8 @@ public class Main extends SimpleApplication{
                 .actionHandle(ActionHandles.GRIP)
                 .translatedName("Grip an item")
                 .actionType(ActionType.FLOAT)
-                .withSuggestAllKnownGripPoseBindings()
+                .withSuggestedBinding(OculusTouchController.PROFILE, OculusTouchController.pathBuilder().leftHand().squeeze())
+                .withSuggestedBinding(OculusTouchController.PROFILE, OculusTouchController.pathBuilder().rightHand().squeeze())
                 .build();
 
         Action haptic = Action.builder()
