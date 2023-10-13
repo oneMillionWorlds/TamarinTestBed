@@ -12,8 +12,10 @@ import com.jme3.scene.Node;
 import com.jme3.scene.shape.Box;
 import com.jme3.texture.Texture;
 import com.onemillionworlds.tamarin.TamarinUtilities;
+import com.onemillionworlds.tamarin.actions.HandSide;
 import com.onemillionworlds.tamarin.actions.OpenXrActionState;
 import com.onemillionworlds.tamarin.actions.state.BooleanActionState;
+import com.onemillionworlds.tamarin.actions.state.Vector2fActionState;
 import com.onemillionworlds.tamarin.openxr.XrAppState;
 import com.onemillionworlds.tamarin.vrhands.BoundHand;
 import com.onemillionworlds.tamarin.vrhands.VRHandsAppState;
@@ -48,7 +50,7 @@ public class MovingPlayerExampleState extends BaseAppState{
     }
 
     private Node getObserver(){
-        return (Node) xrAppState.getObserver();
+        return xrAppState.getObserver();
     }
 
     @Override
@@ -77,22 +79,22 @@ public class MovingPlayerExampleState extends BaseAppState{
         //the observer is the origin on the VR space (that the player then walks about in)
         Node observer = getObserver();
 
-        //note how these do not specify a particular hand, giving flexibility to redefine the actions to different hands
-        BooleanActionState leftAction = openXrActionState.getBooleanActionState(ActionHandles.TURN_LEFT);
+
+        BooleanActionState leftAction = Main.syntheticDPad.west(); //temporary work around till LWJGL 3.3.3
         if (leftAction.hasChanged() && leftAction.getState()){
             xrAppState.rotateObserverWithoutMovingPlayer(0.2f*FastMath.PI);
             TamarinUtilities.rotateObserverWithoutMovingPlayer(xrAppState, 0.2f*FastMath.PI);
         }
 
-        BooleanActionState rightAction = openXrActionState.getBooleanActionState(ActionHandles.TURN_RIGHT);
+        BooleanActionState rightAction = Main.syntheticDPad.west();
         if (rightAction.hasChanged() && rightAction.getState()){
             TamarinUtilities.rotateObserverWithoutMovingPlayer(xrAppState, -0.2f*FastMath.PI);
         }
 
-        //although we have by default bound teleport to the left hand the player may have redefined it, so check both
-        for(BoundHand boundHand : vrHands.getHandControls()){
+        //should be supporting both hands really (in case action is redefined) but while syntheticDPad is being used that's not easy
+        vrHands.getHandControl(HandSide.LEFT).ifPresent(boundHand -> {
             //here we do care about which hand the action is bound to, so we use the bound hand (which implicityly scope the action to that hand)
-            BooleanActionState teleportAction = boundHand.getBooleanActionState(ActionHandles.TELEPORT);
+            BooleanActionState teleportAction = Main.syntheticDPad.north(); //temporary work around till LWJGL 3.3.3
             if (teleportAction.hasChanged() && teleportAction.getState()){
                 //teleport in the direction the hand that requested it is pointing
                 Vector3f pointingDirection = boundHand.getBulkPointingDirection();
@@ -106,12 +108,13 @@ public class MovingPlayerExampleState extends BaseAppState{
                 }
 
             }
-        }
+        });
+
 
         //nausea inducing but nonetheless popular. Normal walking about
-        AnalogActionState analogActionState = openXrActionState.getAnalogActionState("/actions/main/in/walk");
+        Vector2fActionState analogActionState = openXrActionState.getVector2fActionState(ActionHandles.WALK);
         //we'll want the joystick to move the player relative to the head face direction, not the hand pointing direction
-        Vector3f walkingDirectionRaw = new Vector3f(-analogActionState.x, 0, analogActionState.y);
+        Vector3f walkingDirectionRaw = new Vector3f(-analogActionState.getX(), 0, analogActionState.getY());
 
         Vector3f playerRelativeWalkDirection = xrAppState.getLeftCamera().getRotation().mult(walkingDirectionRaw);
         playerRelativeWalkDirection.y = 0;

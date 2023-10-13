@@ -11,6 +11,7 @@ import com.onemillionworlds.tamarin.actions.OpenXrActionState;
 import com.onemillionworlds.tamarin.actions.actionprofile.Action;
 import com.onemillionworlds.tamarin.actions.actionprofile.ActionManifest;
 import com.onemillionworlds.tamarin.actions.actionprofile.ActionSet;
+import com.onemillionworlds.tamarin.actions.compatibility.SyntheticDPad;
 import com.onemillionworlds.tamarin.actions.controllerprofile.OculusTouchController;
 import com.onemillionworlds.tamarin.openxr.XrAppState;
 import com.onemillionworlds.tamarin.vrhands.HandSpec;
@@ -21,6 +22,8 @@ import example.actions.ActionHandles;
 import example.actions.ActionSets;
 
 public class Main extends SimpleApplication{
+
+    public static SyntheticDPad syntheticDPad = new SyntheticDPad();
 
     public static void main(String[] args) {
         AppSettings settings = new AppSettings(true);
@@ -49,7 +52,6 @@ public class Main extends SimpleApplication{
         vrAppState.movePlayersFeetToPosition(new Vector3f(0,0,10));
         vrAppState.playerLookAtPosition(new Vector3f(0,0,0));
 
-        getStateManager().attach(new VRHandsAppState(handSpec()));
         getStateManager().attach(new MenuExampleState());
 
         GuiGlobals.initialize(this);
@@ -60,6 +62,13 @@ public class Main extends SimpleApplication{
         getStateManager().getState(XrAppState.ID, XrAppState.class).configureBothViewports(viewPort -> viewPort.setBackgroundColor(ColorRGBA.Brown));
     }
 
+
+    @Override
+    public void update(){
+        super.update();
+        //this is a temporary workaround until LWJGL is upgraded to 3.3.3, and we can use true dpads
+        syntheticDPad.updateRawAction(getStateManager().getState(OpenXrActionState.class).getVector2fActionState(ActionHandles.SYNTHETIC_D_PAD));
+    }
 
     private ActionManifest manifest(){
         Action grip = Action.builder()
@@ -92,25 +101,12 @@ public class Main extends SimpleApplication{
                 .withSuggestedBinding(OculusTouchController.PROFILE, OculusTouchController.pathBuilder().rightHand().gripPose())
                 .build();
 
-        Action teleport = Action.builder()
-                .actionHandle(ActionHandles.TELEPORT)
-                .translatedName("Teleport")
-                .actionType(ActionType.BOOLEAN)
-                .withSuggestedBinding(OculusTouchController.PROFILE, OculusTouchController.pathBuilder().leftHand().thumbDpadUp())
-                .build();
-
-        Action turnLeft = Action.builder()
-                .actionHandle(ActionHandles.TURN_LEFT)
-                .translatedName("Turn Left")
-                .actionType(ActionType.BOOLEAN)
-                .withSuggestedBinding(OculusTouchController.PROFILE, OculusTouchController.pathBuilder().leftHand().thumbDpadLeft())
-                .build();
-
-        Action turnRight = Action.builder()
-                .actionHandle(ActionHandles.TURN_RIGHT)
-                .translatedName("Turn Right")
-                .actionType(ActionType.BOOLEAN)
-                .withSuggestedBinding(OculusTouchController.PROFILE, OculusTouchController.pathBuilder().leftHand().thumbDpadRight())
+        Action syntheticDpad = Action.builder()
+                .actionHandle(ActionHandles.SYNTHETIC_D_PAD)
+                .translatedName("D Pad")
+                .actionType(ActionType.VECTOR2F)
+                .withSuggestedBinding(OculusTouchController.PROFILE, OculusTouchController.pathBuilder().leftHand().thumbStickX())
+                .withSuggestedBinding(OculusTouchController.PROFILE, OculusTouchController.pathBuilder().leftHand().thumbStickY())
                 .build();
 
         Action walk = Action.builder()
@@ -139,9 +135,7 @@ public class Main extends SimpleApplication{
                         .withAction(haptic)
                         .withAction(trigger)
                         .withAction(handPose)
-                        .withAction(teleport)
-                        .withAction(turnLeft)
-                        .withAction(turnRight)
+                        .withAction(syntheticDpad)
                         .withAction(walk)
                         .withAction(openHandMenu)
                         .build()
