@@ -18,6 +18,7 @@ import com.onemillionworlds.tamarin.vrhands.VRHandsAppState;
 import com.onemillionworlds.tamarin.vrhands.functions.FunctionRegistration;
 import com.onemillionworlds.tamarin.vrhands.grabbing.GrabEventControl;
 import com.onemillionworlds.tamarin.vrhands.grabbing.SnapToHandGrabControl;
+import example.actions.ActionHandles;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -33,7 +34,7 @@ public class BlockMovingExampleState extends BaseAppState{
         ((SimpleApplication)app).getRootNode().attachChild(rootNodeDelegate);
 
         getState(VRHandsAppState.ID, VRHandsAppState.class).getHandControls().forEach(boundHand ->
-                closeHandBindings.add(boundHand.setGrabAction("/actions/main/in/grip", rootNodeDelegate)));
+                closeHandBindings.add(boundHand.setGrabAction(ActionHandles.GRIP, rootNodeDelegate)));
 
         initialiseScene();
     }

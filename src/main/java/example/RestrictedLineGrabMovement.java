@@ -22,6 +22,7 @@ import com.onemillionworlds.tamarin.vrhands.grabbing.ParentRelativeMovingGrabCon
 import com.onemillionworlds.tamarin.vrhands.grabbing.RelativeMovingGrabControl;
 import com.simsilica.lemur.Container;
 import com.simsilica.lemur.Label;
+import example.actions.ActionHandles;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -37,7 +38,7 @@ public class RestrictedLineGrabMovement extends BaseAppState{
         ((SimpleApplication)app).getRootNode().attachChild(rootNodeDelegate);
 
         getState(VRHandsAppState.ID, VRHandsAppState.class).getHandControls().forEach(boundHand ->
-                closeHandBindings.add(boundHand.setGrabAction("/actions/main/in/grip", rootNodeDelegate)));
+                closeHandBindings.add(boundHand.setGrabAction(ActionHandles.GRIP, rootNodeDelegate)));
         initialiseScene();
     }
 
@@ -216,7 +217,6 @@ public class RestrictedLineGrabMovement extends BaseAppState{
         Geometry lineGeometry = new Geometry("line", line);
         Material lineMat = new Material(getApplication().getAssetManager(),"Common/MatDefs/Misc/Unshaded.j3md");
         lineMat.setColor("Color", colour);
-        lineMat.getAdditionalRenderState().setLineWidth(10);
         lineGeometry.setMaterial(lineMat);
         return lineGeometry;
     }

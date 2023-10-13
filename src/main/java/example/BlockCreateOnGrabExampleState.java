@@ -14,7 +14,7 @@ import com.jme3.scene.Node;
 import com.jme3.scene.shape.Box;
 import com.jme3.scene.shape.Quad;
 import com.jme3.texture.Texture;
-import com.onemillionworlds.tamarin.compatibility.ActionBasedOpenVrState;
+import com.onemillionworlds.tamarin.actions.OpenXrActionState;
 import com.onemillionworlds.tamarin.vrhands.VRHandsAppState;
 import com.onemillionworlds.tamarin.vrhands.functions.FunctionRegistration;
 import com.onemillionworlds.tamarin.vrhands.functions.GrabPickingFunction;
@@ -22,6 +22,7 @@ import com.onemillionworlds.tamarin.vrhands.grabbing.GrabEventControl;
 import com.onemillionworlds.tamarin.vrhands.grabbing.RelativeMovingGrabControl;
 import com.simsilica.lemur.Container;
 import com.simsilica.lemur.Label;
+import example.actions.ActionHandles;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -36,7 +37,7 @@ public class BlockCreateOnGrabExampleState extends BaseAppState{
 
     VRHandsAppState vrHandsAppState;
 
-    ActionBasedOpenVrState actionBasedOpenVrState;
+    OpenXrActionState openXrActionState;
 
     List<FunctionRegistration> closeHandBindings = new ArrayList<>();
 
@@ -44,10 +45,10 @@ public class BlockCreateOnGrabExampleState extends BaseAppState{
     protected void initialize(Application app){
         ((SimpleApplication)app).getRootNode().attachChild(rootNodeDelegate);
         vrHandsAppState = getStateManager().getState(VRHandsAppState.ID, VRHandsAppState.class);
-        actionBasedOpenVrState = getStateManager().getState(ActionBasedOpenVrState.ID, ActionBasedOpenVrState.class);
+        openXrActionState = getStateManager().getState(OpenXrActionState.ID, OpenXrActionState.class);
 
         vrHandsAppState.getHandControls().forEach(boundHand ->
-                closeHandBindings.add(boundHand.setGrabAction("/actions/main/in/grip", rootNodeDelegate)));
+                closeHandBindings.add(boundHand.setGrabAction(ActionHandles.GRIP, rootNodeDelegate)));
 
         initialiseScene();
     }
@@ -88,7 +89,7 @@ public class BlockCreateOnGrabExampleState extends BaseAppState{
         super.update(tpf);
         vrHandsAppState.getHandControls().forEach(hand -> {
 
-            if (hand.getAnalogActionState("/actions/main/in/grip").x>0.6f){
+            if (hand.getFloatActionState(ActionHandles.GRIP).getState()>0.6f){
                 //see if the hand is already grabbing anything, if not magic up a new block and give it to the hand
                 GrabPickingFunction grabFunction = hand.getFunction(GrabPickingFunction.class);
                 if (!grabFunction.isCurrentlyHoldingSomething()){

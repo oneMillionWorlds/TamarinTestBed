@@ -25,6 +25,7 @@ import com.onemillionworlds.tamarin.vrhands.functions.handmenu.MenuItem;
 import com.onemillionworlds.tamarin.vrhands.functions.handmenu.MenuLeaf;
 import com.simsilica.lemur.Container;
 import com.simsilica.lemur.Label;
+import example.actions.ActionHandles;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -121,7 +122,7 @@ public class HandMenuExampleState extends BaseAppState{
 
             topMenuItems.add(new MenuLeaf<>(colouredBox(ColorRGBA.Cyan), "Cyan Box"));
 
-            HandRingMenuFunction<String> handRingMenuFunction = new HandRingMenuFunction<>(topMenuItems, this::acceptSelection, "/actions/main/in/openHandMenu");
+            HandRingMenuFunction<String> handRingMenuFunction = new HandRingMenuFunction<>(topMenuItems, this::acceptSelection, ActionHandles.OPEN_HAND_MENU);
             FunctionRegistration functionRegistration = hand.addFunction(handRingMenuFunction);
             activeFunctionRegistrations.add(functionRegistration);
         });

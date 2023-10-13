@@ -16,13 +16,14 @@ import com.jme3.scene.Geometry;
 import com.jme3.scene.Node;
 import com.jme3.scene.Spatial;
 import com.jme3.scene.shape.Cylinder;
-import com.onemillionworlds.tamarin.compatibility.ActionBasedOpenVrState;
+import com.onemillionworlds.tamarin.actions.OpenXrActionState;
 import com.onemillionworlds.tamarin.vrhands.VRHandsAppState;
 import com.onemillionworlds.tamarin.vrhands.functions.FunctionRegistration;
 import com.simsilica.lemur.Button;
 import com.simsilica.lemur.Container;
 import com.simsilica.lemur.Label;
 import com.simsilica.lemur.event.MouseListener;
+import example.actions.ActionHandles;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -34,7 +35,7 @@ import java.util.List;
 public class MenuExampleState extends BaseAppState{
 
     Node rootNodeDelegate = new Node("MenuExampleState");
-    ActionBasedOpenVrState openVr;
+    OpenXrActionState openVr;
     VRHandsAppState vrHands;
 
     /**
@@ -45,7 +46,7 @@ public class MenuExampleState extends BaseAppState{
     @Override
     protected void initialize(Application app){
         ((SimpleApplication)app).getRootNode().attachChild(rootNodeDelegate);
-        openVr = getState(ActionBasedOpenVrState.class);
+        openVr = getState(OpenXrActionState.ID, OpenXrActionState.class);
         vrHands = getState(VRHandsAppState.class);
 
         Container lemurWindow = new Container();
@@ -121,7 +122,7 @@ public class MenuExampleState extends BaseAppState{
         vrHands.getHandControls().forEach(h -> {
             functionRegistrations.add(h.attachPickLine(pickLine()));
             functionRegistrations.add(h.setPickMarkerContinuous(rootNodeDelegate));
-            functionRegistrations.add(h.setClickAction_lemurSupport("/actions/main/in/trigger", rootNodeDelegate));
+            functionRegistrations.add(h.setClickAction_lemurSupport(ActionHandles.TRIGGER, rootNodeDelegate));
         });
     }
 

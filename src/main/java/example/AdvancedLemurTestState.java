@@ -2,7 +2,6 @@ package example;
 
 import com.jme3.app.Application;
 import com.jme3.app.SimpleApplication;
-import com.jme3.app.VRAppState;
 import com.jme3.app.state.BaseAppState;
 import com.jme3.material.Material;
 import com.jme3.material.RenderState;
@@ -15,8 +14,8 @@ import com.jme3.scene.Geometry;
 import com.jme3.scene.Node;
 import com.jme3.scene.Spatial;
 import com.jme3.scene.shape.Cylinder;
-import com.onemillionworlds.tamarin.TamarinUtilities;
-import com.onemillionworlds.tamarin.compatibility.ActionBasedOpenVrState;
+import com.onemillionworlds.tamarin.actions.OpenXrActionState;
+import com.onemillionworlds.tamarin.openxr.XrAppState;
 import com.onemillionworlds.tamarin.vrhands.VRHandsAppState;
 import com.onemillionworlds.tamarin.vrhands.functions.FunctionRegistration;
 import com.simsilica.lemur.Button;
@@ -29,7 +28,7 @@ import com.simsilica.lemur.TextField;
 import com.simsilica.lemur.core.GuiControl;
 import com.simsilica.lemur.core.GuiControlListener;
 import com.simsilica.lemur.core.VersionedList;
-import com.google.common.base.Function;
+import example.actions.ActionHandles;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -40,7 +39,7 @@ import java.util.List;
 public class AdvancedLemurTestState extends BaseAppState{
 
     Node rootNodeDelegate = new Node("KeyboardExampleState");
-    ActionBasedOpenVrState openVr;
+    OpenXrActionState openXrActionState;
     VRHandsAppState vrHands;
 
     List<FunctionRegistration> functionsToCloseOnExit = new ArrayList<>();
@@ -50,7 +49,7 @@ public class AdvancedLemurTestState extends BaseAppState{
     @Override
     protected void initialize(Application app){
         ((SimpleApplication)app).getRootNode().attachChild(rootNodeDelegate);
-        openVr = getState(ActionBasedOpenVrState.class);
+        openXrActionState = getState(OpenXrActionState.ID, OpenXrActionState.class);
         vrHands = getState(VRHandsAppState.class);
 
         addPrimaryKeyboard();
@@ -61,7 +60,7 @@ public class AdvancedLemurTestState extends BaseAppState{
         vrHands.getHandControls().forEach(h -> {
             functionsToCloseOnExit.add(h.attachPickLine(pickLine()));
             functionsToCloseOnExit.add(h.setPickMarkerContinuous(rootNodeDelegate));
-            functionsToCloseOnExit.add(h.setClickAction_lemurSupport("/actions/main/in/trigger", rootNodeDelegate));
+            functionsToCloseOnExit.add(h.setClickAction_lemurSupport(ActionHandles.TRIGGER, rootNodeDelegate));
         });
     }
 
@@ -135,11 +134,9 @@ public class AdvancedLemurTestState extends BaseAppState{
             clickMeButton.setText("Click me, I've been clicked" + clickMeButtonCounter + "times");
         });
 
-        vrHands.getHandControls().forEach(h -> {
-            functionsToCloseOnExit.add(h.setFingerTipPressDetection(lemurWindow, false, "/actions/main/out/haptic", 0.5f));
-        });
+        vrHands.getHandControls().forEach(h -> functionsToCloseOnExit.add(h.setFingerTipPressDetection(lemurWindow, false, ActionHandles.HAPTIC, 0.5f)));
 
-        Vector3f playerCameraPosition = TamarinUtilities.getVrCameraPosition(getStateManager().getState(VRAppState.class));
+        Vector3f playerCameraPosition = getStateManager().getState(XrAppState.ID,XrAppState.class).getVrCameraPosition();
 
         lemurWindow.setLocalTranslation(playerCameraPosition.add(-0.45f,0,-0.25f));
         lemurWindow.lookAt(playerCameraPosition, Vector3f.UNIT_Y);

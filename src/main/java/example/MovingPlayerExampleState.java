@@ -2,7 +2,6 @@ package example;
 
 import com.jme3.app.Application;
 import com.jme3.app.SimpleApplication;
-import com.jme3.app.VRAppState;
 import com.jme3.app.state.BaseAppState;
 import com.jme3.material.Material;
 import com.jme3.math.ColorRGBA;
@@ -13,18 +12,16 @@ import com.jme3.scene.Node;
 import com.jme3.scene.shape.Box;
 import com.jme3.texture.Texture;
 import com.onemillionworlds.tamarin.TamarinUtilities;
-import com.onemillionworlds.tamarin.compatibility.ActionBasedOpenVrState;
-import com.onemillionworlds.tamarin.compatibility.AnalogActionState;
-import com.onemillionworlds.tamarin.compatibility.DigitalActionState;
+import com.onemillionworlds.tamarin.actions.OpenXrActionState;
+import com.onemillionworlds.tamarin.actions.state.BooleanActionState;
+import com.onemillionworlds.tamarin.openxr.XrAppState;
 import com.onemillionworlds.tamarin.vrhands.BoundHand;
 import com.onemillionworlds.tamarin.vrhands.VRHandsAppState;
 import com.simsilica.lemur.Container;
 import com.simsilica.lemur.Label;
+import example.actions.ActionHandles;
 
 /**
- * This is not actually anything to do with tamarin, its core JME movement, but it is provided to demonstrate
- * functionality.
- * <p>
  * This example makes heavy use of the observer, see <a href="https://github.com/oneMillionWorlds/Tamarin/wiki/Understanding-the-observer">Understanding-the-observer</a>
  * for more details
  */
@@ -32,8 +29,8 @@ public class MovingPlayerExampleState extends BaseAppState{
 
     Node rootNodeDelegate = new Node("PlayerMovingExampleState");
 
-    VRAppState vrAppState;
-    ActionBasedOpenVrState openVr;
+    XrAppState xrAppState;
+    OpenXrActionState openXrActionState;
     VRHandsAppState vrHands;
 
     Geometry observerBox;
@@ -44,14 +41,14 @@ public class MovingPlayerExampleState extends BaseAppState{
     @Override
     protected void initialize(Application app){
         ((SimpleApplication)app).getRootNode().attachChild(rootNodeDelegate);
-        vrAppState = getState(VRAppState.class);
-        openVr = getState(ActionBasedOpenVrState.class);
-        vrHands = getState(VRHandsAppState.class);
+        xrAppState = getState(XrAppState.ID, XrAppState.class);
+        openXrActionState = getState(OpenXrActionState.ID, OpenXrActionState.class);
+        vrHands = getState(VRHandsAppState.ID, VRHandsAppState.class);
         initialiseScene();
     }
 
     private Node getObserver(){
-        return (Node)vrAppState.getObserver();
+        return (Node) xrAppState.getObserver();
     }
 
     @Override
@@ -80,21 +77,23 @@ public class MovingPlayerExampleState extends BaseAppState{
         //the observer is the origin on the VR space (that the player then walks about in)
         Node observer = getObserver();
 
-        DigitalActionState leftAction = openVr.getDigitalActionState("/actions/main/in/turnLeft");
-        if (leftAction.changed && leftAction.state){
-
-            TamarinUtilities.rotateObserverWithoutMovingPlayer(vrAppState, 0.2f*FastMath.PI);
+        //note how these do not specify a particular hand, giving flexibility to redefine the actions to different hands
+        BooleanActionState leftAction = openXrActionState.getBooleanActionState(ActionHandles.TURN_LEFT);
+        if (leftAction.hasChanged() && leftAction.getState()){
+            xrAppState.rotateObserverWithoutMovingPlayer(0.2f*FastMath.PI);
+            TamarinUtilities.rotateObserverWithoutMovingPlayer(xrAppState, 0.2f*FastMath.PI);
         }
 
-        DigitalActionState rightAction = openVr.getDigitalActionState("/actions/main/in/turnRight", null);
-        if (rightAction.changed && rightAction.state){
-            TamarinUtilities.rotateObserverWithoutMovingPlayer(vrAppState, -0.2f*FastMath.PI);
+        BooleanActionState rightAction = openXrActionState.getBooleanActionState(ActionHandles.TURN_RIGHT);
+        if (rightAction.hasChanged() && rightAction.getState()){
+            TamarinUtilities.rotateObserverWithoutMovingPlayer(xrAppState, -0.2f*FastMath.PI);
         }
 
         //although we have by default bound teleport to the left hand the player may have redefined it, so check both
         for(BoundHand boundHand : vrHands.getHandControls()){
-            DigitalActionState teleportAction = boundHand.getDigitalActionState("/actions/main/in/teleport");
-            if (teleportAction.changed && teleportAction.state){
+            //here we do care about which hand the action is bound to, so we use the bound hand (which implicityly scope the action to that hand)
+            BooleanActionState teleportAction = boundHand.getBooleanActionState(ActionHandles.TELEPORT);
+            if (teleportAction.hasChanged() && teleportAction.getState()){
                 //teleport in the direction the hand that requested it is pointing
                 Vector3f pointingDirection = boundHand.getBulkPointingDirection();
                 pointingDirection.y=0;
@@ -110,11 +109,11 @@ public class MovingPlayerExampleState extends BaseAppState{
         }
 
         //nausea inducing but nonetheless popular. Normal walking about
-        AnalogActionState analogActionState = openVr.getAnalogActionState("/actions/main/in/walk");
+        AnalogActionState analogActionState = openXrActionState.getAnalogActionState("/actions/main/in/walk");
         //we'll want the joystick to move the player relative to the head face direction, not the hand pointing direction
         Vector3f walkingDirectionRaw = new Vector3f(-analogActionState.x, 0, analogActionState.y);
 
-        Vector3f playerRelativeWalkDirection = vrAppState.getVRViewManager().getLeftCamera().getRotation().mult(walkingDirectionRaw);
+        Vector3f playerRelativeWalkDirection = xrAppState.getLeftCamera().getRotation().mult(walkingDirectionRaw);
         playerRelativeWalkDirection.y = 0;
         if (playerRelativeWalkDirection.length()>0.01){
             playerRelativeWalkDirection.normalizeLocal();

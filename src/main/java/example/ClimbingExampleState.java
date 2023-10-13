@@ -2,25 +2,21 @@ package example;
 
 import com.jme3.app.Application;
 import com.jme3.app.SimpleApplication;
-import com.jme3.app.VRAppState;
 import com.jme3.app.state.BaseAppState;
 import com.jme3.material.Material;
 import com.jme3.math.ColorRGBA;
-import com.jme3.math.FastMath;
-import com.jme3.math.Quaternion;
 import com.jme3.math.Vector3f;
 import com.jme3.scene.Geometry;
 import com.jme3.scene.Node;
 import com.jme3.scene.shape.Box;
-import com.onemillionworlds.tamarin.compatibility.ActionBasedOpenVrState;
-import com.onemillionworlds.tamarin.compatibility.AnalogActionState;
-import com.onemillionworlds.tamarin.compatibility.DigitalActionState;
-import com.onemillionworlds.tamarin.vrhands.BoundHand;
+import com.onemillionworlds.tamarin.actions.OpenXrActionState;
+import com.onemillionworlds.tamarin.openxr.XrAppState;
 import com.onemillionworlds.tamarin.vrhands.VRHandsAppState;
 import com.onemillionworlds.tamarin.vrhands.functions.FunctionRegistration;
 import com.onemillionworlds.tamarin.vrhands.grabbing.ClimbingPointGrabControl;
 import com.simsilica.lemur.Container;
 import com.simsilica.lemur.Label;
+import example.actions.ActionHandles;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -36,8 +32,8 @@ public class ClimbingExampleState extends BaseAppState{
 
     Node rootNodeDelegate = new Node("ClimbingExampleState");
 
-    VRAppState vrAppState;
-    ActionBasedOpenVrState openVr;
+    XrAppState xrAppState;
+    OpenXrActionState openXrActions;
     VRHandsAppState vrHands;
 
     List<FunctionRegistration> closeHandBindings = new ArrayList<>();
@@ -48,27 +44,24 @@ public class ClimbingExampleState extends BaseAppState{
     @Override
     protected void initialize(Application app){
         ((SimpleApplication)app).getRootNode().attachChild(rootNodeDelegate);
-        vrAppState = getState(VRAppState.class);
-        openVr = getState(ActionBasedOpenVrState.ID, ActionBasedOpenVrState.class);
+        xrAppState = getState(XrAppState.ID, XrAppState.class);
+        openXrActions = getState(OpenXrActionState.ID, OpenXrActionState.class);
         vrHands = getState(VRHandsAppState.ID, VRHandsAppState.class);
 
         vrHands.getHandControls().forEach(boundHand ->
-                closeHandBindings.add(boundHand.setGrabAction("/actions/main/in/grip", rootNodeDelegate)));
+                closeHandBindings.add(boundHand.setGrabAction(ActionHandles.GRIP, rootNodeDelegate)));
 
         initialiseScene();
     }
 
-    private Node getObserver(){
-        return (Node)vrAppState.getObserver();
-    }
 
     @Override
     protected void cleanup(Application app){
         rootNodeDelegate.removeFromParent();
-        Node observer = getObserver();
+
         vrHands.forceTerminateClimbing();
-        observer.setLocalTranslation(new Vector3f(0,0,10));
-        observer.lookAt(new Vector3f(0,0,0), Vector3f.UNIT_Y );
+        xrAppState.movePlayersFeetToPosition(new Vector3f(0,0,10));
+        xrAppState.playerLookAtPosition(new Vector3f(0,0,0));
 
         closeHandBindings.forEach(FunctionRegistration::endFunction);
         closeHandBindings.clear();
@@ -87,52 +80,8 @@ public class ClimbingExampleState extends BaseAppState{
     @Override
     public void update(float tpf){
         super.update(tpf);
-        //the observer is the origin on the VR space (that the player then walks about in)
-        Node observer = getObserver();
 
-        DigitalActionState leftAction = openVr.getDigitalActionState("/actions/main/in/turnLeft");
-        if (leftAction.changed && leftAction.state){
-            Quaternion currentRotation = getObserver().getLocalRotation();
-            Quaternion leftTurn = new Quaternion();
-            leftTurn.fromAngleAxis(0.2f*FastMath.PI, Vector3f.UNIT_Y);
-
-            observer.setLocalRotation(leftTurn.mult(currentRotation));
-        }
-
-        DigitalActionState rightAction = openVr.getDigitalActionState("/actions/main/in/turnRight", null);
-        if (rightAction.changed && rightAction.state){
-
-            Quaternion currentRotation = getObserver().getLocalRotation();
-            Quaternion leftTurn = new Quaternion();
-            leftTurn.fromAngleAxis(-0.2f*FastMath.PI, Vector3f.UNIT_Y);
-
-            observer.setLocalRotation(leftTurn.mult(currentRotation));
-        }
-
-        //although we have by default bound teleport to the left hand the player may have redefined it, so check both
-        for(BoundHand boundHand : vrHands.getHandControls()){
-            DigitalActionState teleportAction = boundHand.getDigitalActionState("/actions/main/in/teleport");
-            if (teleportAction.changed && teleportAction.state){
-                //teleport in the direction the hand that requested it is pointing
-                Vector3f pointingDirection = boundHand.getBulkPointingDirection();
-                pointingDirection.y=0;
-                observer.setLocalTranslation(observer.getWorldTranslation().add(pointingDirection.mult(2)));
-            }
-        }
-
-        //nausea inducing but nonetheless popular. Normal walking about
-        AnalogActionState analogActionState = openVr.getAnalogActionState("/actions/main/in/walk");
-        //we'll want the joystick to move the player relative to the head face direction, not the hand pointing direction
-        Vector3f walkingDirectionRaw = new Vector3f(-analogActionState.x, 0, analogActionState.y);
-
-        Vector3f playerRelativeWalkDirection = vrAppState.getVRViewManager().getLeftCamera().getRotation().mult(walkingDirectionRaw);
-        playerRelativeWalkDirection.y = 0;
-        if (playerRelativeWalkDirection.length()>0.01){
-            playerRelativeWalkDirection.normalizeLocal();
-        }
-        observer.setLocalTranslation(observer.getWorldTranslation().add(playerRelativeWalkDirection.mult(2f*tpf)));
-
-        if (observer.getWorldTranslation().y > 8){
+        if (xrAppState.getPlayerFeetPosition().y > 8){
             getStateManager().detach(this);
             getStateManager().attach(new MenuExampleState());
         }
