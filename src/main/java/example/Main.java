@@ -105,16 +105,14 @@ public class Main extends SimpleApplication{
                 .actionHandle(ActionHandles.SYNTHETIC_D_PAD)
                 .translatedName("D Pad")
                 .actionType(ActionType.VECTOR2F)
-                .withSuggestedBinding(OculusTouchController.PROFILE, OculusTouchController.pathBuilder().leftHand().thumbStickX())
-                .withSuggestedBinding(OculusTouchController.PROFILE, OculusTouchController.pathBuilder().leftHand().thumbStickY())
+                .withSuggestedBinding(OculusTouchController.PROFILE, OculusTouchController.pathBuilder().leftHand().thumbStick())
                 .build();
 
         Action walk = Action.builder()
                 .actionHandle(ActionHandles.WALK)
                 .translatedName("Walk")
                 .actionType(ActionType.VECTOR2F)
-                .withSuggestedBinding(OculusTouchController.PROFILE, OculusTouchController.pathBuilder().rightHand().thumbStickX())
-                .withSuggestedBinding(OculusTouchController.PROFILE, OculusTouchController.pathBuilder().rightHand().thumbStickY())
+                .withSuggestedBinding(OculusTouchController.PROFILE, OculusTouchController.pathBuilder().rightHand().thumbStick())
                 .build();
 
         Action openHandMenu = Action.builder()
