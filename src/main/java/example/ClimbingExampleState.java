@@ -60,8 +60,6 @@ public class ClimbingExampleState extends BaseAppState{
         rootNodeDelegate.removeFromParent();
 
         vrHands.forceTerminateClimbing();
-        xrAppState.movePlayersFeetToPosition(new Vector3f(0,0,10));
-        xrAppState.playerLookAtPosition(new Vector3f(0,0,0));
 
         closeHandBindings.forEach(FunctionRegistration::endFunction);
         closeHandBindings.clear();

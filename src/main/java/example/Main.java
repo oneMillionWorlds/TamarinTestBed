@@ -29,7 +29,7 @@ public class Main extends SimpleApplication{
     public static void main(String[] args) {
         AppSettings settings = new AppSettings(true);
         settings.put("Renderer", AppSettings.LWJGL_OPENGL45); // OpenXR only supports relatively modern OpenGL
-
+        settings.setTitle("Tamarin OpenXR Example");
         Main app = new Main();
         app.setLostFocusBehavior(LostFocusBehavior.Disabled);
         app.setSettings(settings);

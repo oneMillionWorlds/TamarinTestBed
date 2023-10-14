@@ -17,6 +17,7 @@ import com.jme3.scene.Node;
 import com.jme3.scene.Spatial;
 import com.jme3.scene.shape.Cylinder;
 import com.onemillionworlds.tamarin.actions.OpenXrActionState;
+import com.onemillionworlds.tamarin.openxr.XrAppState;
 import com.onemillionworlds.tamarin.vrhands.VRHandsAppState;
 import com.onemillionworlds.tamarin.vrhands.functions.FunctionRegistration;
 import com.simsilica.lemur.Button;
@@ -35,7 +36,9 @@ import java.util.List;
 public class MenuExampleState extends BaseAppState{
 
     Node rootNodeDelegate = new Node("MenuExampleState");
-    OpenXrActionState openVr;
+
+    XrAppState xrAppState;
+    OpenXrActionState openXrActionState;
     VRHandsAppState vrHands;
 
     /**
@@ -46,9 +49,9 @@ public class MenuExampleState extends BaseAppState{
     @Override
     protected void initialize(Application app){
         ((SimpleApplication)app).getRootNode().attachChild(rootNodeDelegate);
-        openVr = getState(OpenXrActionState.ID, OpenXrActionState.class);
-        vrHands = getState(VRHandsAppState.class);
-
+        openXrActionState = getState(OpenXrActionState.ID, OpenXrActionState.class);
+        vrHands = getState(VRHandsAppState.ID, VRHandsAppState.class);
+        xrAppState = getState(XrAppState.ID, XrAppState.class);
         Container lemurWindow = new Container();
         lemurWindow.setLocalScale(0.005f); //lemur defaults to 1 meter == 1 pixel (because that make sense for 2D, scale it down, so it's not huge in 3d)
         Label label = new Label("Example application using Tamarin & Lemur");
@@ -129,6 +132,9 @@ public class MenuExampleState extends BaseAppState{
             functionRegistrations.add(h.setPickMarkerContinuous(rootNodeDelegate));
             functionRegistrations.add(h.setClickAction_lemurSupport(ActionHandles.TRIGGER, rootNodeDelegate));
         });
+
+        xrAppState.movePlayersFeetToPosition(new Vector3f(0,0,10));
+        xrAppState.playerLookAtPosition(new Vector3f(0,0,0));
     }
 
     @Override

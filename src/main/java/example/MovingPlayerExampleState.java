@@ -58,10 +58,7 @@ public class MovingPlayerExampleState extends BaseAppState{
     @Override
     protected void cleanup(Application app){
         rootNodeDelegate.removeFromParent();
-        Node observer = getObserver();
         observerBox.removeFromParent();
-        observer.setLocalTranslation(new Vector3f(0,0,10));
-        observer.lookAt(new Vector3f(0,0,0), Vector3f.UNIT_Y );
     }
 
     @Override
