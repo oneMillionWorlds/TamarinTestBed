@@ -95,6 +95,11 @@ public class MovingPlayerExampleState extends BaseAppState{
             TamarinUtilities.rotateObserverWithoutMovingPlayer(xrAppState, -0.2f*FastMath.PI);
         }
 
+        BooleanActionState backAction = syntheticDPad.south();
+        if (backAction.hasChanged() && backAction.getState()){
+            xrAppState.movePlayersFeetToPosition(new Vector3f(0,0,10));
+        }
+
         //should be supporting both hands really (in case action is redefined) but while syntheticDPad is being used that's not easy
         vrHands.getHandControl(HandSide.LEFT).ifPresent(boundHand -> {
             //here we do care about which hand the action is bound to, so we use the bound hand (which implicityly scope the action to that hand)
@@ -138,10 +143,12 @@ public class MovingPlayerExampleState extends BaseAppState{
         pillar(-4.5f,14.5f, ColorRGBA.Yellow);
         pillar(4.5f,14.5f, ColorRGBA.Blue);
 
+        smallPillar(0,10, ColorRGBA.Orange);
+
         //a lemur UI with text explaining what to do
         Container lemurWindow = new Container();
         lemurWindow.setLocalScale(0.02f); //lemur defaults to 1 meter == 1 pixel (because that make sense for 2D, scale it down, so it's not huge in 3d)
-        Label label = new Label("Use the left hat forward to teleport forwards, left and right to sharply turn\n\nUse the right hat forward to walk (very nausea inducing)\n\nIn a real game you'd want some indicator to show where you were teleporting to. \n\nThe turn left and right is to help with seated experiences where physically turning 360 may be annoying or impossible. \n\n Teleport off the checkerboard to exit");
+        Label label = new Label("Use the left hat forward to teleport forwards, left and right to sharply turn. \nLeft hat backwards to teleport to (0,0,10) which is marked by the small orange pillar\n\nUse the right hat forward to walk (very nausea inducing)\n\nIn a real game you'd want some indicator to show where you were teleporting to. \n\nThe turn left and right is to help with seated experiences where physically turning 360 may be annoying or impossible. \n\n Teleport off the checkerboard to exit");
         lemurWindow.addChild(label);
         lemurWindow.setLocalTranslation(-5,4,0);
         rootNodeDelegate.attachChild(lemurWindow);
@@ -154,6 +161,17 @@ public class MovingPlayerExampleState extends BaseAppState{
     private void pillar(float x, float z, ColorRGBA colorRGBA){
         float pillarHeight = 2;
         Box pillar = new Box(0.25f, pillarHeight/2,  0.25f);
+        Geometry pillarGeometry = new Geometry("pillar", pillar);
+        Material boxMat = new Material(getApplication().getAssetManager(),"Common/MatDefs/Misc/Unshaded.j3md");
+        boxMat.setColor("Color", colorRGBA);
+        pillarGeometry.setMaterial(boxMat);
+        pillarGeometry.setLocalTranslation(new Vector3f(x, pillarHeight/2, z));
+        rootNodeDelegate.attachChild(pillarGeometry);
+    }
+
+    private void smallPillar(float x, float z, ColorRGBA colorRGBA){
+        float pillarHeight = 0.2f;
+        Box pillar = new Box(0.05f, 0.2f,  0.05f);
         Geometry pillarGeometry = new Geometry("pillar", pillar);
         Material boxMat = new Material(getApplication().getAssetManager(),"Common/MatDefs/Misc/Unshaded.j3md");
         boxMat.setColor("Color", colorRGBA);
