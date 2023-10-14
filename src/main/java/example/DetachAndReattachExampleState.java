@@ -15,6 +15,7 @@ import com.jme3.scene.shape.Quad;
 import com.jme3.texture.Texture;
 import com.onemillionworlds.tamarin.actions.OpenXrActionState;
 import com.onemillionworlds.tamarin.openxr.XrAppState;
+import com.onemillionworlds.tamarin.vrhands.HandSpec;
 import com.onemillionworlds.tamarin.vrhands.VRHandsAppState;
 import com.onemillionworlds.tamarin.vrhands.functions.FunctionRegistration;
 import com.onemillionworlds.tamarin.vrhands.grabbing.GrabEventControl;
@@ -76,7 +77,7 @@ public class DetachAndReattachExampleState extends BaseAppState{
         //a lemur UI with text explaining what to do
         Container lemurWindow = new Container();
         lemurWindow.setLocalScale(0.02f); //lemur defaults to 1 meter == 1 pixel (because that make sense for 2D, scale it down, so it's not huge in 3d)
-        Label label = new Label("This tests that all the XR states can be detached and reattached. Grab the box and the states will detach for 5 seconds then reattach. VR should exit and restart");
+        Label label = new Label("This tests that all the XR states can be detached and reattached. \nGrab the box and the states will detach for 5 seconds then reattach. VR should exit and restart");
         lemurWindow.addChild(label);
         lemurWindow.setLocalTranslation(-5,4,0);
         rootNodeDelegate.attachChild(lemurWindow);
@@ -94,12 +95,18 @@ public class DetachAndReattachExampleState extends BaseAppState{
             reattachTimer -= tpf;
             if (reattachTimer < 0){
                 reattachCountDown = false;
+
+                HandSpec handSpec = Main.handSpec().toBuilder()
+                        .postBindLeft(hand -> hand.setGrabAction(ActionHandles.GRIP, rootNodeDelegate))
+                        .postBindRight(hand -> hand.setGrabAction(ActionHandles.GRIP, rootNodeDelegate))
+                        .build();
+
                 getStateManager().attach(xrAppState);
                 getStateManager().attach(new OpenXrActionState(Main.manifest(), ActionSets.MAIN));
-                getStateManager().attach(new VRHandsAppState(Main.handSpec()));
+                getStateManager().attach(new VRHandsAppState(handSpec));
 
-                xrAppState.movePlayersFeetToPosition(new Vector3f(0,0,10));
-                xrAppState.playerLookAtPosition(new Vector3f(0,0,0));
+                getStateManager().getState(VRHandsAppState.ID, VRHandsAppState.class).getHandControls().forEach(boundHand ->
+                        closeHandBindings.add(boundHand.setGrabAction(ActionHandles.GRIP, rootNodeDelegate)));
             }
         }
     }
