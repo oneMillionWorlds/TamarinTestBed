@@ -14,10 +14,10 @@ import com.jme3.texture.Texture;
 import com.onemillionworlds.tamarin.TamarinUtilities;
 import com.onemillionworlds.tamarin.actions.HandSide;
 import com.onemillionworlds.tamarin.actions.OpenXrActionState;
+import com.onemillionworlds.tamarin.actions.compatibility.SyntheticDPad;
 import com.onemillionworlds.tamarin.actions.state.BooleanActionState;
 import com.onemillionworlds.tamarin.actions.state.Vector2fActionState;
 import com.onemillionworlds.tamarin.openxr.XrAppState;
-import com.onemillionworlds.tamarin.vrhands.BoundHand;
 import com.onemillionworlds.tamarin.vrhands.VRHandsAppState;
 import com.simsilica.lemur.Container;
 import com.simsilica.lemur.Label;
@@ -36,6 +36,8 @@ public class MovingPlayerExampleState extends BaseAppState{
     VRHandsAppState vrHands;
 
     Geometry observerBox;
+
+    public static SyntheticDPad syntheticDPad = new SyntheticDPad();
 
     public MovingPlayerExampleState(){
     }
@@ -75,18 +77,23 @@ public class MovingPlayerExampleState extends BaseAppState{
     @SuppressWarnings("DuplicatedCode") //as the examples are supposed to be self-contained accept some duplication
     @Override
     public void update(float tpf){
+
         super.update(tpf);
+
+        //this is a temporary workaround until LWJGL is upgraded to 3.3.3, and we can use true dpads
+        syntheticDPad.updateRawAction(getStateManager().getState(OpenXrActionState.class).getVector2fActionState(ActionHandles.SYNTHETIC_D_PAD));
+
         //the observer is the origin on the VR space (that the player then walks about in)
         Node observer = getObserver();
 
 
-        BooleanActionState leftAction = Main.syntheticDPad.west(); //temporary work around till LWJGL 3.3.3
+        BooleanActionState leftAction = syntheticDPad.west(); //temporary work around till LWJGL 3.3.3
         if (leftAction.hasChanged() && leftAction.getState()){
             xrAppState.rotateObserverWithoutMovingPlayer(0.2f*FastMath.PI);
             TamarinUtilities.rotateObserverWithoutMovingPlayer(xrAppState, 0.2f*FastMath.PI);
         }
 
-        BooleanActionState rightAction = Main.syntheticDPad.west();
+        BooleanActionState rightAction = syntheticDPad.west();
         if (rightAction.hasChanged() && rightAction.getState()){
             TamarinUtilities.rotateObserverWithoutMovingPlayer(xrAppState, -0.2f*FastMath.PI);
         }
@@ -94,7 +101,7 @@ public class MovingPlayerExampleState extends BaseAppState{
         //should be supporting both hands really (in case action is redefined) but while syntheticDPad is being used that's not easy
         vrHands.getHandControl(HandSide.LEFT).ifPresent(boundHand -> {
             //here we do care about which hand the action is bound to, so we use the bound hand (which implicityly scope the action to that hand)
-            BooleanActionState teleportAction = Main.syntheticDPad.north(); //temporary work around till LWJGL 3.3.3
+            BooleanActionState teleportAction = syntheticDPad.north(); //temporary work around till LWJGL 3.3.3
             if (teleportAction.hasChanged() && teleportAction.getState()){
                 //teleport in the direction the hand that requested it is pointing
                 Vector3f pointingDirection = boundHand.getBulkPointingDirection();

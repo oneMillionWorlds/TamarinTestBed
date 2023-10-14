@@ -5,15 +5,18 @@ import com.jme3.app.SimpleApplication;
 import com.jme3.app.state.AppState;
 import com.jme3.math.ColorRGBA;
 import com.jme3.math.Vector3f;
+import com.jme3.scene.Geometry;
+import com.jme3.scene.Node;
+import com.jme3.scene.Spatial;
 import com.jme3.system.AppSettings;
 import com.onemillionworlds.tamarin.actions.ActionType;
 import com.onemillionworlds.tamarin.actions.OpenXrActionState;
 import com.onemillionworlds.tamarin.actions.actionprofile.Action;
 import com.onemillionworlds.tamarin.actions.actionprofile.ActionManifest;
 import com.onemillionworlds.tamarin.actions.actionprofile.ActionSet;
-import com.onemillionworlds.tamarin.actions.compatibility.SyntheticDPad;
 import com.onemillionworlds.tamarin.actions.controllerprofile.OculusTouchController;
 import com.onemillionworlds.tamarin.openxr.XrAppState;
+import com.onemillionworlds.tamarin.openxr.XrSettings;
 import com.onemillionworlds.tamarin.vrhands.HandSpec;
 import com.onemillionworlds.tamarin.vrhands.VRHandsAppState;
 import com.simsilica.lemur.GuiGlobals;
@@ -22,8 +25,6 @@ import example.actions.ActionHandles;
 import example.actions.ActionSets;
 
 public class Main extends SimpleApplication{
-
-    public static SyntheticDPad syntheticDPad = new SyntheticDPad();
 
     public static void main(String[] args) {
         AppSettings settings = new AppSettings(true);
@@ -42,8 +43,8 @@ public class Main extends SimpleApplication{
 
     @Override
     public void simpleInitApp(){
-
-        getStateManager().attach(new XrAppState());
+        XrSettings xrSettings = new XrSettings();
+        getStateManager().attach(new XrAppState(xrSettings));
         getStateManager().attach(new OpenXrActionState(manifest(), ActionSets.MAIN));
         getStateManager().attach(new VRHandsAppState(handSpec()));
 
@@ -62,15 +63,7 @@ public class Main extends SimpleApplication{
         getStateManager().getState(XrAppState.ID, XrAppState.class).configureBothViewports(viewPort -> viewPort.setBackgroundColor(ColorRGBA.Brown));
     }
 
-
-    @Override
-    public void update(){
-        super.update();
-        //this is a temporary workaround until LWJGL is upgraded to 3.3.3, and we can use true dpads
-        syntheticDPad.updateRawAction(getStateManager().getState(OpenXrActionState.class).getVector2fActionState(ActionHandles.SYNTHETIC_D_PAD));
-    }
-
-    private ActionManifest manifest(){
+    public static ActionManifest manifest(){
         Action grip = Action.builder()
                 .actionHandle(ActionHandles.GRIP)
                 .translatedName("Grip an item")
@@ -141,12 +134,34 @@ public class Main extends SimpleApplication{
                 ).build();
     }
 
-    private HandSpec handSpec(){
+    public static HandSpec handSpec(){
         return HandSpec.builder(
                         ActionHandles.HAND_POSE,
                         ActionHandles.HAND_POSE)
                 .build();
 
+    }
+
+    private Spatial pointingLineDebug(){
+        Node node = new Node();
+
+        Geometry lineX = new Geometry("line", new com.jme3.scene.shape.Line(new Vector3f(0,0,0), new Vector3f(0.10f,0,0)));
+        lineX.setMaterial(new com.jme3.material.Material(assetManager, "Common/MatDefs/Misc/Unshaded.j3md"));
+        lineX.getMaterial().setColor("Color", ColorRGBA.Green);
+        node.attachChild(lineX);
+
+        Geometry lineY = new Geometry("line", new com.jme3.scene.shape.Line(new Vector3f(0,0,0), new Vector3f(0,0.10f,0)));
+        lineY.setMaterial(new com.jme3.material.Material(assetManager, "Common/MatDefs/Misc/Unshaded.j3md"));
+        lineY.getMaterial().setColor("Color", ColorRGBA.Yellow);
+        node.attachChild(lineY);
+
+        Geometry linez = new Geometry("line", new com.jme3.scene.shape.Line(new Vector3f(0,0,0), new Vector3f(0,0,0.10f)));
+        linez.setMaterial(new com.jme3.material.Material(assetManager, "Common/MatDefs/Misc/Unshaded.j3md"));
+        linez.getMaterial().setColor("Color", ColorRGBA.Red);
+        node.attachChild(linez);
+
+
+        return node;
     }
 
 }
