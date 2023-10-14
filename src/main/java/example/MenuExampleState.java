@@ -15,6 +15,7 @@ import com.jme3.renderer.queue.RenderQueue;
 import com.jme3.scene.Geometry;
 import com.jme3.scene.Node;
 import com.jme3.scene.Spatial;
+import com.jme3.scene.shape.Box;
 import com.jme3.scene.shape.Cylinder;
 import com.onemillionworlds.tamarin.actions.OpenXrActionState;
 import com.onemillionworlds.tamarin.openxr.XrAppState;
@@ -134,7 +135,20 @@ public class MenuExampleState extends BaseAppState{
         });
 
         xrAppState.movePlayersFeetToPosition(new Vector3f(0,0,10));
-        xrAppState.playerLookAtPosition(new Vector3f(0,0,0));
+        //xrAppState.playerLookAtPosition(new Vector3f(0,0,0));
+
+        smallPillar(0, 10, ColorRGBA.Green);
+    }
+
+    private void smallPillar(float x, float z, ColorRGBA colorRGBA){
+        float pillarHeight = 0.2f;
+        Box pillar = new Box(0.05f, 0.2f,  0.05f);
+        Geometry pillarGeometry = new Geometry("pillar", pillar);
+        Material boxMat = new Material(getApplication().getAssetManager(),"Common/MatDefs/Misc/Unshaded.j3md");
+        boxMat.setColor("Color", colorRGBA);
+        pillarGeometry.setMaterial(boxMat);
+        pillarGeometry.setLocalTranslation(new Vector3f(x, pillarHeight/2, z));
+        rootNodeDelegate.attachChild(pillarGeometry);
     }
 
     @Override

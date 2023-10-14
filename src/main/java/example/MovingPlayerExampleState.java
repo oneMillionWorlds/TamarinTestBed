@@ -11,7 +11,6 @@ import com.jme3.scene.Geometry;
 import com.jme3.scene.Node;
 import com.jme3.scene.shape.Box;
 import com.jme3.texture.Texture;
-import com.onemillionworlds.tamarin.TamarinUtilities;
 import com.onemillionworlds.tamarin.actions.HandSide;
 import com.onemillionworlds.tamarin.actions.OpenXrActionState;
 import com.onemillionworlds.tamarin.actions.compatibility.SyntheticDPad;
@@ -84,15 +83,14 @@ public class MovingPlayerExampleState extends BaseAppState{
         Node observer = getObserver();
 
 
-        BooleanActionState leftAction = syntheticDPad.west(); //temporary work around till LWJGL 3.3.3
+        BooleanActionState leftAction = syntheticDPad.east(); //temporary work around till LWJGL 3.3.3
         if (leftAction.hasChanged() && leftAction.getState()){
             xrAppState.rotateObserverWithoutMovingPlayer(0.2f*FastMath.PI);
-            TamarinUtilities.rotateObserverWithoutMovingPlayer(xrAppState, 0.2f*FastMath.PI);
         }
 
         BooleanActionState rightAction = syntheticDPad.west();
         if (rightAction.hasChanged() && rightAction.getState()){
-            TamarinUtilities.rotateObserverWithoutMovingPlayer(xrAppState, -0.2f*FastMath.PI);
+            xrAppState.rotateObserverWithoutMovingPlayer(-0.2f*FastMath.PI);
         }
 
         BooleanActionState backAction = syntheticDPad.south();
