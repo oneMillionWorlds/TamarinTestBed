@@ -2,19 +2,20 @@ package example;
 
 import com.jme3.app.LostFocusBehavior;
 import com.jme3.app.SimpleApplication;
-import com.jme3.app.state.AppState;
 import com.jme3.math.ColorRGBA;
 import com.jme3.math.Vector3f;
-import com.jme3.scene.Geometry;
-import com.jme3.scene.Node;
-import com.jme3.scene.Spatial;
 import com.jme3.system.AppSettings;
 import com.onemillionworlds.tamarin.actions.ActionType;
 import com.onemillionworlds.tamarin.actions.OpenXrActionState;
 import com.onemillionworlds.tamarin.actions.actionprofile.Action;
 import com.onemillionworlds.tamarin.actions.actionprofile.ActionManifest;
 import com.onemillionworlds.tamarin.actions.actionprofile.ActionSet;
+import com.onemillionworlds.tamarin.actions.controllerprofile.GoogleDaydreamController;
+import com.onemillionworlds.tamarin.actions.controllerprofile.HtcViveController;
+import com.onemillionworlds.tamarin.actions.controllerprofile.MixedRealityMotionController;
+import com.onemillionworlds.tamarin.actions.controllerprofile.OculusGoController;
 import com.onemillionworlds.tamarin.actions.controllerprofile.OculusTouchController;
+import com.onemillionworlds.tamarin.actions.controllerprofile.ValveIndexController;
 import com.onemillionworlds.tamarin.openxr.XrAppState;
 import com.onemillionworlds.tamarin.openxr.XrSettings;
 import com.onemillionworlds.tamarin.vrhands.HandSpec;
@@ -72,8 +73,18 @@ public class Main extends SimpleApplication{
                 .actionHandle(ActionHandles.GRIP)
                 .translatedName("Grip an item")
                 .actionType(ActionType.FLOAT)
+                .withSuggestedBinding(GoogleDaydreamController.PROFILE, GoogleDaydreamController.pathBuilder().leftHand().trackpadClick())
+                .withSuggestedBinding(GoogleDaydreamController.PROFILE, GoogleDaydreamController.pathBuilder().rightHand().trackpadClick())
+                .withSuggestedBinding(HtcViveController.PROFILE, HtcViveController.pathBuilder().leftHand().squeezeClick())
+                .withSuggestedBinding(HtcViveController.PROFILE, HtcViveController.pathBuilder().rightHand().squeezeClick())
+                .withSuggestedBinding(MixedRealityMotionController.PROFILE, MixedRealityMotionController.pathBuilder().leftHand().squeezeClick())
+                .withSuggestedBinding(MixedRealityMotionController.PROFILE, MixedRealityMotionController.pathBuilder().rightHand().squeezeClick())
+                .withSuggestedBinding(OculusGoController.PROFILE, OculusGoController.pathBuilder().leftHand().trackpadX())
+                .withSuggestedBinding(OculusGoController.PROFILE, OculusGoController.pathBuilder().rightHand().trackpadX())
                 .withSuggestedBinding(OculusTouchController.PROFILE, OculusTouchController.pathBuilder().leftHand().squeeze())
                 .withSuggestedBinding(OculusTouchController.PROFILE, OculusTouchController.pathBuilder().rightHand().squeeze())
+                .withSuggestedBinding(ValveIndexController.PROFILE, ValveIndexController.pathBuilder().leftHand().squeezeValue())
+                .withSuggestedBinding(ValveIndexController.PROFILE, ValveIndexController.pathBuilder().rightHand().squeezeValue())
                 .build();
 
         Action haptic = Action.builder()
@@ -87,30 +98,49 @@ public class Main extends SimpleApplication{
                 .actionHandle(ActionHandles.TRIGGER)
                 .translatedName("Trigger action")
                 .actionType(ActionType.FLOAT)
+                .withSuggestedBinding(GoogleDaydreamController.PROFILE, GoogleDaydreamController.pathBuilder().leftHand().selectClick())
+                .withSuggestedBinding(GoogleDaydreamController.PROFILE, GoogleDaydreamController.pathBuilder().rightHand().selectClick())
+                .withSuggestedBinding(HtcViveController.PROFILE, HtcViveController.pathBuilder().leftHand().triggerValue())
+                .withSuggestedBinding(HtcViveController.PROFILE, HtcViveController.pathBuilder().rightHand().triggerValue())
+                .withSuggestedBinding(MixedRealityMotionController.PROFILE, MixedRealityMotionController.pathBuilder().leftHand().triggerValue())
+                .withSuggestedBinding(MixedRealityMotionController.PROFILE, MixedRealityMotionController.pathBuilder().rightHand().triggerValue())
+                .withSuggestedBinding(OculusGoController.PROFILE, OculusGoController.pathBuilder().leftHand().triggerClick())
+                .withSuggestedBinding(OculusGoController.PROFILE, OculusGoController.pathBuilder().rightHand().triggerClick())
                 .withSuggestedBinding(OculusTouchController.PROFILE, OculusTouchController.pathBuilder().leftHand().triggerValue())
                 .withSuggestedBinding(OculusTouchController.PROFILE, OculusTouchController.pathBuilder().rightHand().triggerValue())
+                .withSuggestedBinding(ValveIndexController.PROFILE, ValveIndexController.pathBuilder().leftHand().triggerValue())
+                .withSuggestedBinding(ValveIndexController.PROFILE, ValveIndexController.pathBuilder().rightHand().triggerValue())
                 .build();
 
         Action handPose = Action.builder()
                 .actionHandle(ActionHandles.HAND_POSE)
                 .translatedName("Hand Pose")
                 .actionType(ActionType.POSE)
-                .withSuggestedBinding(OculusTouchController.PROFILE, OculusTouchController.pathBuilder().leftHand().gripPose())
-                .withSuggestedBinding(OculusTouchController.PROFILE, OculusTouchController.pathBuilder().rightHand().gripPose())
+                .withSuggestAllKnownAimPoseBindings()
                 .build();
 
         Action syntheticDpad = Action.builder()
                 .actionHandle(ActionHandles.SYNTHETIC_D_PAD)
                 .translatedName("D Pad")
                 .actionType(ActionType.VECTOR2F)
+                .withSuggestedBinding(GoogleDaydreamController.PROFILE, GoogleDaydreamController.pathBuilder().leftHand().trackpad())
+                .withSuggestedBinding(HtcViveController.PROFILE, HtcViveController.pathBuilder().leftHand().trackpad())
+                .withSuggestedBinding(MixedRealityMotionController.PROFILE, MixedRealityMotionController.pathBuilder().leftHand().trackpad())
+                .withSuggestedBinding(OculusGoController.PROFILE, OculusGoController.pathBuilder().leftHand().trackpad())
                 .withSuggestedBinding(OculusTouchController.PROFILE, OculusTouchController.pathBuilder().leftHand().thumbStick())
+                .withSuggestedBinding(ValveIndexController.PROFILE, ValveIndexController.pathBuilder().leftHand().thumbStick())
                 .build();
 
         Action walk = Action.builder()
                 .actionHandle(ActionHandles.WALK)
                 .translatedName("Walk")
                 .actionType(ActionType.VECTOR2F)
+                .withSuggestedBinding(GoogleDaydreamController.PROFILE, GoogleDaydreamController.pathBuilder().rightHand().trackpad())
+                .withSuggestedBinding(HtcViveController.PROFILE, HtcViveController.pathBuilder().rightHand().trackpad())
+                .withSuggestedBinding(MixedRealityMotionController.PROFILE, MixedRealityMotionController.pathBuilder().rightHand().trackpad())
+                .withSuggestedBinding(OculusGoController.PROFILE, OculusGoController.pathBuilder().rightHand().trackpad())
                 .withSuggestedBinding(OculusTouchController.PROFILE, OculusTouchController.pathBuilder().rightHand().thumbStick())
+                .withSuggestedBinding(ValveIndexController.PROFILE, ValveIndexController.pathBuilder().rightHand().thumbStick())
                 .build();
 
         Action openHandMenu = Action.builder()
@@ -145,27 +175,4 @@ public class Main extends SimpleApplication{
                 .build();
 
     }
-
-    private Spatial pointingLineDebug(){
-        Node node = new Node();
-
-        Geometry lineX = new Geometry("line", new com.jme3.scene.shape.Line(new Vector3f(0,0,0), new Vector3f(0.10f,0,0)));
-        lineX.setMaterial(new com.jme3.material.Material(assetManager, "Common/MatDefs/Misc/Unshaded.j3md"));
-        lineX.getMaterial().setColor("Color", ColorRGBA.Green);
-        node.attachChild(lineX);
-
-        Geometry lineY = new Geometry("line", new com.jme3.scene.shape.Line(new Vector3f(0,0,0), new Vector3f(0,0.10f,0)));
-        lineY.setMaterial(new com.jme3.material.Material(assetManager, "Common/MatDefs/Misc/Unshaded.j3md"));
-        lineY.getMaterial().setColor("Color", ColorRGBA.Yellow);
-        node.attachChild(lineY);
-
-        Geometry linez = new Geometry("line", new com.jme3.scene.shape.Line(new Vector3f(0,0,0), new Vector3f(0,0,0.10f)));
-        linez.setMaterial(new com.jme3.material.Material(assetManager, "Common/MatDefs/Misc/Unshaded.j3md"));
-        linez.getMaterial().setColor("Color", ColorRGBA.Red);
-        node.attachChild(linez);
-
-
-        return node;
-    }
-
 }
