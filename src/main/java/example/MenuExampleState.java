@@ -15,7 +15,6 @@ import com.jme3.renderer.queue.RenderQueue;
 import com.jme3.scene.Geometry;
 import com.jme3.scene.Node;
 import com.jme3.scene.Spatial;
-import com.jme3.scene.shape.Box;
 import com.jme3.scene.shape.Cylinder;
 import com.onemillionworlds.tamarin.actions.OpenXrActionState;
 import com.onemillionworlds.tamarin.openxr.XrAppState;
@@ -121,11 +120,14 @@ public class MenuExampleState extends BaseAppState{
             app.getStateManager().attach(new DetachAndReattachExampleState());
         });
 
+        lemurWindow.addChild(new Button("VR sound Test")).addClickCommands(source -> {
+            app.getStateManager().detach(this);
+            app.getStateManager().attach(new VrSoundExampleState());
+        });
+
         lemurWindow.addChild(new Button("Exit")).addClickCommands(source ->
             getApplication().stop()
         );
-
-        //TamarinUtilities.playerLookAtPosition(getState(VRAppState.ID, VRAppState.class), lemurWindow.getWorldTranslation());
 
         //get the left hand and add a pick line to it
         vrHands.getHandControls().forEach(h -> {

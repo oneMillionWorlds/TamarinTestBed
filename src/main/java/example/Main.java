@@ -37,7 +37,6 @@ public class Main extends SimpleApplication{
         app.setLostFocusBehavior(LostFocusBehavior.Disabled);
         app.setSettings(settings);
         app.setShowSettings(false);
-        app.setDisplayStatView(true);
         app.start();
     }
 
@@ -173,6 +172,5 @@ public class Main extends SimpleApplication{
                         ActionHandles.HAND_POSE,
                         ActionHandles.HAND_POSE)
                 .build();
-
     }
 }
