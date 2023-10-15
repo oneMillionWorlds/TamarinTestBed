@@ -30,15 +30,18 @@ public class Main extends SimpleApplication{
         AppSettings settings = new AppSettings(true);
         settings.put("Renderer", AppSettings.LWJGL_OPENGL45); // OpenXR only supports relatively modern OpenGL
         settings.setTitle("Tamarin OpenXR Example");
+        settings.setVSync(false); // don't want to VSync to the monitor refresh rate, we want to VSync to the headset refresh rate (which tamarin implictly handles)
+
         Main app = new Main();
         app.setLostFocusBehavior(LostFocusBehavior.Disabled);
         app.setSettings(settings);
         app.setShowSettings(false);
+        app.setDisplayStatView(true);
         app.start();
     }
 
-    public Main(AppState... appStates) {
-        super(appStates);
+    public Main() {
+        super();
     }
 
     @Override
