@@ -59,6 +59,7 @@ public class Main extends SimpleApplication{
         BaseStyles.loadGlassStyle();
         GuiGlobals.getInstance().getStyles().setDefaultStyle("glass");
 
+        getCamera().setFrustumPerspective(45f, (float)cam.getWidth() / cam.getHeight(), 0.01f, 1000f);
 
         getStateManager().getState(XrAppState.ID, XrAppState.class).configureBothViewports(viewPort -> viewPort.setBackgroundColor(ColorRGBA.Brown));
     }

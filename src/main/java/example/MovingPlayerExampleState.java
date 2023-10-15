@@ -85,12 +85,12 @@ public class MovingPlayerExampleState extends BaseAppState{
 
         BooleanActionState leftAction = syntheticDPad.east(); //temporary work around till LWJGL 3.3.3
         if (leftAction.hasChanged() && leftAction.getState()){
-            xrAppState.rotateObserverWithoutMovingPlayer(0.2f*FastMath.PI);
+            xrAppState.rotateObserverWithoutMovingPlayer(-0.2f*FastMath.PI);
         }
 
         BooleanActionState rightAction = syntheticDPad.west();
         if (rightAction.hasChanged() && rightAction.getState()){
-            xrAppState.rotateObserverWithoutMovingPlayer(-0.2f*FastMath.PI);
+            xrAppState.rotateObserverWithoutMovingPlayer(0.2f*FastMath.PI);
         }
 
         BooleanActionState backAction = syntheticDPad.south();
