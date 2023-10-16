@@ -140,13 +140,14 @@ public class VrSoundExampleState extends BaseAppState{
                 if (time<0.5 && !sounded){
                     sound.playInstance();
                     sounded = true;
+
                 }
 
-                float fallOff = 1-(time/vibrateTime);
-                if (fallOff<0){
-                    fallOff = 0;
-                }
+                float fallOff = FastMath.clamp(1-(time/vibrateTime), 0, 1);
                 float deviation = fallOff * 0.01f * FastMath.sin(50*time);
+
+                //vibrate the hand if it's holding the box as it chimes (just as a nice effect)
+                grabControl.getGrabbingHand().ifPresent(boundHand -> boundHand.triggerHapticAction(ActionHandles.HAPTIC, 0.1f, 4, 0.3f*fallOff));
 
                 boxGeometry.setLocalTranslation(new Vector3f(deviation, 0, deviation));
             }
