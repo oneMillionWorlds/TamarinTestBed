@@ -5,6 +5,7 @@ import com.jme3.app.SimpleApplication;
 import com.jme3.app.state.BaseAppState;
 import com.jme3.asset.AssetManager;
 import com.jme3.material.Material;
+import com.jme3.math.ColorRGBA;
 import com.jme3.math.FastMath;
 import com.jme3.math.Quaternion;
 import com.jme3.math.Vector3f;
@@ -38,15 +39,10 @@ public class DetachAndReattachExampleState extends BaseAppState{
 
     boolean reattachCountDown = false;
     float reattachTimer;
-    XrAppState xrAppState;
-    OpenXrActionState openXrActions;
-    VRHandsAppState vrHandsAppState;
+
     @Override
     protected void initialize(Application app){
         ((SimpleApplication)app).getRootNode().attachChild(rootNodeDelegate);
-        xrAppState = getStateManager().getState(XrAppState.ID, XrAppState.class);
-        openXrActions = getStateManager().getState(OpenXrActionState.ID, OpenXrActionState.class);
-        vrHandsAppState = getStateManager().getState(VRHandsAppState.ID, VRHandsAppState.class);
 
         getStateManager().getState(VRHandsAppState.ID, VRHandsAppState.class).getHandControls().forEach(boundHand ->
                 closeHandBindings.add(boundHand.setGrabAction(ActionHandles.GRIP, rootNodeDelegate)));
@@ -100,7 +96,9 @@ public class DetachAndReattachExampleState extends BaseAppState{
                         .postBindLeft(hand -> hand.setGrabAction(ActionHandles.GRIP, rootNodeDelegate))
                         .postBindRight(hand -> hand.setGrabAction(ActionHandles.GRIP, rootNodeDelegate))
                         .build();
-
+                XrAppState xrAppState = new XrAppState();
+                xrAppState.movePlayersFeetToPosition(new Vector3f(0,0,10));
+                xrAppState.configureBothViewports(v -> v.setBackgroundColor(ColorRGBA.Brown));
                 getStateManager().attach(xrAppState);
                 getStateManager().attach(new OpenXrActionState(Main.manifest(), ActionSets.MAIN));
                 getStateManager().attach(new VRHandsAppState(handSpec));
@@ -154,7 +152,7 @@ public class DetachAndReattachExampleState extends BaseAppState{
         boxGeometry.setMaterial(boxMat);
         boxGeometry.setLocalTranslation(location);
         GrabEventControl grabControl = new GrabEventControl(() -> {
-            getStateManager().detach(xrAppState);
+            getStateManager().detach(getState(XrAppState.class));
             getStateManager().detach(getState(OpenXrActionState.class));
             getStateManager().detach(getState(VRHandsAppState.class));
 
