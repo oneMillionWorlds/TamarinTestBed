@@ -12,6 +12,7 @@ import com.jme3.scene.Node;
 import com.jme3.scene.shape.Box;
 import com.jme3.texture.Texture;
 import com.onemillionworlds.tamarin.actions.OpenXrActionState;
+import com.onemillionworlds.tamarin.actions.PhysicalBindingInterpretation;
 import com.onemillionworlds.tamarin.actions.state.BooleanActionState;
 import com.onemillionworlds.tamarin.actions.state.Vector2fActionState;
 import com.onemillionworlds.tamarin.openxr.XrAppState;
@@ -138,10 +139,16 @@ public class MovingPlayerExampleState extends BaseAppState{
 
         smallPillar(0,10, ColorRGBA.Orange);
 
-        //a lemur UI with text explaining what to do
+        /*a lemur UI with text explaining what to do.
+        * Note that it dynamically produces some of the tutorial text based on what actions are bound to what buttons
+        * (Dpad stuff it harder, so is hard coded
+        */
+        PhysicalBindingInterpretation walkBinding = openXrActionState.getPhysicalBindingForAction(ActionHandles.WALK).get(0);
+        String walkText = "Use " + walkBinding.handSide().map(h -> h.name().toLowerCase()).orElse("") + " " + walkBinding.fundamentalButton() +  " to walk (very nausea inducing)";
+
         Container lemurWindow = new Container();
         lemurWindow.setLocalScale(0.02f); //lemur defaults to 1 meter == 1 pixel (because that make sense for 2D, scale it down, so it's not huge in 3d)
-        Label label = new Label("Use the left hat forward to teleport forwards, left and right to sharply turn. \nLeft hat backwards to teleport to (0,0,10) which is marked by the small orange pillar\n\nUse the right hat forward to walk (very nausea inducing)\n\nIn a real game you'd want some indicator to show where you were teleporting to. \n\nThe turn left and right is to help with seated experiences where physically turning 360 may be annoying or impossible. \n\n Teleport off the checkerboard to exit");
+        Label label = new Label("Use the left hat forward to teleport forwards, left and right to sharply turn. \n\nLeft hat backwards to teleport to (0,0,10) which is marked by the small orange pillar\n\nIn a real game you'd want some indicator to show where you were teleporting to. \n\n" + walkText + "\n\nThe turn left and right is to help with seated experiences where physically turning 360 may be annoying or impossible. \n\n Teleport off the checkerboard to exit");
         lemurWindow.addChild(label);
         lemurWindow.setLocalTranslation(-5,4,0);
         rootNodeDelegate.attachChild(lemurWindow);

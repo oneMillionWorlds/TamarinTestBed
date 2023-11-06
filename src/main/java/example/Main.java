@@ -25,7 +25,11 @@ import com.simsilica.lemur.style.BaseStyles;
 import example.actions.ActionHandles;
 import example.actions.ActionSets;
 
+import java.util.logging.Logger;
+
 public class Main extends SimpleApplication{
+
+    private static final Logger LOGGER = Logger.getLogger(Main.class.getName());
 
     public static void main(String[] args) {
         AppSettings settings = new AppSettings(true);
@@ -64,7 +68,16 @@ public class Main extends SimpleApplication{
 
         getCamera().setFrustumPerspective(45f, (float)cam.getWidth() / cam.getHeight(), 0.01f, 1000f);
 
-        getStateManager().getState(XrAppState.ID, XrAppState.class).configureBothViewports(viewPort -> viewPort.setBackgroundColor(ColorRGBA.Brown));
+        XrAppState xrAppState = getStateManager().getState(XrAppState.ID, XrAppState.class);
+        xrAppState.configureBothViewports(viewPort -> viewPort.setBackgroundColor(ColorRGBA.Brown));
+        xrAppState.runAfterInitialisation(() -> {
+            LOGGER.info("System is: "+xrAppState.getSystemName());
+        });
+    }
+
+    @Override
+    public void simpleUpdate(float tpf){
+        super.simpleUpdate(tpf);
     }
 
     public static ActionManifest manifest(){
@@ -192,6 +205,9 @@ public class Main extends SimpleApplication{
                 .withSuggestedBinding(OculusGoController.PROFILE, OculusGoController.pathBuilder().rightHand().trackpadClick())
                 .withSuggestedBinding(OculusTouchController.PROFILE, OculusTouchController.pathBuilder().leftHand().thumbStickClick())
                 .withSuggestedBinding(OculusTouchController.PROFILE, OculusTouchController.pathBuilder().rightHand().thumbStickClick())
+                .withSuggestedBinding(OculusTouchController.PROFILE, OculusTouchController.pathBuilder().rightHand().aClick())
+                .withSuggestedBinding(OculusTouchController.PROFILE, OculusTouchController.pathBuilder().rightHand().aTouch())
+
                 .withSuggestedBinding(ValveIndexController.PROFILE, ValveIndexController.pathBuilder().leftHand().thumbStickClick())
                 .withSuggestedBinding(ValveIndexController.PROFILE, ValveIndexController.pathBuilder().rightHand().thumbStickClick())
                 .build();
