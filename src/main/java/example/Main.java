@@ -131,52 +131,21 @@ public class Main extends SimpleApplication{
                 .withSuggestAllKnownAimPoseBindings()
                 .build();
 
-        Action teleport = Action.builder()
-                .actionHandle(ActionHandles.TELEPORT)
-                .translatedName("Teleport")
-                .actionType(ActionType.BOOLEAN)
-                .withSuggestedBinding(GoogleDaydreamController.PROFILE, GoogleDaydreamController.pathBuilder().leftHand().trackpadDpadUp())
-                .withSuggestedBinding(HtcViveController.PROFILE, HtcViveController.pathBuilder().leftHand().trackpadDpadUp())
-                .withSuggestedBinding(MixedRealityMotionController.PROFILE, MixedRealityMotionController.pathBuilder().leftHand().trackpadDpadUp())
-                .withSuggestedBinding(OculusGoController.PROFILE, OculusGoController.pathBuilder().leftHand().trackpadDpadUp())
-                .withSuggestedBinding(OculusTouchController.PROFILE, OculusTouchController.pathBuilder().leftHand().thumbStickDpadUp())
-                .withSuggestedBinding(ValveIndexController.PROFILE, ValveIndexController.pathBuilder().leftHand().thumbStickDpadUp())
-                .build();
 
-        Action turnLeft = Action.builder()
-                .actionHandle(ActionHandles.TURN_LEFT)
-                .translatedName("Turn Left")
-                .actionType(ActionType.BOOLEAN)
-                .withSuggestedBinding(GoogleDaydreamController.PROFILE, GoogleDaydreamController.pathBuilder().leftHand().trackpadDpadLeft())
-                .withSuggestedBinding(HtcViveController.PROFILE, HtcViveController.pathBuilder().leftHand().trackpadDpadLeft())
-                .withSuggestedBinding(MixedRealityMotionController.PROFILE, MixedRealityMotionController.pathBuilder().leftHand().trackpadDpadLeft())
-                .withSuggestedBinding(OculusGoController.PROFILE, OculusGoController.pathBuilder().leftHand().trackpadDpadLeft())
-                .withSuggestedBinding(OculusTouchController.PROFILE, OculusTouchController.pathBuilder().leftHand().thumbStickDpadLeft())
-                .withSuggestedBinding(ValveIndexController.PROFILE, ValveIndexController.pathBuilder().leftHand().thumbStickDpadLeft())
-                .build();
-
-        Action turnRight = Action.builder()
-                .actionHandle(ActionHandles.TURN_RIGHT)
-                .translatedName("Turn Right")
-                .actionType(ActionType.BOOLEAN)
-                .withSuggestedBinding(GoogleDaydreamController.PROFILE, GoogleDaydreamController.pathBuilder().leftHand().trackpadDpadRight())
-                .withSuggestedBinding(HtcViveController.PROFILE, HtcViveController.pathBuilder().leftHand().trackpadDpadRight())
-                .withSuggestedBinding(MixedRealityMotionController.PROFILE, MixedRealityMotionController.pathBuilder().leftHand().trackpadDpadRight())
-                .withSuggestedBinding(OculusGoController.PROFILE, OculusGoController.pathBuilder().leftHand().trackpadDpadRight())
-                .withSuggestedBinding(OculusTouchController.PROFILE, OculusTouchController.pathBuilder().leftHand().thumbStickDpadRight())
-                .withSuggestedBinding(ValveIndexController.PROFILE, ValveIndexController.pathBuilder().leftHand().thumbStickDpadRight())
-                .build();
-
-        Action resetPosition = Action.builder()
-                .actionHandle(ActionHandles.RESET_POSITION)
-                .translatedName("Reset position")
-                .actionType(ActionType.BOOLEAN)
-                .withSuggestedBinding(GoogleDaydreamController.PROFILE, GoogleDaydreamController.pathBuilder().leftHand().trackpadDpadDown())
-                .withSuggestedBinding(HtcViveController.PROFILE, HtcViveController.pathBuilder().leftHand().trackpadDpadDown())
-                .withSuggestedBinding(MixedRealityMotionController.PROFILE, MixedRealityMotionController.pathBuilder().leftHand().trackpadDpadDown())
-                .withSuggestedBinding(OculusGoController.PROFILE, OculusGoController.pathBuilder().leftHand().trackpadDpadDown())
-                .withSuggestedBinding(OculusTouchController.PROFILE, OculusTouchController.pathBuilder().leftHand().thumbStickDpadDown())
-                .withSuggestedBinding(ValveIndexController.PROFILE, ValveIndexController.pathBuilder().leftHand().thumbStickDpadDown())
+        /*
+         * This puts all the dpad controls into a single action, this sucks but is the only way to do it on older runtimes
+         * which may not support the XR_EXT_dpad_binding extension
+         */
+        Action movementDPad = Action.builder()
+                .actionHandle(ActionHandles.MOVEMENT_DPAD)
+                .translatedName("Step Movement controls")
+                .actionType(ActionType.VECTOR2F)
+                .withSuggestedBinding(GoogleDaydreamController.PROFILE, GoogleDaydreamController.pathBuilder().leftHand().trackpad())
+                .withSuggestedBinding(HtcViveController.PROFILE, HtcViveController.pathBuilder().leftHand().trackpad())
+                .withSuggestedBinding(MixedRealityMotionController.PROFILE, MixedRealityMotionController.pathBuilder().leftHand().trackpad())
+                .withSuggestedBinding(OculusGoController.PROFILE, OculusGoController.pathBuilder().leftHand().trackpad())
+                .withSuggestedBinding(OculusTouchController.PROFILE, OculusTouchController.pathBuilder().leftHand().thumbStick())
+                .withSuggestedBinding(ValveIndexController.PROFILE, ValveIndexController.pathBuilder().leftHand().thumbStick())
                 .build();
 
         Action walk = Action.builder()
@@ -222,10 +191,7 @@ public class Main extends SimpleApplication{
                         .withAction(haptic)
                         .withAction(trigger)
                         .withAction(handPose)
-                        .withAction(teleport)
-                        .withAction(turnLeft)
-                        .withAction(turnRight)
-                        .withAction(resetPosition)
+                        .withAction(movementDPad)
                         .withAction(walk)
                         .withAction(openHandMenu)
                         .build()

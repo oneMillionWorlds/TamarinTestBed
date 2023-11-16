@@ -11,12 +11,13 @@ import com.jme3.scene.Geometry;
 import com.jme3.scene.Node;
 import com.jme3.scene.shape.Box;
 import com.jme3.texture.Texture;
+import com.onemillionworlds.tamarin.actions.HandSide;
 import com.onemillionworlds.tamarin.actions.OpenXrActionState;
 import com.onemillionworlds.tamarin.actions.PhysicalBindingInterpretation;
+import com.onemillionworlds.tamarin.actions.compatibility.SyntheticDPad;
 import com.onemillionworlds.tamarin.actions.state.BooleanActionState;
 import com.onemillionworlds.tamarin.actions.state.Vector2fActionState;
 import com.onemillionworlds.tamarin.openxr.XrAppState;
-import com.onemillionworlds.tamarin.vrhands.BoundHand;
 import com.onemillionworlds.tamarin.vrhands.VRHandsAppState;
 import com.simsilica.lemur.Container;
 import com.simsilica.lemur.Label;
@@ -35,6 +36,8 @@ public class MovingPlayerExampleState extends BaseAppState{
     VRHandsAppState vrHands;
 
     Geometry observerBox;
+
+    SyntheticDPad movementDpad = new SyntheticDPad();
 
     public MovingPlayerExampleState(){
     }
@@ -74,30 +77,36 @@ public class MovingPlayerExampleState extends BaseAppState{
 
         super.update(tpf);
 
+        /*
+         * this is a temporary workaround until the XR_EXT_dpad_binding extension is better supported and we can use true dpads
+         */
+        movementDpad.updateRawAction(openXrActionState.getVector2fActionState(ActionHandles.MOVEMENT_DPAD));
+
         //this is a temporary workaround until LWJGL is upgraded to 3.3.3, and we can use true dpads
         //syntheticDPad.updateRawAction(getStateManager().getState(OpenXrActionState.class).getVector2fActionState(ActionHandles.SYNTHETIC_D_PAD));
 
         //the observer is the origin on the VR space (that the player then walks about in)
         Node observer = getObserver();
 
-        BooleanActionState leftAction = openXrActionState.getBooleanActionState(ActionHandles.TURN_LEFT); //temporary work around till LWJGL 3.3.3
+        BooleanActionState leftAction = movementDpad.west();
         if (leftAction.hasChanged() && leftAction.getState()){
             xrAppState.rotateObserverWithoutMovingPlayer(-0.2f*FastMath.PI);
         }
 
-        BooleanActionState rightAction = openXrActionState.getBooleanActionState(ActionHandles.TURN_RIGHT);
+        BooleanActionState rightAction = movementDpad.east();
         if (rightAction.hasChanged() && rightAction.getState()){
             xrAppState.rotateObserverWithoutMovingPlayer(0.2f*FastMath.PI);
         }
 
-        BooleanActionState backAction = openXrActionState.getBooleanActionState(ActionHandles.RESET_POSITION);
-        if (backAction.hasChanged() && backAction.getState()){
+        BooleanActionState resetPosition = movementDpad.south();
+        if (resetPosition.hasChanged() && resetPosition.getState()){
             xrAppState.movePlayersFeetToPosition(new Vector3f(0,0,10));
         }
 
-        //Even though this is by default bound to the left hand, consider it against both the left and right hand in case its redefined by the player
-        for(BoundHand boundHand : vrHands.getHandControls()){
-            BooleanActionState teleportAction = boundHand.getBooleanActionState(ActionHandles.TELEPORT);
+        BooleanActionState teleportAction = movementDpad.north();
+        // really we should be more understanding of the action being redefined to a different hand, but that is painful
+        // while using the synthetic dpad. So assume left hand.
+        vrHands.getHandControl(HandSide.LEFT).ifPresent(boundHand -> {
             if (teleportAction.hasChanged() && teleportAction.getState()){
                 //teleport in the direction the hand that requested it is pointing
                 Vector3f pointingDirection = boundHand.getBulkPointingDirection();
@@ -111,8 +120,7 @@ public class MovingPlayerExampleState extends BaseAppState{
                 }
 
             }
-        }
-
+        });
 
         //nausea inducing but nonetheless popular. Normal walking about
         Vector2fActionState analogActionState = openXrActionState.getVector2fActionState(ActionHandles.WALK);
