@@ -13,7 +13,7 @@ public class ActionHandles{
      * This puts all the dpad controls into a single action, this sucks but is the only way to do it on older runtimes
      * which may not support the XR_EXT_dpad_binding extension
      */
-    public static final ActionHandle MOVEMENT_DPAD = new ActionHandle(ActionSets.MAIN, "teleport");
+    public static final ActionHandle MOVEMENT_DPAD = new ActionHandle(ActionSets.MAIN, "movement_dpad");
 
     public static final ActionHandle WALK = new ActionHandle(ActionSets.MAIN, "walk");
     public static final ActionHandle OPEN_HAND_MENU = new ActionHandle(ActionSets.MAIN, "open_hand_menu");
