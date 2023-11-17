@@ -88,12 +88,12 @@ public class MovingPlayerExampleState extends BaseAppState{
         //the observer is the origin on the VR space (that the player then walks about in)
         Node observer = getObserver();
 
-        BooleanActionState leftAction = movementDpad.west();
+        BooleanActionState leftAction = movementDpad.east();
         if (leftAction.hasChanged() && leftAction.getState()){
             xrAppState.rotateObserverWithoutMovingPlayer(-0.2f*FastMath.PI);
         }
 
-        BooleanActionState rightAction = movementDpad.east();
+        BooleanActionState rightAction = movementDpad.west();
         if (rightAction.hasChanged() && rightAction.getState()){
             xrAppState.rotateObserverWithoutMovingPlayer(0.2f*FastMath.PI);
         }
