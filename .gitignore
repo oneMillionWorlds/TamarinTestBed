@@ -22,6 +22,8 @@
 hs_err_pid*
 /.gradle
 /.idea
+!/.idea/runConfigurations/
+
 /build
 /bulletjme.dll
 /openVr/.idea
