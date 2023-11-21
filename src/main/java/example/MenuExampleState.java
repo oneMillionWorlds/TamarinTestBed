@@ -125,6 +125,12 @@ public class MenuExampleState extends BaseAppState{
             app.getStateManager().attach(new VrSoundExampleState());
         });
 
+        lemurWindow.addChild(new Button("Change hands at runtime")).addClickCommands(source -> {
+            app.getStateManager().detach(this);
+            app.getStateManager().attach(new ChangeHandsExampleState());
+        });
+
+
         lemurWindow.addChild(new Button("Exit")).addClickCommands(source ->
             getApplication().stop()
         );

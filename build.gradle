@@ -9,6 +9,9 @@ repositories {
     jcenter()
     //mavenLocal()
     mavenCentral()
+    maven {
+        url "https://s01.oss.sonatype.org/content/repositories/comonemillionworlds-1034"
+    }
 }
 
 ext {
@@ -16,7 +19,7 @@ ext {
 }
 
 dependencies {
-    implementation 'com.onemillionworlds:tamarin:2.1.4'
+    implementation 'com.onemillionworlds:tamarin:2.2'
 
     implementation "org.jmonkeyengine:jme3-core:$jmonkeyengine_version"
     implementation "org.jmonkeyengine:jme3-lwjgl3:$jmonkeyengine_version"
