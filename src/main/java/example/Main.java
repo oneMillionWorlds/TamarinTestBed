@@ -2,6 +2,9 @@ package example;
 
 import com.jme3.app.LostFocusBehavior;
 import com.jme3.app.SimpleApplication;
+import com.jme3.light.AmbientLight;
+import com.jme3.light.DirectionalLight;
+import com.jme3.material.Material;
 import com.jme3.math.ColorRGBA;
 import com.jme3.math.Vector3f;
 import com.jme3.system.AppSettings;
@@ -73,6 +76,11 @@ public class Main extends SimpleApplication{
         xrAppState.runAfterInitialisation(() -> {
             LOGGER.info("System is: "+xrAppState.getSystemName());
         });
+
+        //set up some lights to make the hands look better
+        rootNode.addLight(new DirectionalLight(new Vector3f(-1, -1, -1).normalizeLocal(), new ColorRGBA(0.6f, 0.6f, 0.4f, 1f)));
+        rootNode.addLight(new AmbientLight(new ColorRGBA(0.1f, 0.1f, 0.1f, 1f)));
+        rootNode.addLight(new DirectionalLight(new Vector3f(0, -1, 1).normalizeLocal(), new ColorRGBA(0.5f, 0.45f, 0.5f, 1f)));
     }
 
     @Override
@@ -202,6 +210,18 @@ public class Main extends SimpleApplication{
         return HandSpec.builder(
                         ActionHandles.HAND_POSE,
                         ActionHandles.HAND_POSE)
+                .applyMaterialToLeftHand((hand, assetManager) -> {
+                    //use the standard Tamarin texture but use a lit material instead
+                    Material mat = new Material(assetManager, "Common/MatDefs/Light/Lighting.j3md");
+                    mat.setTexture("DiffuseMap", assetManager.loadTexture("Tamarin/Textures/basicHands_pinStripe.png"));
+                    hand.setMaterial(mat);
+                })
+                .applyMaterialToRightHand((hand, assetManager) -> {
+                    //use the standard Tamarin texture but use a lit material instead
+                    Material mat = new Material(assetManager, "Common/MatDefs/Light/Lighting.j3md");
+                    mat.setTexture("DiffuseMap", assetManager.loadTexture("Tamarin/Textures/basicHands_pinStripe.png"));
+                    hand.setMaterial(mat);
+                })
                 .build();
     }
 }

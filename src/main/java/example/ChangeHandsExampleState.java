@@ -64,17 +64,22 @@ public class ChangeHandsExampleState extends BaseAppState{
     private void initialiseScene(){
         rootNodeDelegate.attachChild(checkerboardFloor(getApplication().getAssetManager()));
 
-        Material devilHandMaterial = new Material(getApplication().getAssetManager(),"Common/MatDefs/Misc/Unshaded.j3md");
-        devilHandMaterial.setTexture("ColorMap", getApplication().getAssetManager().loadTexture("Textures/demonHandsLeft.png"));
+        Material devilHandMaterial = new Material(getApplication().getAssetManager(),"Common/MatDefs/Light/Lighting.j3md");
+        devilHandMaterial.setTexture("DiffuseMap", getApplication().getAssetManager().loadTexture("Textures/demonHands.png"));
 
-        grabbableHand(new Vector3f(0,1f, 9.5f), "Models/demonHandsLeft.glb", devilHandMaterial);
+        grabbableHand(new Vector3f(-0.1f,1f, 9.5f), "Models/demonHandsLeft.glb", devilHandMaterial);
+
+        Material pinStripeMaterial = new Material(getApplication().getAssetManager(),"Common/MatDefs/Light/Lighting.j3md");
+        pinStripeMaterial.setTexture("DiffuseMap", getApplication().getAssetManager().loadTexture(BoundHand.DEFAULT_HAND_TEXTURE));
+
+        grabbableHand(new Vector3f(0.1f,1f, 9.5f), BoundHand.DEFAULT_HAND_MODEL_LEFT, pinStripeMaterial);
 
         exitBox(new Vector3f(-0.5f,1f, 9.6f));
 
         //a lemur UI with text explaining what to do
         Container lemurWindow = new Container();
         lemurWindow.setLocalScale(0.02f); //lemur defaults to 1 meter == 1 pixel (because that make sense for 2D, scale it down, so it's not huge in 3d)
-        Label label = new Label("This example is used to test precise grabbing, with several objects close together");
+        Label label = new Label("This example is used to test changing hands at runtime. A devil hand can be grabbed to swap to it (left hand only)");
         lemurWindow.addChild(label);
         lemurWindow.setLocalTranslation(-5,4,0);
         rootNodeDelegate.attachChild(lemurWindow);
