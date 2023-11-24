@@ -129,7 +129,10 @@ public class MenuExampleState extends BaseAppState{
             app.getStateManager().detach(this);
             app.getStateManager().attach(new ChangeHandsExampleState());
         });
-
+        lemurWindow.addChild(new Button("Test that glow effects work in VR")).addClickCommands(source -> {
+            app.getStateManager().detach(this);
+            app.getStateManager().attach(new GlowTestState());
+        });
 
         lemurWindow.addChild(new Button("Exit")).addClickCommands(source ->
             getApplication().stop()
