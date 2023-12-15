@@ -21,6 +21,8 @@ import com.onemillionworlds.tamarin.vrhands.VRHandsAppState;
 import com.onemillionworlds.tamarin.vrhands.functions.FunctionRegistration;
 import com.onemillionworlds.tamarin.vrhands.grabbing.GrabEventControl;
 import com.onemillionworlds.tamarin.vrhands.grabbing.RelativeMovingGrabControl;
+import com.simsilica.lemur.Container;
+import com.simsilica.lemur.Label;
 import example.actions.ActionHandles;
 
 import java.util.ArrayList;
@@ -72,6 +74,14 @@ public class GlowTestState extends BaseAppState{
     }
 
     private void initialiseScene(){
+
+        Container lemurWindow = new Container();
+        lemurWindow.setLocalScale(0.02f); //lemur defaults to 1 meter == 1 pixel (because that make sense for 2D, scale it down, so it's not huge in 3d)
+        Label label = new Label("This tests that the glow effect works in VR, the upper boxes have no glow, the botton boxes do");
+        lemurWindow.addChild(label);
+        lemurWindow.setLocalTranslation(-5,4,0);
+        rootNodeDelegate.attachChild(lemurWindow);
+
         rootNodeDelegate.attachChild(checkerboardFloor(getApplication().getAssetManager()));
 
         glowBox(new Vector3f(0f,1.1f, 9.6f), ColorRGBA.Green, true);
@@ -84,6 +94,8 @@ public class GlowTestState extends BaseAppState{
         glowBox(new Vector3f(0.3f,1.3f, 9.6f), ColorRGBA.White, false);
 
         exitBox(new Vector3f(-0.5f,1f, 9.6f));
+
+        getState(XrAppState.ID, XrAppState.class).movePlayersFeetToPosition(new Vector3f(0,0,10));
     }
 
     @SuppressWarnings("DuplicatedCode") //each example is supposed to be mostly stand along so allow some duplication
@@ -145,7 +157,7 @@ public class GlowTestState extends BaseAppState{
     private static FilterPostProcessor buildPostProcessors(AssetManager assetManager){
         FilterPostProcessor fpp=new FilterPostProcessor(assetManager);
         BloomFilter bf=new BloomFilter(BloomFilter.GlowMode.Objects);
-        bf.setBlurScale(0.5f);
+        bf.setBlurScale(3f);
         fpp.addFilter(bf);
 
         return fpp;
