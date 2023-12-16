@@ -152,9 +152,9 @@ public class DetachAndReattachExampleState extends BaseAppState{
         boxGeometry.setMaterial(boxMat);
         boxGeometry.setLocalTranslation(location);
         GrabEventControl grabControl = new GrabEventControl(() -> {
-            getStateManager().detach(getState(XrAppState.class));
-            getStateManager().detach(getState(OpenXrActionState.class));
-            getStateManager().detach(getState(VRHandsAppState.class));
+            getStateManager().detach(getState(XrAppState.ID, XrAppState.class));
+            getStateManager().detach(getState(OpenXrActionState.ID, OpenXrActionState.class));
+            getStateManager().detach(getState(VRHandsAppState.ID, VRHandsAppState.class));
 
             reattachTimer = 5;
             reattachCountDown = true;
