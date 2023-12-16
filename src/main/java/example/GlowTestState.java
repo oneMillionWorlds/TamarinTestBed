@@ -44,7 +44,7 @@ public class GlowTestState extends BaseAppState{
         getState(VRHandsAppState.ID, VRHandsAppState.class).getHandControls().forEach(boundHand ->
                 closeHandBindings.add(boundHand.setGrabAction(ActionHandles.GRIP, rootNodeDelegate)));
 
-        getState(XrAppState.ID, XrAppState.class).setViewportConfiguration(viewPort -> {
+        getState(XrAppState.ID, XrAppState.class).setMainViewportConfiguration(viewPort -> {
             AssetManager assetManager = getApplication().getAssetManager();
             FilterPostProcessor filterPostProcessor = buildPostProcessors(assetManager);
             viewPort.addProcessor(filterPostProcessor);

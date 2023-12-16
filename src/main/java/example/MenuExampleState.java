@@ -133,6 +133,11 @@ public class MenuExampleState extends BaseAppState{
             app.getStateManager().detach(this);
             app.getStateManager().attach(new GlowTestState());
         });
+        lemurWindow.addChild(new Button("Additional (overlay) viewports")).addClickCommands(source -> {
+            app.getStateManager().detach(this);
+            app.getStateManager().attach(new AdditionalViewportExampleState());
+        });
+
 
         lemurWindow.addChild(new Button("Exit")).addClickCommands(source ->
             getApplication().stop()

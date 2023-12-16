@@ -98,7 +98,7 @@ public class DetachAndReattachExampleState extends BaseAppState{
                         .build();
                 XrAppState xrAppState = new XrAppState();
                 xrAppState.movePlayersFeetToPosition(new Vector3f(0,0,10));
-                xrAppState.setViewportConfiguration(v -> v.setBackgroundColor(ColorRGBA.Brown));
+                xrAppState.setMainViewportConfiguration(v -> v.setBackgroundColor(ColorRGBA.Brown));
                 getStateManager().attach(xrAppState);
                 getStateManager().attach(new OpenXrActionState(Main.manifest(), ActionSets.MAIN));
                 getStateManager().attach(new VRHandsAppState(handSpec));
