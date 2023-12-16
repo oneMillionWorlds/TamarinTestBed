@@ -72,7 +72,7 @@ public class Main extends SimpleApplication{
         getCamera().setFrustumPerspective(45f, (float)cam.getWidth() / cam.getHeight(), 0.01f, 1000f);
 
         XrAppState xrAppState = getStateManager().getState(XrAppState.ID, XrAppState.class);
-        xrAppState.configureBothViewports(viewPort -> viewPort.setBackgroundColor(ColorRGBA.Brown));
+        xrAppState.setViewportConfiguration(viewPort -> viewPort.setBackgroundColor(ColorRGBA.Brown));
         xrAppState.runAfterInitialisation(() -> {
             LOGGER.info("System is: "+xrAppState.getSystemName());
         });
