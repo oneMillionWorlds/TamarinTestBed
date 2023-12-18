@@ -11,9 +11,9 @@ import com.jme3.scene.Node;
 import com.jme3.scene.shape.Box;
 import com.onemillionworlds.tamarin.actions.HandSide;
 import com.onemillionworlds.tamarin.actions.OpenXrActionState;
-import com.onemillionworlds.tamarin.actions.PhysicalBindingInterpretation;
 import com.onemillionworlds.tamarin.actions.compatibility.SyntheticDPad;
 import com.onemillionworlds.tamarin.actions.state.BooleanActionState;
+import com.onemillionworlds.tamarin.debug.TamarinDebugOverlayState;
 import com.onemillionworlds.tamarin.openxr.XrAppState;
 import com.onemillionworlds.tamarin.viewports.AdditionalViewportRequest;
 import com.onemillionworlds.tamarin.viewports.ViewportConfigurator;
@@ -48,6 +48,8 @@ public class AdditionalViewportExampleState extends BaseAppState{
         initialiseScene();
 
         viewportConfigurator = xrAppState.addAdditionalViewport(AdditionalViewportRequest.builder(additionalRootNode).build());
+
+        getStateManager().attach(new TamarinDebugOverlayState());
     }
 
     private Node getObserver(){
@@ -58,6 +60,7 @@ public class AdditionalViewportExampleState extends BaseAppState{
     protected void cleanup(Application app){
         rootNodeDelegate.removeFromParent();
         viewportConfigurator.removeViewports();
+        getStateManager().detach(getState(TamarinDebugOverlayState.ID, TamarinDebugOverlayState.class));
     }
 
     @Override
@@ -98,6 +101,9 @@ public class AdditionalViewportExampleState extends BaseAppState{
             }
         });
 
+        additionalRootNode.updateLogicalState(tpf);
+        additionalRootNode.updateGeometricState();
+
     }
 
     private void initialiseScene(){
@@ -129,6 +135,7 @@ public class AdditionalViewportExampleState extends BaseAppState{
         Geometry pillarGeometry = new Geometry("pillar", pillar);
         Material boxMat = new Material(getApplication().getAssetManager(),"Common/MatDefs/Misc/Unshaded.j3md");
         boxMat.setColor("Color", colorRGBA);
+        boxMat.getAdditionalRenderState().setWireframe(true);
         pillarGeometry.setMaterial(boxMat);
         pillarGeometry.setLocalTranslation(new Vector3f(x, pillarHeight/2, z));
         additionalRootNode.attachChild(pillarGeometry);
