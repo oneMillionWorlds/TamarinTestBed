@@ -5,10 +5,17 @@ import com.jme3.app.SimpleApplication;
 import com.jme3.app.state.BaseAppState;
 import com.jme3.material.Material;
 import com.jme3.math.ColorRGBA;
+import com.jme3.math.FastMath;
+import com.jme3.math.Quaternion;
 import com.jme3.math.Vector3f;
+import com.jme3.renderer.RenderManager;
+import com.jme3.renderer.ViewPort;
 import com.jme3.scene.Geometry;
 import com.jme3.scene.Node;
+import com.jme3.scene.Spatial;
+import com.jme3.scene.control.AbstractControl;
 import com.jme3.scene.shape.Box;
+import com.jme3.scene.shape.Cylinder;
 import com.onemillionworlds.tamarin.actions.HandSide;
 import com.onemillionworlds.tamarin.actions.OpenXrActionState;
 import com.onemillionworlds.tamarin.actions.compatibility.SyntheticDPad;
@@ -18,9 +25,15 @@ import com.onemillionworlds.tamarin.openxr.XrAppState;
 import com.onemillionworlds.tamarin.viewports.AdditionalViewportRequest;
 import com.onemillionworlds.tamarin.viewports.ViewportConfigurator;
 import com.onemillionworlds.tamarin.vrhands.VRHandsAppState;
+import com.onemillionworlds.tamarin.vrhands.functions.FunctionRegistration;
+import com.simsilica.lemur.Button;
 import com.simsilica.lemur.Container;
 import com.simsilica.lemur.Label;
+import com.simsilica.lemur.component.SpringGridLayout;
 import example.actions.ActionHandles;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class AdditionalViewportExampleState extends BaseAppState{
 
@@ -36,8 +49,7 @@ public class AdditionalViewportExampleState extends BaseAppState{
 
     ViewportConfigurator viewportConfigurator;
 
-    public AdditionalViewportExampleState(){
-    }
+    List<FunctionRegistration> functionsToCloseOnExit = new ArrayList<>();
 
     @Override
     protected void initialize(Application app){
@@ -49,11 +61,18 @@ public class AdditionalViewportExampleState extends BaseAppState{
 
         viewportConfigurator = xrAppState.addAdditionalViewport(AdditionalViewportRequest.builder(additionalRootNode).build());
 
-        getStateManager().attach(new TamarinDebugOverlayState());
-    }
+        vrHands.getHandControls().forEach(boundHand -> {
+            //tamarin doesn't care that the picking is being done against overlay nodes, hand interaction is the same :)
+            functionsToCloseOnExit.add(boundHand.setClickAction_lemurSupport(ActionHandles.TRIGGER, additionalRootNode));
 
-    private Node getObserver(){
-        return xrAppState.getObserver();
+            //to get the picking lines in the overlay viewport is a bit involved, because the hand is in the normal viewport
+            //we set it to track the hands attachment node rather than attaching directly to it
+            Spatial pickLine = pickLine();
+            pickLine.addControl(new TrackOtherNodeControl(boundHand.getHandNode_xPointing()));
+            additionalRootNode.attachChild(pickLine);
+        });
+
+        getStateManager().attach(new TamarinDebugOverlayState());
     }
 
     @Override
@@ -61,6 +80,7 @@ public class AdditionalViewportExampleState extends BaseAppState{
         rootNodeDelegate.removeFromParent();
         viewportConfigurator.removeViewports();
         getStateManager().detach(getState(TamarinDebugOverlayState.ID, TamarinDebugOverlayState.class));
+        functionsToCloseOnExit.forEach(FunctionRegistration::endFunction);
     }
 
     @Override
@@ -83,10 +103,6 @@ public class AdditionalViewportExampleState extends BaseAppState{
          * this is a temporary workaround until the XR_EXT_dpad_binding extension is better supported and we can use true dpads
          */
         movementDpad.updateRawAction(openXrActionState.getVector2fActionState(ActionHandles.MOVEMENT_DPAD));
-
-        //the observer is the origin on the VR space (that the player then walks about in)
-        Node observer = getObserver();
-
 
         BooleanActionState teleportAction = movementDpad.north();
         // really we should be more understanding of the action being redefined to a different hand, but that is painful
@@ -127,6 +143,23 @@ public class AdditionalViewportExampleState extends BaseAppState{
         lemurWindow.setLocalTranslation(-5,4,0);
         rootNodeDelegate.attachChild(lemurWindow);
 
+        Container overlayUi = new Container();
+        SpringGridLayout overlayLayout = new SpringGridLayout();
+        overlayUi.setLayout(overlayLayout);
+        additionalRootNode.attachChild(overlayUi);
+
+        overlayUi.setLocalScale(0.005f);
+        Label labelOverlay = new Label("This UI is attached to the overlay node. \nPerhaps its a main menu that opens while the game is paused. \nIt has been drawn 'over' the main world");
+        Button exitButton = new Button("Click this overlay button to exit");
+        exitButton.addClickCommands(command -> {
+            getStateManager().detach(this);
+            getStateManager().attach(new MenuExampleState());
+        });
+        overlayUi.addChild(labelOverlay);
+        overlayUi.addChild(exitButton);
+        overlayUi.setLocalTranslation(0,1,12);
+        overlayUi.lookAt(new Vector3f(0,1,15), Vector3f.UNIT_Y);
+
     }
 
     private void pillarExtraViewport(float x, float z, ColorRGBA colorRGBA){
@@ -150,6 +183,46 @@ public class AdditionalViewportExampleState extends BaseAppState{
         pillarGeometry.setMaterial(boxMat);
         pillarGeometry.setLocalTranslation(new Vector3f(x, pillarHeight/2, z));
         rootNodeDelegate.attachChild(pillarGeometry);
+    }
+
+    @SuppressWarnings("DuplicatedCode") //as the examples are supposed to be self-contained accept some duplication
+    private Spatial pickLine(){
+        float length = 4;
+
+        Cylinder pickCylinder = new Cylinder(10,10, 0.002f, length, true);
+
+        Geometry geometry = new Geometry("debugHandLine", pickCylinder);
+        Material material = new Material(getApplication().getAssetManager(), "Common/MatDefs/Misc/Unshaded.j3md");
+        material.setColor("Color", ColorRGBA.White);
+        geometry.setMaterial(material);
+
+        Quaternion rotate = new Quaternion();
+        rotate.fromAngleAxis(FastMath.HALF_PI, Vector3f.UNIT_Y);
+        geometry.setLocalRotation(rotate);
+        geometry.setLocalTranslation(length/2, 0,0);
+
+        Node node = new Node();
+        node.attachChild(geometry);
+        return node;
+    }
+
+    public static class TrackOtherNodeControl extends AbstractControl{
+
+        Spatial spatialToFollow;
+
+        public TrackOtherNodeControl(Spatial spatialToFollow){
+            this.spatialToFollow = spatialToFollow;
+        }
+
+        @Override
+        protected void controlUpdate(float tpf){
+            getSpatial().setLocalTransform(spatialToFollow.getWorldTransform());
+        }
+
+        @Override
+        protected void controlRender(RenderManager rm, ViewPort vp){
+
+        }
     }
 
 }
