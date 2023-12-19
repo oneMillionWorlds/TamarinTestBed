@@ -67,6 +67,7 @@ public class Main extends SimpleApplication{
 
         GuiGlobals.initialize(this);
         BaseStyles.loadGlassStyle();
+        BaseStyles.loadStyleResources("com/onemillionworlds/tamarintestbed/tamarintestbed-extra-styles.groovy");
         GuiGlobals.getInstance().getStyles().setDefaultStyle("glass");
 
         getCamera().setFrustumPerspective(45f, (float)cam.getWidth() / cam.getHeight(), 0.01f, 1000f);

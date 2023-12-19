@@ -30,6 +30,7 @@ import com.simsilica.lemur.Button;
 import com.simsilica.lemur.Container;
 import com.simsilica.lemur.Label;
 import com.simsilica.lemur.component.SpringGridLayout;
+import com.simsilica.lemur.style.ElementId;
 import example.actions.ActionHandles;
 
 import java.util.ArrayList;
@@ -143,7 +144,7 @@ public class AdditionalViewportExampleState extends BaseAppState{
         lemurWindow.setLocalTranslation(-5,4,0);
         rootNodeDelegate.attachChild(lemurWindow);
 
-        Container overlayUi = new Container();
+        Container overlayUi = new Container(new ElementId("solidbackground"));
         SpringGridLayout overlayLayout = new SpringGridLayout();
         overlayUi.setLayout(overlayLayout);
         additionalRootNode.attachChild(overlayUi);
