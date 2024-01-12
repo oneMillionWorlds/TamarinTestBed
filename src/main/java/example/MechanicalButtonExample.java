@@ -20,8 +20,10 @@ import com.jme3.scene.Spatial;
 import com.jme3.scene.control.AbstractControl;
 import com.jme3.scene.shape.Box;
 import com.onemillionworlds.tamarin.openxr.XrAppState;
+import com.onemillionworlds.tamarin.vrhands.Haptic;
 import com.onemillionworlds.tamarin.vrhands.VRHandsAppState;
-import com.onemillionworlds.tamarin.vrhands.touching.MechanicalButtonTouchControl;
+import com.onemillionworlds.tamarin.vrhands.touching.ButtonMovementAxis;
+import com.onemillionworlds.tamarin.vrhands.touching.MechanicalButton;
 import example.actions.ActionHandles;
 
 /**
@@ -36,7 +38,7 @@ public class MechanicalButtonExample extends BaseAppState{
         ((SimpleApplication)app).getRootNode().attachChild(rootNodeDelegate);
 
         Node panelCenter = new Node("PanelCenter");
-        panelCenter.setLocalTranslation(0, 1.5f, 0);
+        panelCenter.setLocalTranslation(0, 1f, 0);
         rootNodeDelegate.attachChild(panelCenter);
         panelCenter.attachChild(app.getAssetManager().loadModel("Models/buttonPanel.j3o"));
         panelCenter.setLocalRotation(new Quaternion().fromAngleAxis(-0.2f*FastMath.PI, Vector3f.UNIT_X));
@@ -46,18 +48,19 @@ public class MechanicalButtonExample extends BaseAppState{
         nonToggleButtons.setLocalTranslation(0.2f, -0.1f, 0.05f);
         panelCenter.attachChild(nonToggleButtons);
 
-        Camera c = getApplication().getCamera();
-        c.setLocation(new Vector3f(0, 1.5f, 3));
-        c.lookAt(Vector3f.ZERO, Vector3f.UNIT_Y);
-
         XrAppState xrAppState = getState(XrAppState.ID, XrAppState.class);
         if(xrAppState!=null){
-            xrAppState.movePlayersFeetToPosition(new Vector3f(0, 0, 1));
+            xrAppState.movePlayersFeetToPosition(new Vector3f(0, 0, 0.75f));
             xrAppState.playerLookAtPosition(new Vector3f(0, 0, 0));
             VRHandsAppState vrHandsAppState = getState(VRHandsAppState.ID, VRHandsAppState.class);
             vrHandsAppState.getHandControls().forEach(handControl -> {
                 handControl.setFingerTipPressDetection(rootNodeDelegate, false, ActionHandles.HAPTIC, 0.25f);
             });
+        }else{
+            //this is tested for its non VR behaviour as well, so we need to set the camera position
+            Camera c = getApplication().getCamera();
+            c.setLocation(new Vector3f(0, 1.5f, 3));
+            c.lookAt(new Vector3f(0, 1f, 0), Vector3f.UNIT_Y);
         }
 
     }
@@ -76,15 +79,15 @@ public class MechanicalButtonExample extends BaseAppState{
 
                 Geometry button = (Geometry)getApplication().getAssetManager().loadModel(red ? "Models/buttons/redCircle.j3o" : "Models/buttons/blueCircle.j3o").clone();
 
-                button.setLocalTranslation(i*0.35f, j*0.25f, 0);
+                MechanicalButton mechanicalButton = new MechanicalButton(button, ButtonMovementAxis.NEGATIVE_Z, 0.02f, 0.5f);
+                mechanicalButton.setHapticOnFullDepress(new Haptic(ActionHandles.HAPTIC, 0.1f, 100f, 0.5f));
+                start.attachChild(mechanicalButton);
 
-                MechanicalButtonTouchControl mechanicalButtonTouchControl = new MechanicalButtonTouchControl(new Vector3f(0,0,-1f), 0.02f, 0.5f);
-                button.addControl(mechanicalButtonTouchControl);
-                start.attachChild(button);
+                mechanicalButton.setLocalTranslation(i*0.35f, j*0.25f, 0);
 
-                DisplayLight displayLight = buildDisplayLight(red ? ColorRGBA.Red : ColorRGBA.Blue, true);
+                DisplayLight displayLight = buildDisplayLight(red ? ColorRGBA.Red : new ColorRGBA(0.5f, 0.5f, 1, 1), true);
 
-                mechanicalButtonTouchControl.addPressListener(() -> {
+                mechanicalButton.addPressListener(() -> {
                     displayLight.setDisplayIntensity(1);
                 });
 
