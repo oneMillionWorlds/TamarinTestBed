@@ -24,7 +24,11 @@ import com.onemillionworlds.tamarin.vrhands.Haptic;
 import com.onemillionworlds.tamarin.vrhands.VRHandsAppState;
 import com.onemillionworlds.tamarin.vrhands.touching.ButtonMovementAxis;
 import com.onemillionworlds.tamarin.vrhands.touching.MechanicalButton;
+import com.onemillionworlds.tamarin.vrhands.touching.MechanicalToggle;
 import example.actions.ActionHandles;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * This shows non lemur buttons that respond to the player touching them with the finger.
@@ -38,6 +42,9 @@ public class MechanicalButtonExample extends BaseAppState{
         ((SimpleApplication)app).getRootNode().attachChild(rootNodeDelegate);
 
         Node panelCenter = new Node("PanelCenter");
+
+        panelCenter.setLocalScale(0.5f); //so I built this too big, scaling down the whole thing to avoid recalculating the positions of everything
+
         panelCenter.setLocalTranslation(0, 1f, 0);
         rootNodeDelegate.attachChild(panelCenter);
         panelCenter.attachChild(app.getAssetManager().loadModel("Models/buttonPanel.j3o"));
@@ -48,21 +55,18 @@ public class MechanicalButtonExample extends BaseAppState{
         nonToggleButtons.setLocalTranslation(0.2f, -0.1f, 0.05f);
         panelCenter.attachChild(nonToggleButtons);
 
-        XrAppState xrAppState = getState(XrAppState.ID, XrAppState.class);
-        if(xrAppState!=null){
-            xrAppState.movePlayersFeetToPosition(new Vector3f(0, 0, 0.75f));
-            xrAppState.playerLookAtPosition(new Vector3f(0, 0, 0));
-            VRHandsAppState vrHandsAppState = getState(VRHandsAppState.ID, VRHandsAppState.class);
-            vrHandsAppState.getHandControls().forEach(handControl -> {
-                handControl.setFingerTipPressDetection(rootNodeDelegate, false, ActionHandles.HAPTIC, 0.25f);
-            });
-        }else{
-            //this is tested for its non VR behaviour as well, so we need to set the camera position
-            Camera c = getApplication().getCamera();
-            c.setLocation(new Vector3f(0, 1.5f, 3));
-            c.lookAt(new Vector3f(0, 1f, 0), Vector3f.UNIT_Y);
-        }
+        Node toggleButtons = createToggleButtons();
+        toggleButtons.setLocalTranslation(-0.4f, -0.1f, 0.07f);
+        panelCenter.attachChild(toggleButtons);
 
+        XrAppState xrAppState = getState(XrAppState.ID, XrAppState.class);
+
+        xrAppState.movePlayersFeetToPosition(new Vector3f(0, 0, 0.75f));
+        xrAppState.playerLookAtPosition(new Vector3f(0, 0, 0));
+        VRHandsAppState vrHandsAppState = getState(VRHandsAppState.ID, VRHandsAppState.class);
+        vrHandsAppState.getHandControls().forEach(handControl -> {
+            handControl.setFingerTipPressDetection(rootNodeDelegate, false, ActionHandles.HAPTIC, 0.25f);
+        });
     }
 
 
@@ -77,7 +81,7 @@ public class MechanicalButtonExample extends BaseAppState{
             for(int j=0;j<2;j++){
                 red = !red;
 
-                Geometry button = (Geometry)getApplication().getAssetManager().loadModel(red ? "Models/buttons/redCircle.j3o" : "Models/buttons/blueCircle.j3o").clone();
+                Geometry button = (Geometry)getApplication().getAssetManager().loadModel(red ? "Models/buttons/redCircle.j3o" : "Models/buttons/blueCircle.j3o");
 
                 MechanicalButton mechanicalButton = new MechanicalButton(button, ButtonMovementAxis.NEGATIVE_Z, 0.02f, 0.5f);
                 mechanicalButton.setHapticOnFullDepress(new Haptic(ActionHandles.HAPTIC, 0.1f, 100f, 0.5f));
@@ -91,12 +95,59 @@ public class MechanicalButtonExample extends BaseAppState{
                     displayLight.setDisplayIntensity(1);
                 });
 
-                displayLight.light.setLocalTranslation(displayIndex*0.035f, 0.45f, 0);
+                displayLight.light.setLocalTranslation(displayIndex*0.06f, 0.45f, 0);
                 start.attachChild(displayLight.light);
 
                 displayIndex++;
             }
         }
+        return start;
+    }
+
+    private Node createToggleButtons(){
+
+        Node start = new Node();
+
+        int displayIndex = 0;
+
+        List<MechanicalToggle> toggleList = new ArrayList<>();
+
+        boolean red = true;
+        for(int i=0;i<2;i++){
+            for(int j=0;j<2;j++){
+                red = !red;
+
+                Geometry button = (Geometry)getApplication().getAssetManager().loadModel(red ? "Models/buttons/redHexagon.j3o" : "Models/buttons/blueHexagon.j3o").clone();
+
+                MechanicalToggle mechanicalToggle = new MechanicalToggle(button, ButtonMovementAxis.NEGATIVE_Z, 0.04f, 0.03f, 0.2f);
+                toggleList.add(mechanicalToggle);
+                mechanicalToggle.setHapticOnFullDepress(new Haptic(ActionHandles.HAPTIC, 0.1f, 100f, 0.5f));
+                start.attachChild(mechanicalToggle);
+
+                mechanicalToggle.setLocalTranslation(i*0.25f, j*0.25f, 0);
+
+                DisplayLight displayLight = buildDisplayLight(red ? ColorRGBA.Red : new ColorRGBA(0.5f, 0.5f, 1, 1), false);
+
+                mechanicalToggle.addPressListener((toggleState) -> {
+                    displayLight.setDisplayIntensity(toggleState.isAKindOfOn() ? 1 :0);
+                });
+
+                displayLight.light.setLocalTranslation(displayIndex*0.06f, 0.45f, 0);
+                start.attachChild(displayLight.light);
+
+                displayIndex++;
+            }
+        }
+
+        //reset button
+        Geometry resetButtonGeometry = (Geometry)getApplication().getAssetManager().loadModel("Models/buttons/redCircle.j3o");
+        MechanicalButton resetButton = new MechanicalButton(resetButtonGeometry, ButtonMovementAxis.NEGATIVE_Z, 0.02f, 0.5f);
+        resetButton.setLocalTranslation(-0.3f, 0.25f, -0.02f);
+        start.attachChild(resetButton);
+        resetButton.addPressListener(() -> {
+            toggleList.forEach(t -> t.setState(MechanicalToggle.ToggleState.TRANSITIONING_OFF));
+        });
+
         return start;
     }
 
@@ -113,7 +164,7 @@ public class MechanicalButtonExample extends BaseAppState{
     protected void onDisable(){}
 
     private DisplayLight buildDisplayLight(ColorRGBA displayColour, boolean autoFade){
-        Geometry simpleBox = new Geometry("Box", new Box(0.01f, 0.01f, 0.01f));
+        Geometry simpleBox = new Geometry("Box", new Box(0.02f, 0.02f, 0.02f));
         Material material = new Material(getApplication().getAssetManager(), "Common/MatDefs/Misc/Unshaded.j3md");
         simpleBox.setMaterial(material);
 

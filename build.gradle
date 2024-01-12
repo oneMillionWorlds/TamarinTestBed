@@ -18,7 +18,7 @@ repositories {
 }
 
 ext {
-    jmonkeyengine_version = '3.7.0-SNAPSHOT'
+    jmonkeyengine_version = '3.6.1-stable'
 }
 
 dependencies {
@@ -53,7 +53,7 @@ tasks.register("generateButtons", DeepTokenifyDirectory){
     inputDirectory = file('deepTokenTemplates/buttons')
     outputDirectory = file('src/main/generated/resources/Models/buttons')
     tokenWidth = 0.25f
-    tokenDepth = 0.03f
+    tokenDepth = 0.1f
 }
 
 test {
