@@ -1,0 +1,1 @@
+These are shapes used by the deepTokens library to produce some basic meshes. They are converted to j3o meshes during the build process.
