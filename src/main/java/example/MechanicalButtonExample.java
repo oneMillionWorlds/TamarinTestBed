@@ -3,15 +3,11 @@ package example;
 import com.jme3.app.Application;
 import com.jme3.app.SimpleApplication;
 import com.jme3.app.state.BaseAppState;
-import com.jme3.bounding.BoundingSphere;
-import com.jme3.bounding.BoundingVolume;
-import com.jme3.collision.CollisionResults;
 import com.jme3.material.Material;
 import com.jme3.math.ColorRGBA;
 import com.jme3.math.FastMath;
 import com.jme3.math.Quaternion;
 import com.jme3.math.Vector3f;
-import com.jme3.renderer.Camera;
 import com.jme3.renderer.RenderManager;
 import com.jme3.renderer.ViewPort;
 import com.jme3.scene.Geometry;
@@ -19,9 +15,12 @@ import com.jme3.scene.Node;
 import com.jme3.scene.Spatial;
 import com.jme3.scene.control.AbstractControl;
 import com.jme3.scene.shape.Box;
+import com.jme3.texture.Texture;
 import com.onemillionworlds.tamarin.openxr.XrAppState;
 import com.onemillionworlds.tamarin.vrhands.Haptic;
 import com.onemillionworlds.tamarin.vrhands.VRHandsAppState;
+import com.onemillionworlds.tamarin.vrhands.functions.FunctionRegistration;
+import com.onemillionworlds.tamarin.vrhands.grabbing.GrabEventControl;
 import com.onemillionworlds.tamarin.vrhands.touching.ButtonMovementAxis;
 import com.onemillionworlds.tamarin.vrhands.touching.MechanicalButton;
 import com.onemillionworlds.tamarin.vrhands.touching.MechanicalToggle;
@@ -36,6 +35,8 @@ import java.util.List;
 public class MechanicalButtonExample extends BaseAppState{
 
     Node rootNodeDelegate = new Node("BlockMovingExampleState");
+
+    List<FunctionRegistration> closeHandBindings = new ArrayList<>();
 
     @Override
     protected void initialize(Application app){
@@ -65,10 +66,12 @@ public class MechanicalButtonExample extends BaseAppState{
         xrAppState.playerLookAtPosition(new Vector3f(0, 0, 0));
         VRHandsAppState vrHandsAppState = getState(VRHandsAppState.ID, VRHandsAppState.class);
         vrHandsAppState.getHandControls().forEach(handControl -> {
-            handControl.setFingerTipPressDetection(rootNodeDelegate, false, ActionHandles.HAPTIC, 0.25f);
+            closeHandBindings.add(handControl.setFingerTipPressDetection(rootNodeDelegate, false, ActionHandles.HAPTIC, 0.25f));
+            closeHandBindings.add(handControl.setGrabAction(ActionHandles.GRIP, rootNodeDelegate));
         });
-    }
 
+        exitBox(new Vector3f(-0.5f, 1f, 0.5f));
+    }
 
     private Node createNonToggleButtons(){
 
@@ -91,9 +94,7 @@ public class MechanicalButtonExample extends BaseAppState{
 
                 DisplayLight displayLight = buildDisplayLight(red ? ColorRGBA.Red : new ColorRGBA(0.5f, 0.5f, 1, 1), true);
 
-                mechanicalButton.addPressListener(() -> {
-                    displayLight.setDisplayIntensity(1);
-                });
+                mechanicalButton.addPressListener(() -> displayLight.setDisplayIntensity(1));
 
                 displayLight.light.setLocalTranslation(displayIndex*0.06f, 0.45f, 0);
                 start.attachChild(displayLight.light);
@@ -128,9 +129,7 @@ public class MechanicalButtonExample extends BaseAppState{
 
                 DisplayLight displayLight = buildDisplayLight(red ? ColorRGBA.Red : new ColorRGBA(0.5f, 0.5f, 1, 1), false);
 
-                mechanicalToggle.addPressListener((toggleState) -> {
-                    displayLight.setDisplayIntensity(toggleState.isAKindOfOn() ? 1 :0);
-                });
+                mechanicalToggle.addPressListener((toggleState) -> displayLight.setDisplayIntensity(toggleState.isAKindOfOn() ? 1 :0));
 
                 displayLight.light.setLocalTranslation(displayIndex*0.06f, 0.45f, 0);
                 start.attachChild(displayLight.light);
@@ -144,17 +143,31 @@ public class MechanicalButtonExample extends BaseAppState{
         MechanicalButton resetButton = new MechanicalButton(resetButtonGeometry, ButtonMovementAxis.NEGATIVE_Z, 0.02f, 0.5f);
         resetButton.setLocalTranslation(-0.3f, 0.25f, -0.02f);
         start.attachChild(resetButton);
-        resetButton.addPressListener(() -> {
-            toggleList.forEach(t -> t.setState(MechanicalToggle.ToggleState.TRANSITIONING_OFF));
-        });
+        resetButton.addPressListener(() -> toggleList.forEach(t -> t.setState(MechanicalToggle.ToggleState.TRANSITIONING_OFF)));
 
         return start;
     }
 
+    private void exitBox(Vector3f location){
+        Box box = new Box(0.05f, 0.05f, 0.05f);
+        Geometry boxGeometry = new Geometry("box", box);
+        Texture exitTexture = getApplication().getAssetManager().loadTexture("Textures/grabToExit.png");
+        Material boxMat = new Material(getApplication().getAssetManager(),"Common/MatDefs/Misc/Unshaded.j3md");
+        boxMat.setTexture("ColorMap", exitTexture);
+        boxGeometry.setMaterial(boxMat);
+        boxGeometry.setLocalTranslation(location);
+        GrabEventControl grabControl = new GrabEventControl(() -> {
+            getStateManager().detach(this);
+            getStateManager().attach(new MenuExampleState());
+        });
+        boxGeometry.addControl(grabControl);
+        rootNodeDelegate.attachChild(boxGeometry);
+    }
 
     @Override
     protected void cleanup(Application app){
         rootNodeDelegate.removeFromParent();
+        closeHandBindings.forEach(FunctionRegistration::endFunction);
     }
 
     @Override

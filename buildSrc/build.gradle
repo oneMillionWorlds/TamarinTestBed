@@ -2,8 +2,12 @@ plugins {
     id 'java-gradle-plugin'
 }
 repositories {
-    mavenLocal()
     mavenCentral()
+    maven {
+        //this is where new Tamarins get published to first, they sync to central eventually but this is faster
+        name = 'Sonatype'
+        url = 'https://s01.oss.sonatype.org/content/repositories/releases/'
+    }
 }
 
 apply plugin: 'java'
