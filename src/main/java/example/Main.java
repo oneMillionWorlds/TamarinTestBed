@@ -7,6 +7,8 @@ import com.jme3.light.DirectionalLight;
 import com.jme3.material.Material;
 import com.jme3.math.ColorRGBA;
 import com.jme3.math.Vector3f;
+import com.jme3.post.FilterPostProcessor;
+import com.jme3.post.filters.FXAAFilter;
 import com.jme3.system.AppSettings;
 import com.onemillionworlds.tamarin.actions.ActionType;
 import com.onemillionworlds.tamarin.actions.OpenXrActionState;
@@ -73,10 +75,14 @@ public class Main extends SimpleApplication{
         getCamera().setFrustumPerspective(45f, (float)cam.getWidth() / cam.getHeight(), 0.01f, 1000f);
 
         XrAppState xrAppState = getStateManager().getState(XrAppState.ID, XrAppState.class);
-        xrAppState.setMainViewportConfiguration(viewPort -> viewPort.setBackgroundColor(ColorRGBA.Brown));
-        xrAppState.runAfterInitialisation(() -> {
-            LOGGER.info("System is: "+xrAppState.getSystemName());
+        xrAppState.runAfterInitialisation(() -> LOGGER.info("System is: "+xrAppState.getSystemName()));
+        xrAppState.setMainViewportConfiguration(vp -> {
+            vp.setBackgroundColor(ColorRGBA.Brown);
+            FilterPostProcessor fpp = new FilterPostProcessor(assetManager);
+            fpp.addFilter(new FXAAFilter());
+            vp.addProcessor(fpp);
         });
+
 
         //set up some lights to make the hands look better
         rootNode.addLight(new DirectionalLight(new Vector3f(-1, -1, -1).normalizeLocal(), new ColorRGBA(0.6f, 0.6f, 0.4f, 1f)));

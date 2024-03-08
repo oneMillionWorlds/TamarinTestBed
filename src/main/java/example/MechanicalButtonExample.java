@@ -68,6 +68,9 @@ public class MechanicalButtonExample extends BaseAppState{
         vrHandsAppState.getHandControls().forEach(handControl -> {
             closeHandBindings.add(handControl.setFingerTipPressDetection(rootNodeDelegate, false, ActionHandles.HAPTIC, 0.25f));
             closeHandBindings.add(handControl.setGrabAction(ActionHandles.GRIP, rootNodeDelegate));
+
+            closeHandBindings.add(handControl.setPickMarkerContinuous(rootNodeDelegate));
+            closeHandBindings.add(handControl.setClickAction_lemurSupport(ActionHandles.TRIGGER, rootNodeDelegate));
         });
 
         exitBox(new Vector3f(-0.5f, 1f, 0.5f));
