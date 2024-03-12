@@ -78,9 +78,10 @@ public class Main extends SimpleApplication{
         xrAppState.runAfterInitialisation(() -> LOGGER.info("System is: "+xrAppState.getSystemName()));
         xrAppState.setMainViewportConfiguration(vp -> {
             vp.setBackgroundColor(ColorRGBA.Brown);
-            FilterPostProcessor fpp = new FilterPostProcessor(assetManager);
-            fpp.addFilter(new FXAAFilter());
-            vp.addProcessor(fpp);
+            //the below doesn't play nice with the glow post processor
+            //FilterPostProcessor fpp = new FilterPostProcessor(assetManager);
+            //fpp.addFilter(new FXAAFilter());
+            //vp.addProcessor(fpp);
         });
 
 
