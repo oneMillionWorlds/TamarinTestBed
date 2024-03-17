@@ -46,7 +46,7 @@ public class GlowTestState extends BaseAppState{
 
         getState(XrAppState.ID, XrAppState.class).setMainViewportConfiguration(viewPort -> {
             AssetManager assetManager = getApplication().getAssetManager();
-            FilterPostProcessor filterPostProcessor = buildPostProcessors(assetManager);
+            FilterPostProcessor filterPostProcessor = buildPostProcessors(assetManager, app.getContext().getSettings().getSamples());
             viewPort.addProcessor(filterPostProcessor);
             removeGlowPostProcessor.add(() -> viewPort.removeProcessor(filterPostProcessor));
         });
@@ -154,12 +154,12 @@ public class GlowTestState extends BaseAppState{
         return boxGeometry;
     }
 
-    private static FilterPostProcessor buildPostProcessors(AssetManager assetManager){
+    private static FilterPostProcessor buildPostProcessors(AssetManager assetManager, int samples){
         FilterPostProcessor fpp=new FilterPostProcessor(assetManager);
         BloomFilter bf=new BloomFilter(BloomFilter.GlowMode.Objects);
         bf.setBlurScale(3f);
         fpp.addFilter(bf);
-
+        fpp.setNumSamples(samples);
         return fpp;
     }
 }

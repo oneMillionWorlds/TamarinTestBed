@@ -7,8 +7,6 @@ import com.jme3.light.DirectionalLight;
 import com.jme3.material.Material;
 import com.jme3.math.ColorRGBA;
 import com.jme3.math.Vector3f;
-import com.jme3.post.FilterPostProcessor;
-import com.jme3.post.filters.FXAAFilter;
 import com.jme3.system.AppSettings;
 import com.onemillionworlds.tamarin.actions.ActionType;
 import com.onemillionworlds.tamarin.actions.OpenXrActionState;
@@ -41,7 +39,8 @@ public class Main extends SimpleApplication{
         settings.put("Renderer", AppSettings.LWJGL_OPENGL45); // OpenXR only supports relatively modern OpenGL
         settings.setTitle("Tamarin OpenXR Example");
         settings.setVSync(false); // don't want to VSync to the monitor refresh rate, we want to VSync to the headset refresh rate (which tamarin implictly handles)
-
+        settings.setSamples(4);
+        settings.setWindowSize(1280, 720);
         Main app = new Main();
         app.setLostFocusBehavior(LostFocusBehavior.Disabled);
         app.setSettings(settings);
@@ -55,7 +54,11 @@ public class Main extends SimpleApplication{
 
     @Override
     public void simpleInitApp(){
+
+        getViewPort().setBackgroundColor(ColorRGBA.Brown);
+
         XrSettings xrSettings = new XrSettings();
+        //xrSettings.setDrawMode(DrawMode.BLITTED);
         getStateManager().attach(new XrAppState(xrSettings));
         getStateManager().attach(new OpenXrActionState(manifest(), ActionSets.MAIN));
         getStateManager().attach(new VRHandsAppState(handSpec()));
@@ -72,16 +75,12 @@ public class Main extends SimpleApplication{
         BaseStyles.loadStyleResources("com/onemillionworlds/tamarintestbed/tamarintestbed-extra-styles.groovy");
         GuiGlobals.getInstance().getStyles().setDefaultStyle("glass");
 
-        getCamera().setFrustumPerspective(45f, (float)cam.getWidth() / cam.getHeight(), 0.01f, 1000f);
+        getCamera().setFrustumPerspective(120f, (float)cam.getWidth() / cam.getHeight(), 0.01f, 1000f);
 
         XrAppState xrAppState = getStateManager().getState(XrAppState.ID, XrAppState.class);
         xrAppState.runAfterInitialisation(() -> LOGGER.info("System is: "+xrAppState.getSystemName()));
         xrAppState.setMainViewportConfiguration(vp -> {
             vp.setBackgroundColor(ColorRGBA.Brown);
-            //the below doesn't play nice with the glow post processor
-            //FilterPostProcessor fpp = new FilterPostProcessor(assetManager);
-            //fpp.addFilter(new FXAAFilter());
-            //vp.addProcessor(fpp);
         });
 
 
