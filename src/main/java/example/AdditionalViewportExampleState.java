@@ -20,6 +20,7 @@ import com.onemillionworlds.tamarin.actions.HandSide;
 import com.onemillionworlds.tamarin.actions.OpenXrActionState;
 import com.onemillionworlds.tamarin.actions.compatibility.SyntheticDPad;
 import com.onemillionworlds.tamarin.actions.state.BooleanActionState;
+import com.onemillionworlds.tamarin.debug.HandDebugItems;
 import com.onemillionworlds.tamarin.debug.TamarinDebugOverlayState;
 import com.onemillionworlds.tamarin.openxr.XrAppState;
 import com.onemillionworlds.tamarin.viewports.AdditionalViewportRequest;
@@ -73,7 +74,7 @@ public class AdditionalViewportExampleState extends BaseAppState{
             additionalRootNode.attachChild(pickLine);
         });
 
-        getStateManager().attach(new TamarinDebugOverlayState());
+        getStateManager().attach(new TamarinDebugOverlayState(HandDebugItems.SKELETON, HandDebugItems.WRIST_NODE, HandDebugItems.INDEX_FINGER_TIP));
     }
 
     @Override
