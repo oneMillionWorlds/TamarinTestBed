@@ -2,42 +2,42 @@ package example;
 
 import com.jme3.app.Application;
 import com.jme3.app.SimpleApplication;
-import com.jme3.app.VRAppState;
 import com.jme3.app.state.BaseAppState;
 import com.jme3.material.Material;
 import com.jme3.math.ColorRGBA;
 import com.jme3.math.FastMath;
-import com.jme3.math.Quaternion;
 import com.jme3.math.Vector3f;
 import com.jme3.scene.Geometry;
 import com.jme3.scene.Node;
 import com.jme3.scene.shape.Box;
 import com.jme3.texture.Texture;
-import com.onemillionworlds.tamarin.compatibility.ActionBasedOpenVrState;
-import com.onemillionworlds.tamarin.compatibility.AnalogActionState;
-import com.onemillionworlds.tamarin.compatibility.DigitalActionState;
-import com.onemillionworlds.tamarin.vrhands.BoundHand;
+import com.onemillionworlds.tamarin.actions.HandSide;
+import com.onemillionworlds.tamarin.actions.OpenXrActionState;
+import com.onemillionworlds.tamarin.actions.PhysicalBindingInterpretation;
+import com.onemillionworlds.tamarin.actions.compatibility.SyntheticDPad;
+import com.onemillionworlds.tamarin.actions.state.BooleanActionState;
+import com.onemillionworlds.tamarin.actions.state.Vector2fActionState;
+import com.onemillionworlds.tamarin.openxr.XrAppState;
 import com.onemillionworlds.tamarin.vrhands.VRHandsAppState;
-import com.onemillionworlds.tamarin.vrhands.grabbing.GrabEventControl;
 import com.simsilica.lemur.Container;
 import com.simsilica.lemur.Label;
+import example.actions.ActionHandles;
 
 /**
- * This is not actually anything to do with tamarin, its core JME movement, but it is provided to demonstrate
- * functionality.
- *
- * This example makes heavy use of the observer, see https://github.com/oneMillionWorlds/Tamarin/wiki/Understanding-the-observer
+ * This example makes heavy use of the observer, see <a href="https://github.com/oneMillionWorlds/Tamarin/wiki/Understanding-the-observer">Understanding-the-observer</a>
  * for more details
  */
 public class MovingPlayerExampleState extends BaseAppState{
 
     Node rootNodeDelegate = new Node("PlayerMovingExampleState");
 
-    VRAppState vrAppState;
-    ActionBasedOpenVrState openVr;
+    XrAppState xrAppState;
+    OpenXrActionState openXrActionState;
     VRHandsAppState vrHands;
 
     Geometry observerBox;
+
+    SyntheticDPad movementDpad = new SyntheticDPad();
 
     public MovingPlayerExampleState(){
     }
@@ -45,23 +45,20 @@ public class MovingPlayerExampleState extends BaseAppState{
     @Override
     protected void initialize(Application app){
         ((SimpleApplication)app).getRootNode().attachChild(rootNodeDelegate);
-        vrAppState = getState(VRAppState.class);
-        openVr = getState(ActionBasedOpenVrState.class);
-        vrHands = getState(VRHandsAppState.class);
+        xrAppState = getState(XrAppState.ID, XrAppState.class);
+        openXrActionState = getState(OpenXrActionState.ID, OpenXrActionState.class);
+        vrHands = getState(VRHandsAppState.ID, VRHandsAppState.class);
         initialiseScene();
     }
 
     private Node getObserver(){
-        return (Node)vrAppState.getObserver();
+        return xrAppState.getObserver();
     }
 
     @Override
     protected void cleanup(Application app){
         rootNodeDelegate.removeFromParent();
-        Node observer = getObserver();
         observerBox.removeFromParent();
-        observer.setLocalTranslation(new Vector3f(0,0,10));
-        observer.lookAt(new Vector3f(0,0,0), Vector3f.UNIT_Y );
     }
 
     @Override
@@ -74,26 +71,43 @@ public class MovingPlayerExampleState extends BaseAppState{
 
     }
 
+    @SuppressWarnings("DuplicatedCode") //as the examples are supposed to be self-contained accept some duplication
     @Override
     public void update(float tpf){
+
         super.update(tpf);
+
+        /*
+         * this is a temporary workaround until the XR_EXT_dpad_binding extension is better supported and we can use true dpads
+         */
+        movementDpad.updateRawAction(openXrActionState.getVector2fActionState(ActionHandles.MOVEMENT_DPAD));
+
+        //this is a temporary workaround until LWJGL is upgraded to 3.3.3, and we can use true dpads
+        //syntheticDPad.updateRawAction(getStateManager().getState(OpenXrActionState.class).getVector2fActionState(ActionHandles.SYNTHETIC_D_PAD));
+
         //the observer is the origin on the VR space (that the player then walks about in)
         Node observer = getObserver();
 
-        DigitalActionState leftAction = openVr.getDigitalActionState("/actions/main/in/turnLeft");
-        if (leftAction.changed && leftAction.state){
-            rotateObserverWithoutMovingPlayer(getObserver(), vrAppState, 0.2f*FastMath.PI);
+        BooleanActionState leftAction = movementDpad.east();
+        if (leftAction.hasChanged() && leftAction.getState()){
+            xrAppState.rotateObserverWithoutMovingPlayer(-0.2f*FastMath.PI);
         }
 
-        DigitalActionState rightAction = openVr.getDigitalActionState("/actions/main/in/turnRight", null);
-        if (rightAction.changed && rightAction.state){
-            rotateObserverWithoutMovingPlayer(getObserver(), vrAppState, -0.2f*FastMath.PI);
+        BooleanActionState rightAction = movementDpad.west();
+        if (rightAction.hasChanged() && rightAction.getState()){
+            xrAppState.rotateObserverWithoutMovingPlayer(0.2f*FastMath.PI);
         }
 
-        //although we have by default bound teleport to the left hand the player may have redefined it, so check both
-        for(BoundHand boundHand : vrHands.getHandControls()){
-            DigitalActionState teleportAction = openVr.getDigitalActionState("/actions/main/in/teleport", boundHand.getHandSide().restrictToInputString);
-            if (teleportAction.changed && teleportAction.state){
+        BooleanActionState resetPosition = movementDpad.south();
+        if (resetPosition.hasChanged() && resetPosition.getState()){
+            xrAppState.movePlayersFeetToPosition(new Vector3f(0,0,10));
+        }
+
+        BooleanActionState teleportAction = movementDpad.north();
+        // really we should be more understanding of the action being redefined to a different hand, but that is painful
+        // while using the synthetic dpad. So assume left hand.
+        vrHands.getHandControl(HandSide.LEFT).ifPresent(boundHand -> {
+            if (teleportAction.hasChanged() && teleportAction.getState()){
                 //teleport in the direction the hand that requested it is pointing
                 Vector3f pointingDirection = boundHand.getBulkPointingDirection();
                 pointingDirection.y=0;
@@ -106,14 +120,14 @@ public class MovingPlayerExampleState extends BaseAppState{
                 }
 
             }
-        }
+        });
 
         //nausea inducing but nonetheless popular. Normal walking about
-        AnalogActionState analogActionState = openVr.getAnalogActionState("/actions/main/in/walk");
+        Vector2fActionState analogActionState = openXrActionState.getVector2fActionState(ActionHandles.WALK);
         //we'll want the joystick to move the player relative to the head face direction, not the hand pointing direction
-        Vector3f walkingDirectionRaw = new Vector3f(-analogActionState.x, 0, analogActionState.y);
+        Vector3f walkingDirectionRaw = new Vector3f(-analogActionState.getX(), 0, analogActionState.getY());
 
-        Vector3f playerRelativeWalkDirection = vrAppState.getVRViewManager().getLeftCamera().getRotation().mult(walkingDirectionRaw);
+        Vector3f playerRelativeWalkDirection = xrAppState.getLeftCamera().getRotation().mult(walkingDirectionRaw);
         playerRelativeWalkDirection.y = 0;
         if (playerRelativeWalkDirection.length()>0.01){
             playerRelativeWalkDirection.normalizeLocal();
@@ -131,10 +145,18 @@ public class MovingPlayerExampleState extends BaseAppState{
         pillar(-4.5f,14.5f, ColorRGBA.Yellow);
         pillar(4.5f,14.5f, ColorRGBA.Blue);
 
-        //a lemur UI with text explaining what to do
+        smallPillar(0,10, ColorRGBA.Orange);
+
+        /*a lemur UI with text explaining what to do.
+        * Note that it dynamically produces some of the tutorial text based on what actions are bound to what buttons
+        * (Dpad stuff it harder, so is hard coded
+        */
+        PhysicalBindingInterpretation walkBinding = openXrActionState.getPhysicalBindingForAction(ActionHandles.WALK).get(0);
+        String walkText = "Use " + walkBinding.handSide().map(h -> h.name().toLowerCase()).orElse("") + " " + walkBinding.fundamentalButton() +  " to walk (very nausea inducing)";
+
         Container lemurWindow = new Container();
         lemurWindow.setLocalScale(0.02f); //lemur defaults to 1 meter == 1 pixel (because that make sense for 2D, scale it down, so it's not huge in 3d)
-        Label label = new Label("Use the left hat forward to teleport forwards, left and right to sharply turn\n\nUse the right hat forward to walk (very nausea inducing)\n\nIn a real game you'd want some indicator to show where you were teleporting to. \n\nThe turn left and right is to help with seated experiences where physically turning 360 may be annoying or impossible. \n\n Teleport off the checkerboard to exit");
+        Label label = new Label("Use the left hat forward to teleport forwards, left and right to sharply turn. \n\nLeft hat backwards to teleport to (0,0,10) which is marked by the small orange pillar\n\nIn a real game you'd want some indicator to show where you were teleporting to. \n\n" + walkText + "\n\nThe turn left and right is to help with seated experiences where physically turning 360 may be annoying or impossible. \n\n Teleport off the checkerboard to exit");
         lemurWindow.addChild(label);
         lemurWindow.setLocalTranslation(-5,4,0);
         rootNodeDelegate.attachChild(lemurWindow);
@@ -155,6 +177,17 @@ public class MovingPlayerExampleState extends BaseAppState{
         rootNodeDelegate.attachChild(pillarGeometry);
     }
 
+    private void smallPillar(float x, float z, ColorRGBA colorRGBA){
+        float pillarHeight = 0.2f;
+        Box pillar = new Box(0.05f, 0.2f,  0.05f);
+        Geometry pillarGeometry = new Geometry("pillar", pillar);
+        Material boxMat = new Material(getApplication().getAssetManager(),"Common/MatDefs/Misc/Unshaded.j3md");
+        boxMat.setColor("Color", colorRGBA);
+        pillarGeometry.setMaterial(boxMat);
+        pillarGeometry.setLocalTranslation(new Vector3f(x, pillarHeight/2, z));
+        rootNodeDelegate.attachChild(pillarGeometry);
+    }
+
     private Geometry observerBox(){
         Box box = new Box(0.10f, 0.10f, 0.10f);
         Geometry boxGeometry = new Geometry("box", box);
@@ -165,33 +198,4 @@ public class MovingPlayerExampleState extends BaseAppState{
 
         return boxGeometry;
     }
-
-    /**
-     * Often you'll want to programatically turn the player, which should be done by rotating the observer.
-     *
-     * However, if the player isn't standing directly above the observer this rotation will induce motion.
-     *
-     * TODO; after Tamarin 1.2.3 move over to TamarinUtilities
-     * This method corrects for that and gives the impression the player is just turning
-     * @param observerNode the node that represents the observer (see tamarin wiki for explanation on observer node)
-     * @param vrAppState the VRAppState
-     * @param angleAboutYAxis the requested turn angle. Positive numbers turn left, negative numbers turn right
-     */
-    public static void rotateObserverWithoutMovingPlayer(Node observerNode, VRAppState vrAppState, float angleAboutYAxis){
-        Quaternion currentRotation = observerNode.getLocalRotation();
-        Quaternion leftTurn = new Quaternion();
-        leftTurn.fromAngleAxis(angleAboutYAxis, Vector3f.UNIT_Y);
-
-        /* Because the player may be a short distance from the observer rotating the observer may move the
-         * player. This requires that a small movement in the observer occur along with the rotation
-         */
-        Vector3f playerStartPosition = vrAppState.getVRViewManager().getLeftCamera().getLocation().add(vrAppState.getVRViewManager().getRightCamera().getLocation()).mult(0.5f);
-        Vector3f playerStartPositionObserverRelative = observerNode.worldToLocal(playerStartPosition, null);
-        observerNode.setLocalRotation(leftTurn.mult(currentRotation));
-        Vector3f playerPositionAfterRotation = observerNode.localToWorld(playerStartPositionObserverRelative, null);
-
-        Vector3f inducedError = playerPositionAfterRotation.subtract(playerStartPosition);
-        observerNode.setLocalTranslation(observerNode.getLocalTranslation().subtract(inducedError));
-    }
-
 }

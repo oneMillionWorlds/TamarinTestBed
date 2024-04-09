@@ -2,27 +2,25 @@ package example;
 
 import com.jme3.app.Application;
 import com.jme3.app.SimpleApplication;
-import com.jme3.app.VRAppState;
 import com.jme3.app.state.BaseAppState;
 import com.jme3.material.Material;
 import com.jme3.math.ColorRGBA;
-import com.jme3.math.FastMath;
 import com.jme3.math.Quaternion;
 import com.jme3.math.Vector3f;
 import com.jme3.scene.Geometry;
 import com.jme3.scene.Node;
 import com.jme3.scene.Spatial;
 import com.jme3.scene.shape.Box;
-import com.jme3.texture.Texture;
-import com.onemillionworlds.tamarin.compatibility.ActionBasedOpenVrState;
-import com.onemillionworlds.tamarin.compatibility.AnalogActionState;
-import com.onemillionworlds.tamarin.compatibility.DigitalActionState;
+import com.onemillionworlds.tamarin.actions.OpenXrActionState;
 import com.onemillionworlds.tamarin.math.RotationalVelocity;
+import com.onemillionworlds.tamarin.openxr.XrAppState;
 import com.onemillionworlds.tamarin.vrhands.BoundHand;
 import com.onemillionworlds.tamarin.vrhands.VRHandsAppState;
-import com.onemillionworlds.tamarin.vrhands.grabbing.AutoMovingGrabControl;
+import com.onemillionworlds.tamarin.vrhands.functions.FunctionRegistration;
+import com.onemillionworlds.tamarin.vrhands.grabbing.SnapToHandGrabControl;
 import com.simsilica.lemur.Container;
 import com.simsilica.lemur.Label;
+import example.actions.ActionHandles;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -34,8 +32,8 @@ public class HandVelocityExampleState extends BaseAppState{
 
     Node rootNodeDelegate = new Node("HandVelocityExampleState");
 
-    VRAppState vrAppState;
-    ActionBasedOpenVrState openVr;
+    XrAppState xrAppState;
+    OpenXrActionState openXrActionState;
     VRHandsAppState vrHands;
 
     Vector3f stoneCentre = new Vector3f(0,0.75f, 9.4f);
@@ -45,29 +43,30 @@ public class HandVelocityExampleState extends BaseAppState{
 
     List<Geometry> stones = new ArrayList<>();
 
+    List<FunctionRegistration> closeHandBindings = new ArrayList<>();
+
     public HandVelocityExampleState(){
     }
 
     @Override
     protected void initialize(Application app){
         ((SimpleApplication)app).getRootNode().attachChild(rootNodeDelegate);
-        vrAppState = getState(VRAppState.class);
-        openVr = getState(ActionBasedOpenVrState.class);
-        vrHands = getState(VRHandsAppState.class);
-        initialiseScene();
-    }
+        xrAppState = getState(XrAppState.ID, XrAppState.class);
+        openXrActionState = getState(OpenXrActionState.ID, OpenXrActionState.class);
+        vrHands = getState(VRHandsAppState.ID, VRHandsAppState.class);
 
-    private Node getObserver(){
-        return (Node)vrAppState.getObserver();
+        vrHands.getHandControls().forEach(boundHand ->
+                closeHandBindings.add(boundHand.setGrabAction(ActionHandles.GRIP, rootNodeDelegate)));
+
+        initialiseScene();
     }
 
     @Override
     protected void cleanup(Application app){
         rootNodeDelegate.removeFromParent();
-        Node observer = getObserver();
 
-        observer.setLocalTranslation(new Vector3f(0,0,10));
-        observer.lookAt(new Vector3f(0,0,0), Vector3f.UNIT_Y );
+        closeHandBindings.forEach(FunctionRegistration::endFunction);
+        closeHandBindings.clear();
     }
 
     @Override
@@ -83,51 +82,6 @@ public class HandVelocityExampleState extends BaseAppState{
     @Override
     public void update(float tpf){
         super.update(tpf);
-        //the observer is the origin on the VR space (that the player then walks about in)
-        Node observer = getObserver();
-
-        DigitalActionState leftAction = openVr.getDigitalActionState("/actions/main/in/turnLeft");
-        if (leftAction.changed && leftAction.state){
-            Quaternion currentRotation = getObserver().getLocalRotation();
-            Quaternion leftTurn = new Quaternion();
-            leftTurn.fromAngleAxis(0.2f*FastMath.PI, Vector3f.UNIT_Y);
-
-            observer.setLocalRotation(leftTurn.mult(currentRotation));
-        }
-
-        DigitalActionState rightAction = openVr.getDigitalActionState("/actions/main/in/turnRight", null);
-        if (rightAction.changed && rightAction.state){
-
-            Quaternion currentRotation = getObserver().getLocalRotation();
-            Quaternion leftTurn = new Quaternion();
-            leftTurn.fromAngleAxis(-0.2f*FastMath.PI, Vector3f.UNIT_Y);
-
-            observer.setLocalRotation(leftTurn.mult(currentRotation));
-        }
-
-        //although we have by default bound teleport to the left hand the player may have redefined it, so check both
-        for(BoundHand boundHand : vrHands.getHandControls()){
-            DigitalActionState teleportAction = openVr.getDigitalActionState("/actions/main/in/teleport", boundHand.getHandSide().restrictToInputString);
-            if (teleportAction.changed && teleportAction.state){
-                //teleport in the direction the hand that requested it is pointing
-                Vector3f pointingDirection = boundHand.getBulkPointingDirection();
-                pointingDirection.y=0;
-                observer.setLocalTranslation(observer.getWorldTranslation().add(pointingDirection.mult(2)));
-            }
-        }
-
-        //nausea inducing but nonetheless popular. Normal walking about
-        AnalogActionState analogActionState = openVr.getAnalogActionState("/actions/main/in/walk");
-        //we'll want the joystick to move the player relative to the head face direction, not the hand pointing direction
-        Vector3f walkingDirectionRaw = new Vector3f(-analogActionState.x, 0, analogActionState.y);
-
-        Vector3f playerRelativeWalkDirection = vrAppState.getVRViewManager().getLeftCamera().getRotation().mult(walkingDirectionRaw);
-        playerRelativeWalkDirection.y = 0;
-        if (playerRelativeWalkDirection.length()>0.01){
-            playerRelativeWalkDirection.normalizeLocal();
-        }
-        observer.setLocalTranslation(observer.getWorldTranslation().add(playerRelativeWalkDirection.mult(2f*tpf)));
-
         eliminateExcessiveStones();
         ensureStonesAvailableToThrow();
         exitIfHitTarget();
@@ -136,7 +90,6 @@ public class HandVelocityExampleState extends BaseAppState{
     private void ensureStonesAvailableToThrow(){
 
         boolean needNewStones = stones.stream().noneMatch(s -> s.getWorldTranslation().distance(stoneCentre) < 2);
-
         if (needNewStones){
             for(int i = -2; i <= 2; i++){
                 for(int j = 0; j < 2; j++){
@@ -195,7 +148,7 @@ public class HandVelocityExampleState extends BaseAppState{
         boxGeometry.setMaterial(boxMat);
 
         boxGeometry.setLocalTranslation(location);
-        AutoMovingGrabControl grabAndThrowControl = new AutoMovingGrabControl(new Vector3f(0.025f,0,0), 0.05f){
+        SnapToHandGrabControl grabAndThrowControl = new SnapToHandGrabControl(new Vector3f(0.025f,0,0), 0.05f){
             boolean physicsActivated = false;
 
             Vector3f velocity = new Vector3f();
@@ -216,7 +169,7 @@ public class HandVelocityExampleState extends BaseAppState{
                 }
 
                 if (gravityAffected){
-                    velocity.y-=9.8*tpf;
+                    velocity.y-=9.8f*tpf;
                 }
 
                 spatial.setLocalTranslation(spatial.getLocalTranslation().add(velocity.mult(tpf)));

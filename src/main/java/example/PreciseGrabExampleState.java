@@ -17,13 +17,15 @@ import com.jme3.texture.Texture;
 import com.onemillionworlds.tamarin.vrhands.VRHandsAppState;
 import com.onemillionworlds.tamarin.vrhands.functions.FunctionRegistration;
 import com.onemillionworlds.tamarin.vrhands.grabbing.GrabEventControl;
-import com.onemillionworlds.tamarin.vrhands.grabbing.SnapToHandGrabControl;
+import com.onemillionworlds.tamarin.vrhands.grabbing.RelativeMovingGrabControl;
+import com.simsilica.lemur.Container;
+import com.simsilica.lemur.Label;
 import example.actions.ActionHandles;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class BlockMovingExampleState extends BaseAppState{
+public class PreciseGrabExampleState extends BaseAppState{
 
     Node rootNodeDelegate = new Node("BlockMovingExampleState");
 
@@ -35,7 +37,6 @@ public class BlockMovingExampleState extends BaseAppState{
 
         getState(VRHandsAppState.ID, VRHandsAppState.class).getHandControls().forEach(boundHand ->
                 closeHandBindings.add(boundHand.setGrabAction(ActionHandles.GRIP, rootNodeDelegate)));
-
         initialiseScene();
     }
 
@@ -59,12 +60,22 @@ public class BlockMovingExampleState extends BaseAppState{
     private void initialiseScene(){
         rootNodeDelegate.attachChild(checkerboardFloor(getApplication().getAssetManager()));
 
-        grabbableBox(new Vector3f(0,1f, 9.5f));
-        grabbableBox(new Vector3f(0.2f,1.2f, 9.5f));
-        grabbableBox(new Vector3f(-0.2f,0.9f, 9.5f));
-        grabbableBox(new Vector3f(0.3f,1.1f, 9.6f));
+        exitBox(new Vector3f(-0.5f,1f, 10f));
+        debugBox(new Vector3f(-0.5f,0.8f, 10f));
 
-        exitBox(new Vector3f(-0.5f,1f, 9.6f));
+        for(float x = -0.4f; x<0.5f; x+=0.1f){
+            for(float z = 8; z<9.6f; z+=0.1f){
+                grabbableBox(new Vector3f(x,1f, z), ColorRGBA.randomColor());
+            }
+        }
+
+        //a lemur UI with text explaining what to do
+        Container lemurWindow = new Container();
+        lemurWindow.setLocalScale(0.02f); //lemur defaults to 1 meter == 1 pixel (because that make sense for 2D, scale it down, so it's not huge in 3d)
+        Label label = new Label("This example is used to test precise grabbing, with several objects close together");
+        lemurWindow.addChild(label);
+        lemurWindow.setLocalTranslation(-5,4,0);
+        rootNodeDelegate.attachChild(lemurWindow);
     }
 
     @SuppressWarnings("DuplicatedCode") //each example is supposed to be mostly stand along so allow some duplication
@@ -85,6 +96,15 @@ public class BlockMovingExampleState extends BaseAppState{
         return floor;
     }
 
+    private void grabbableBox(Vector3f location, ColorRGBA colour){
+        Geometry boxGeometry = box(colour, 0.05f);
+        boxGeometry.setLocalTranslation(location);
+        RelativeMovingGrabControl relativeGrabControl = new RelativeMovingGrabControl();
+        boxGeometry.addControl(relativeGrabControl);
+        rootNodeDelegate.attachChild(boxGeometry);
+    }
+
+    @SuppressWarnings("DuplicatedCode") //each example is supposed to be mostly stand along so allow some duplication
     private void exitBox(Vector3f location){
         Box box = new Box(0.05f, 0.05f, 0.05f);
         Geometry boxGeometry = new Geometry("box", box);
@@ -101,15 +121,30 @@ public class BlockMovingExampleState extends BaseAppState{
         rootNodeDelegate.attachChild(boxGeometry);
     }
 
-    private void grabbableBox(Vector3f location){
+    private void debugBox(Vector3f location){
         Box box = new Box(0.05f, 0.05f, 0.05f);
         Geometry boxGeometry = new Geometry("box", box);
+        Texture exitTexture = getApplication().getAssetManager().loadTexture("Textures/grabToDebug.png");
         Material boxMat = new Material(getApplication().getAssetManager(),"Common/MatDefs/Misc/Unshaded.j3md");
-        boxMat.setColor("Color", ColorRGBA.randomColor());
+        boxMat.setTexture("ColorMap", exitTexture);
         boxGeometry.setMaterial(boxMat);
         boxGeometry.setLocalTranslation(location);
-        SnapToHandGrabControl grabControl = new SnapToHandGrabControl(new Vector3f(0.025f,0,0), 0.05f);
+        GrabEventControl grabControl = new GrabEventControl(() -> {
+            getState(VRHandsAppState.ID, VRHandsAppState.class).getHandControls().forEach(boundHand ->
+                    closeHandBindings.add(boundHand.debugPalmGrabPoints()));
+        });
         boxGeometry.addControl(grabControl);
         rootNodeDelegate.attachChild(boxGeometry);
     }
+
+    private Geometry box(ColorRGBA colour, float halfSize){
+        Box mainBox = new Box(halfSize, halfSize, halfSize);
+        Geometry boxGeometry = new Geometry("parent", mainBox);
+        Material boxMat = new Material(getApplication().getAssetManager(),"Common/MatDefs/Misc/Unshaded.j3md");
+        boxMat.setColor("Color", colour);
+        boxGeometry.setMaterial(boxMat);
+
+        return boxGeometry;
+    }
+
 }

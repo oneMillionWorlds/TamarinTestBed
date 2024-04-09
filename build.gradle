@@ -1,3 +1,6 @@
+import com.onemillionworlds.DeepTokenifyDirectory
+import com.onemillionworlds.DeepTokenifyFile
+
 plugins {
     id 'java'
 }
@@ -7,31 +10,54 @@ version '1.0-SNAPSHOT'
 
 repositories {
     jcenter()
-    //mavenLocal()
     mavenCentral()
 }
 
 ext {
-    jmonkeyengine_version = '3.4.1-stable'
+    jmonkeyengine_version = '3.6.1-stable'
 }
 
 dependencies {
-    implementation 'com.onemillionworlds:tamarin:1.2.2'
-
+    implementation 'com.onemillionworlds:tamarin:2.5.0'
+    implementation "org.jmonkeyengine:jme3-effects:$jmonkeyengine_version"
     implementation "org.jmonkeyengine:jme3-core:$jmonkeyengine_version"
     implementation "org.jmonkeyengine:jme3-lwjgl3:$jmonkeyengine_version"
-    implementation "org.jmonkeyengine:jme3-vr:$jmonkeyengine_version"
+    implementation "org.jmonkeyengine:jme3-desktop:$jmonkeyengine_version"
     implementation "org.jmonkeyengine:jme3-plugins:$jmonkeyengine_version"
+    implementation "org.jmonkeyengine:jme3-testdata:$jmonkeyengine_version"
+    implementation 'com.onemillionworlds:deeptokens:1.0.4'
 
-    implementation "com.simsilica:lemur:1.14.0"
-    implementation "com.simsilica:lemur-proto:1.11.0"
+    runtimeOnly "org.jmonkeyengine:jme3-jogg:$jmonkeyengine_version"
+
+    implementation "com.simsilica:lemur:1.16.0"
+    implementation "com.simsilica:lemur-proto:1.13.0"
+    implementation "com.google.guava:guava:19.0" // <-- I don't understand why this is necessary as lemur brings it in, but the Selector dropdown won't work with out this
+    implementation group: 'org.codehaus.groovy', name: 'groovy-all', version: '3.0.19'
     implementation 'com.github.stephengold:Minie:4.8.1'
-    implementation group: 'org.codehaus.groovy', name: 'groovy-all', version: '3.0.9'
 
     testImplementation 'org.junit.jupiter:junit-jupiter-api:5.7.0'
     testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.7.0'
 }
 
+tasks.register("generateButtonPanel", DeepTokenifyFile){
+    inputFile = file('deepTokenTemplates/buttonPanel.png')
+    outputFile = file('src/main/generated/resources/Models/buttonPanel.j3o')
+    tokenWidth = 2f
+    tokenDepth = 0.05f
+}
+
+tasks.register("generateButtons", DeepTokenifyDirectory){
+    inputDirectory = file('deepTokenTemplates/buttons')
+    outputDirectory = file('src/main/generated/resources/Models/buttons')
+    tokenWidth = 0.25f
+    tokenDepth = 0.1f
+}
+
 test {
     useJUnitPlatform()
 }
+
+sourceSets.main.resources.srcDirs += 'src/main/generated/resources'
+
+processResources.dependsOn(generateButtons)
+processResources.dependsOn(generateButtonPanel)

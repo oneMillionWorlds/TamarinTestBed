@@ -5,35 +5,40 @@ import com.jme3.app.SimpleApplication;
 import com.jme3.app.state.BaseAppState;
 import com.jme3.asset.AssetManager;
 import com.jme3.material.Material;
-import com.jme3.math.ColorRGBA;
 import com.jme3.math.FastMath;
 import com.jme3.math.Quaternion;
 import com.jme3.math.Vector3f;
 import com.jme3.scene.Geometry;
 import com.jme3.scene.Node;
+import com.jme3.scene.Spatial;
 import com.jme3.scene.shape.Box;
 import com.jme3.scene.shape.Quad;
 import com.jme3.texture.Texture;
+import com.onemillionworlds.tamarin.actions.HandSide;
+import com.onemillionworlds.tamarin.vrhands.BoundHand;
 import com.onemillionworlds.tamarin.vrhands.VRHandsAppState;
 import com.onemillionworlds.tamarin.vrhands.functions.FunctionRegistration;
 import com.onemillionworlds.tamarin.vrhands.grabbing.GrabEventControl;
-import com.onemillionworlds.tamarin.vrhands.grabbing.SnapToHandGrabControl;
+import com.simsilica.lemur.Container;
+import com.simsilica.lemur.Label;
 import example.actions.ActionHandles;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class BlockMovingExampleState extends BaseAppState{
+public class ChangeHandsExampleState extends BaseAppState{
 
     Node rootNodeDelegate = new Node("BlockMovingExampleState");
 
     List<FunctionRegistration> closeHandBindings = new ArrayList<>();
 
+    VRHandsAppState handsAppState;
+
     @Override
     protected void initialize(Application app){
         ((SimpleApplication)app).getRootNode().attachChild(rootNodeDelegate);
-
-        getState(VRHandsAppState.ID, VRHandsAppState.class).getHandControls().forEach(boundHand ->
+        handsAppState = getState(VRHandsAppState.ID, VRHandsAppState.class);
+        handsAppState.getHandControls().forEach(boundHand ->
                 closeHandBindings.add(boundHand.setGrabAction(ActionHandles.GRIP, rootNodeDelegate)));
 
         initialiseScene();
@@ -59,12 +64,25 @@ public class BlockMovingExampleState extends BaseAppState{
     private void initialiseScene(){
         rootNodeDelegate.attachChild(checkerboardFloor(getApplication().getAssetManager()));
 
-        grabbableBox(new Vector3f(0,1f, 9.5f));
-        grabbableBox(new Vector3f(0.2f,1.2f, 9.5f));
-        grabbableBox(new Vector3f(-0.2f,0.9f, 9.5f));
-        grabbableBox(new Vector3f(0.3f,1.1f, 9.6f));
+        Material devilHandMaterial = new Material(getApplication().getAssetManager(),"Common/MatDefs/Light/Lighting.j3md");
+        devilHandMaterial.setTexture("DiffuseMap", getApplication().getAssetManager().loadTexture("Textures/demonHands.png"));
+
+        grabbableHand(new Vector3f(-0.1f,1f, 9.5f), "Models/demonHandsLeft.glb", devilHandMaterial);
+
+        Material pinStripeMaterial = new Material(getApplication().getAssetManager(),"Common/MatDefs/Light/Lighting.j3md");
+        pinStripeMaterial.setTexture("DiffuseMap", getApplication().getAssetManager().loadTexture(BoundHand.DEFAULT_HAND_TEXTURE));
+
+        grabbableHand(new Vector3f(0.1f,1f, 9.5f), BoundHand.DEFAULT_HAND_MODEL_LEFT, pinStripeMaterial);
 
         exitBox(new Vector3f(-0.5f,1f, 9.6f));
+
+        //a lemur UI with text explaining what to do
+        Container lemurWindow = new Container();
+        lemurWindow.setLocalScale(0.02f); //lemur defaults to 1 meter == 1 pixel (because that make sense for 2D, scale it down, so it's not huge in 3d)
+        Label label = new Label("This example is used to test changing hands at runtime. A devil hand can be grabbed to swap to it (left hand only)");
+        lemurWindow.addChild(label);
+        lemurWindow.setLocalTranslation(-5,4,0);
+        rootNodeDelegate.attachChild(lemurWindow);
     }
 
     @SuppressWarnings("DuplicatedCode") //each example is supposed to be mostly stand along so allow some duplication
@@ -101,15 +119,19 @@ public class BlockMovingExampleState extends BaseAppState{
         rootNodeDelegate.attachChild(boxGeometry);
     }
 
-    private void grabbableBox(Vector3f location){
-        Box box = new Box(0.05f, 0.05f, 0.05f);
-        Geometry boxGeometry = new Geometry("box", box);
-        Material boxMat = new Material(getApplication().getAssetManager(),"Common/MatDefs/Misc/Unshaded.j3md");
-        boxMat.setColor("Color", ColorRGBA.randomColor());
-        boxGeometry.setMaterial(boxMat);
-        boxGeometry.setLocalTranslation(location);
-        SnapToHandGrabControl grabControl = new SnapToHandGrabControl(new Vector3f(0.025f,0,0), 0.05f);
-        boxGeometry.addControl(grabControl);
-        rootNodeDelegate.attachChild(boxGeometry);
+    private void grabbableHand(Vector3f location, String handModelPath, Material material){
+
+        Spatial handModel = getApplication().getAssetManager().loadModel(handModelPath);
+        handModel.setMaterial(material);
+
+        handModel.setLocalTranslation(location);
+
+        handModel.addControl(new GrabEventControl(() -> {
+            BoundHand boundHand = handsAppState.getHandControl(HandSide.LEFT).orElseThrow();
+            boundHand.updateHandGeometryAndControlledArmature(VRHandsAppState.searchForArmatured(handModel.clone()));
+        }));
+
+        rootNodeDelegate.attachChild(handModel);
+
     }
 }

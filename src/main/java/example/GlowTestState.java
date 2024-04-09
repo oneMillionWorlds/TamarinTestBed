@@ -9,25 +9,33 @@ import com.jme3.math.ColorRGBA;
 import com.jme3.math.FastMath;
 import com.jme3.math.Quaternion;
 import com.jme3.math.Vector3f;
+import com.jme3.post.FilterPostProcessor;
+import com.jme3.post.filters.BloomFilter;
 import com.jme3.scene.Geometry;
 import com.jme3.scene.Node;
 import com.jme3.scene.shape.Box;
 import com.jme3.scene.shape.Quad;
 import com.jme3.texture.Texture;
+import com.onemillionworlds.tamarin.openxr.XrAppState;
 import com.onemillionworlds.tamarin.vrhands.VRHandsAppState;
 import com.onemillionworlds.tamarin.vrhands.functions.FunctionRegistration;
 import com.onemillionworlds.tamarin.vrhands.grabbing.GrabEventControl;
-import com.onemillionworlds.tamarin.vrhands.grabbing.SnapToHandGrabControl;
+import com.onemillionworlds.tamarin.vrhands.grabbing.RelativeMovingGrabControl;
+import com.simsilica.lemur.Container;
+import com.simsilica.lemur.Label;
 import example.actions.ActionHandles;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
-public class BlockMovingExampleState extends BaseAppState{
+public class GlowTestState extends BaseAppState{
 
     Node rootNodeDelegate = new Node("BlockMovingExampleState");
 
     List<FunctionRegistration> closeHandBindings = new ArrayList<>();
+
+    Collection<Runnable> removeGlowPostProcessor = new ArrayList<>();
 
     @Override
     protected void initialize(Application app){
@@ -35,6 +43,13 @@ public class BlockMovingExampleState extends BaseAppState{
 
         getState(VRHandsAppState.ID, VRHandsAppState.class).getHandControls().forEach(boundHand ->
                 closeHandBindings.add(boundHand.setGrabAction(ActionHandles.GRIP, rootNodeDelegate)));
+
+        getState(XrAppState.ID, XrAppState.class).setMainViewportConfiguration(viewPort -> {
+            AssetManager assetManager = getApplication().getAssetManager();
+            FilterPostProcessor filterPostProcessor = buildPostProcessors(assetManager, app.getContext().getSettings().getSamples());
+            viewPort.addProcessor(filterPostProcessor);
+            removeGlowPostProcessor.add(() -> viewPort.removeProcessor(filterPostProcessor));
+        });
 
         initialiseScene();
     }
@@ -44,6 +59,8 @@ public class BlockMovingExampleState extends BaseAppState{
         rootNodeDelegate.removeFromParent();
         closeHandBindings.forEach(FunctionRegistration::endFunction);
         closeHandBindings.clear();
+        removeGlowPostProcessor.forEach(Runnable::run);
+        removeGlowPostProcessor.clear();
     }
 
     @Override
@@ -57,14 +74,28 @@ public class BlockMovingExampleState extends BaseAppState{
     }
 
     private void initialiseScene(){
+
+        Container lemurWindow = new Container();
+        lemurWindow.setLocalScale(0.02f); //lemur defaults to 1 meter == 1 pixel (because that make sense for 2D, scale it down, so it's not huge in 3d)
+        Label label = new Label("This tests that the glow effect works in VR, the upper boxes have no glow, the botton boxes do");
+        lemurWindow.addChild(label);
+        lemurWindow.setLocalTranslation(-5,4,0);
+        rootNodeDelegate.attachChild(lemurWindow);
+
         rootNodeDelegate.attachChild(checkerboardFloor(getApplication().getAssetManager()));
 
-        grabbableBox(new Vector3f(0,1f, 9.5f));
-        grabbableBox(new Vector3f(0.2f,1.2f, 9.5f));
-        grabbableBox(new Vector3f(-0.2f,0.9f, 9.5f));
-        grabbableBox(new Vector3f(0.3f,1.1f, 9.6f));
+        glowBox(new Vector3f(0f,1.1f, 9.6f), ColorRGBA.Green, true);
+        glowBox(new Vector3f(0f,1.3f, 9.6f), ColorRGBA.Green, false);
+
+        glowBox(new Vector3f(-0.3f,1.1f, 9.6f), ColorRGBA.Blue, true);
+        glowBox(new Vector3f(-0.3f,1.3f, 9.6f), ColorRGBA.Blue, false);
+
+        glowBox(new Vector3f(0.3f,1.1f, 9.6f), ColorRGBA.White, true);
+        glowBox(new Vector3f(0.3f,1.3f, 9.6f), ColorRGBA.White, false);
 
         exitBox(new Vector3f(-0.5f,1f, 9.6f));
+
+        getState(XrAppState.ID, XrAppState.class).movePlayersFeetToPosition(new Vector3f(0,0,10));
     }
 
     @SuppressWarnings("DuplicatedCode") //each example is supposed to be mostly stand along so allow some duplication
@@ -101,15 +132,34 @@ public class BlockMovingExampleState extends BaseAppState{
         rootNodeDelegate.attachChild(boxGeometry);
     }
 
-    private void grabbableBox(Vector3f location){
-        Box box = new Box(0.05f, 0.05f, 0.05f);
-        Geometry boxGeometry = new Geometry("box", box);
-        Material boxMat = new Material(getApplication().getAssetManager(),"Common/MatDefs/Misc/Unshaded.j3md");
-        boxMat.setColor("Color", ColorRGBA.randomColor());
-        boxGeometry.setMaterial(boxMat);
+    private void glowBox(Vector3f location, ColorRGBA colour, boolean glow){
+        Geometry boxGeometry = box(colour, glow);
         boxGeometry.setLocalTranslation(location);
-        SnapToHandGrabControl grabControl = new SnapToHandGrabControl(new Vector3f(0.025f,0,0), 0.05f);
-        boxGeometry.addControl(grabControl);
+        RelativeMovingGrabControl relativeGrabControl = new RelativeMovingGrabControl();
+        boxGeometry.addControl(relativeGrabControl);
         rootNodeDelegate.attachChild(boxGeometry);
+    }
+
+    private Geometry box(ColorRGBA colour, boolean glow){
+        Box mainBox = new Box(0.05f, 0.05f, 0.05f);
+        Geometry boxGeometry = new Geometry("parent", mainBox);
+        Material boxMat = new Material(getApplication().getAssetManager(),"Common/MatDefs/Misc/Unshaded.j3md");
+        boxMat.setColor("Color", colour);
+        if(glow){
+            boxMat.setColor("GlowColor", colour);
+        }
+
+        boxGeometry.setMaterial(boxMat);
+
+        return boxGeometry;
+    }
+
+    private static FilterPostProcessor buildPostProcessors(AssetManager assetManager, int samples){
+        FilterPostProcessor fpp=new FilterPostProcessor(assetManager);
+        BloomFilter bf=new BloomFilter(BloomFilter.GlowMode.Objects);
+        bf.setBlurScale(3f);
+        fpp.addFilter(bf);
+        fpp.setNumSamples(samples);
+        return fpp;
     }
 }
