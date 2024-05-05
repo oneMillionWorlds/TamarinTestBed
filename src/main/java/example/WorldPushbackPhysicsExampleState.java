@@ -2,15 +2,10 @@ package example;
 
 import com.jme3.app.Application;
 import com.jme3.app.SimpleApplication;
-import com.jme3.app.VRAppState;
 import com.jme3.app.state.BaseAppState;
 import com.jme3.asset.AssetManager;
 import com.jme3.bullet.BulletAppState;
 import com.jme3.bullet.PhysicsSpace;
-import com.jme3.bullet.collision.ContactListener;
-import com.jme3.bullet.collision.PhysicsCollisionEvent;
-import com.jme3.bullet.collision.PhysicsCollisionListener;
-import com.jme3.bullet.collision.PhysicsCollisionObject;
 import com.jme3.bullet.collision.shapes.CapsuleCollisionShape;
 import com.jme3.bullet.control.CharacterControl;
 import com.jme3.bullet.control.RigidBodyControl;
@@ -24,20 +19,21 @@ import com.jme3.scene.Node;
 import com.jme3.scene.shape.Box;
 import com.jme3.scene.shape.Quad;
 import com.jme3.texture.Texture;
-import com.onemillionworlds.tamarin.compatibility.ActionBasedOpenVrState;
-import com.onemillionworlds.tamarin.compatibility.AnalogActionState;
+import com.onemillionworlds.tamarin.actions.OpenXrActionState;
+import com.onemillionworlds.tamarin.actions.state.Vector2fActionState;
+import com.onemillionworlds.tamarin.openxr.XrAppState;
 import com.onemillionworlds.tamarin.vrhands.VRHandsAppState;
-import com.onemillionworlds.tamarin.vrhands.grabbing.AutoMovingGrabControl;
+import example.actions.ActionHandles;
 
 /**
  * This example has the whole player as an active physics object. This can be a little
  * unkind on the human player but some game styles require it
  */
-public class HardPhysicsExampleState extends BaseAppState{
+public class WorldPushbackPhysicsExampleState extends BaseAppState{
 
     Node rootNodeDelegate = new Node("BlockMovingExampleState");
-    VRAppState vrAppState;
-    ActionBasedOpenVrState openVr;
+    XrAppState vrAppState;
+    OpenXrActionState openXrActionState;
     VRHandsAppState vrHands;
 
     //the fact the capsule cannot have its height updated is a problem. The height should be constantly updated to be the human players current camera height relative to observer
@@ -54,8 +50,8 @@ public class HardPhysicsExampleState extends BaseAppState{
     @Override
     protected void initialize(Application app){
         ((SimpleApplication)app).getRootNode().attachChild(rootNodeDelegate);
-        vrAppState = getState(VRAppState.class);
-        openVr = getState(ActionBasedOpenVrState.class);
+        vrAppState = getState(XrAppState.ID, XrAppState.class);
+        openXrActionState = getState(OpenXrActionState.ID, OpenXrActionState.class);
         vrHands = getState(VRHandsAppState.class);
 
         initialiseScene();
@@ -83,6 +79,7 @@ public class HardPhysicsExampleState extends BaseAppState{
         getStateManager().attach(appState);
         PhysicsSpace physicsSpace = appState.getPhysicsSpace();
         physicsSpace.setMaxTimeStep(1f/90);
+
         rootNodeDelegate.attachChild(checkerboardFloor(getApplication().getAssetManager(), physicsSpace));
 
         //grabbableBox(new Vector3f(0,1f, 9.5f), physicsSpace);
@@ -135,11 +132,15 @@ public class HardPhysicsExampleState extends BaseAppState{
     }
 
     public void moveViaControls(float timeslice){
-        AnalogActionState analogActionState = openVr.getAnalogActionState("/actions/main/in/walk");
-        //we'll want the joystick to move the player relative to the head face direction, not the hand pointing direction
-        Vector3f walkingDirectionRaw = new Vector3f(-analogActionState.x, 0, analogActionState.y);
 
-        Vector3f playerRelativeWalkDirection = vrAppState.getVRViewManager().getLeftCamera().getRotation().mult(walkingDirectionRaw);
+
+        Vector2fActionState analogActionState = openXrActionState.getVector2fActionState(ActionHandles.WALK);
+        //we'll want the joystick to move the player relative to the head face direction, not the hand pointing direction
+        Vector3f walkingDirectionRaw = new Vector3f(-analogActionState.getX(), 0, analogActionState.getY());
+
+        Quaternion lookDirection = new Quaternion().lookAt(vrAppState.getVrCameraLookDirection(), Vector3f.UNIT_Y);
+
+        Vector3f playerRelativeWalkDirection = lookDirection.mult(walkingDirectionRaw);
         playerRelativeWalkDirection.y = 0;
         if (playerRelativeWalkDirection.length()>0.01){
             playerRelativeWalkDirection.normalizeLocal();
@@ -226,10 +227,7 @@ public class HardPhysicsExampleState extends BaseAppState{
      * @return
      */
     private Vector3f getPlayerFeetPosition(){
-        float y = getObserver().getWorldTranslation().y;
-        Vector3f cameraPosition = vrAppState.getVRViewManager().getLeftCamera().getLocation().add(vrAppState.getVRViewManager().getRightCamera().getLocation()).mult(0.5f);
-
-        return new Vector3f(cameraPosition.x, y, cameraPosition.z);
+        return vrAppState.getPlayerFeetPosition();
     }
 
     private Node getObserver(){
