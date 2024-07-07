@@ -20,6 +20,7 @@ import com.onemillionworlds.tamarin.vrhands.functions.FunctionRegistration;
 import com.onemillionworlds.tamarin.vrhands.grabbing.GrabEventControl;
 import com.onemillionworlds.tamarin.vrhands.grabbing.ParentRelativeMovingGrabControl;
 import com.onemillionworlds.tamarin.vrhands.grabbing.RelativeMovingGrabControl;
+import com.onemillionworlds.tamarin.vrhands.grabbing.restrictions.RestrictToLocalLine;
 import com.simsilica.lemur.Container;
 import com.simsilica.lemur.Label;
 import example.actions.ActionHandles;
@@ -118,7 +119,7 @@ public class RestrictedLineGrabMovement extends BaseAppState{
         boxGeometry.setLocalTranslation(location);
 
         RelativeMovingGrabControl relativeGrabControl = new RelativeMovingGrabControl();
-        relativeGrabControl.restrictToPath(minPosition, maxPosition);
+        relativeGrabControl.setGrabMoveRestriction(new RestrictToLocalLine(minPosition, maxPosition));
         relativeGrabControl.setShouldApplyRotation(canRotate);
 
         boxGeometry.addControl(relativeGrabControl);
@@ -147,14 +148,14 @@ public class RestrictedLineGrabMovement extends BaseAppState{
         parent.attachChild(node1);
         node1.attachChild(box1Geometry);
         RelativeMovingGrabControl relative1 = new RelativeMovingGrabControl();
-        relative1.restrictToPath(new Vector3f(0,0,0), new Vector3f(0,0.3f,0));
+        relative1.setGrabMoveRestriction(new RestrictToLocalLine(new Vector3f(0,0,0), new Vector3f(0,0.3f,0)));
         node1.addControl(relative1);
 
         node1.attachChild( line(new Vector3f(0,0,0), new Vector3f(0.3f,0,0), ColorRGBA.White));
         Node node2a = new Node("node2b");
         Geometry box2aGeometry = box(ColorRGBA.White, 0.04f);
         RelativeMovingGrabControl relative2a = new RelativeMovingGrabControl();
-        relative2a.restrictToPath(new Vector3f(0,0,0), new Vector3f(0.3f,0,0)); //note the way the path is relative to the parent
+        relative2a.setGrabMoveRestriction(new RestrictToLocalLine(new Vector3f(0,0,0), new Vector3f(0.3f,0,0))); //note the way the path is relative to the parent
         node2a.setLocalTranslation(new Vector3f(0.3f,0,0));
         node2a.addControl(relative2a);
         node2a.attachChild(box2aGeometry);
@@ -163,7 +164,7 @@ public class RestrictedLineGrabMovement extends BaseAppState{
         node2a.attachChild(line(new Vector3f(0,0,0), new Vector3f(0,0,0.2f), ColorRGBA.Cyan));
         Geometry box3Geometry = box(ColorRGBA.Cyan, 0.03f);
         RelativeMovingGrabControl relative3 = new RelativeMovingGrabControl();
-        relative3.restrictToPath(new Vector3f(0,0,0), new Vector3f(0,0,0.2f));
+        relative3.setGrabMoveRestriction(new RestrictToLocalLine(new Vector3f(0,0,0), new Vector3f(0,0,0.2f)));
         box3Geometry.setLocalTranslation(0,0,0.2f);
         box3Geometry.addControl(relative3);
         node2a.attachChild(box3Geometry);
@@ -172,7 +173,7 @@ public class RestrictedLineGrabMovement extends BaseAppState{
         node1.attachChild( line(new Vector3f(0,0,0), new Vector3f(-0.3f,0,0), ColorRGBA.Black));
         Geometry box2bGeometry = box(ColorRGBA.Black, 0.04f);
         RelativeMovingGrabControl relative2b = new RelativeMovingGrabControl();
-        relative2b.restrictToPath(new Vector3f(0,0,0), new Vector3f(-0.3f,0,0));
+        relative2b.setGrabMoveRestriction(new RestrictToLocalLine(new Vector3f(0,0,0), new Vector3f(-0.3f,0,0)));
         box2bGeometry.setLocalTranslation(new Vector3f(-0.3f,0,0));
         box2bGeometry.addControl(relative2b);
         node1.attachChild(box2bGeometry);

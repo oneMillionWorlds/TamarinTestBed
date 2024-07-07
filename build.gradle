@@ -14,7 +14,7 @@ repositories {
 }
 
 ext {
-    jmonkeyengine_version = '3.6.1-stable'
+    jmonkeyengine_version = '3.7.0-beta1'
 }
 
 dependencies {

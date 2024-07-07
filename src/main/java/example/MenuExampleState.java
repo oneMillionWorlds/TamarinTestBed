@@ -100,9 +100,14 @@ public class MenuExampleState extends BaseAppState{
             app.getStateManager().attach(new HandMenuExampleState());
         });
 
-        lemurWindow.addChild(new Button("Advanced grabbing example")).addClickCommands(source -> {
+        lemurWindow.addChild(new Button("Advanced grabbing example (restricted to lines and parent motion)")).addClickCommands(source -> {
             app.getStateManager().detach(this);
             app.getStateManager().attach(new RestrictedLineGrabMovement());
+        });
+
+        lemurWindow.addChild(new Button("Advanced grabbing example 2 (more advanced movement restrictions)")).addClickCommands(source -> {
+            app.getStateManager().detach(this);
+            app.getStateManager().attach(new AdvancedRestrictedBoxGrabMovement());
         });
 
         lemurWindow.addChild(new Button("Item given to hand on hand clench example")).addClickCommands(source -> {
