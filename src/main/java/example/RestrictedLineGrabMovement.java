@@ -5,6 +5,7 @@ import com.jme3.app.SimpleApplication;
 import com.jme3.app.state.BaseAppState;
 import com.jme3.asset.AssetManager;
 import com.jme3.material.Material;
+import com.jme3.material.RenderState;
 import com.jme3.math.ColorRGBA;
 import com.jme3.math.FastMath;
 import com.jme3.math.Quaternion;
@@ -20,6 +21,8 @@ import com.onemillionworlds.tamarin.vrhands.functions.FunctionRegistration;
 import com.onemillionworlds.tamarin.vrhands.grabbing.GrabEventControl;
 import com.onemillionworlds.tamarin.vrhands.grabbing.ParentRelativeMovingGrabControl;
 import com.onemillionworlds.tamarin.vrhands.grabbing.RelativeMovingGrabControl;
+import com.onemillionworlds.tamarin.vrhands.grabbing.restrictions.RestrictToGlobalLine;
+import com.onemillionworlds.tamarin.vrhands.grabbing.restrictions.RestrictToLocalBox;
 import com.onemillionworlds.tamarin.vrhands.grabbing.restrictions.RestrictToLocalLine;
 import com.simsilica.lemur.Container;
 import com.simsilica.lemur.Label;
@@ -67,6 +70,8 @@ public class RestrictedLineGrabMovement extends BaseAppState{
         grabbableBoxOnLine(new Vector3f(0.3f,1.1f, 9.6f), new Vector3f(-0.1f,1.1f, 9.6f), new Vector3f(0.6f,1.1f, 9.6f), true, ColorRGBA.Red);
         grabbablePointsOnParent(new Vector3f(-0.4f, 0.9f, 9.7f ));
         chainedParent(new Vector3f(0.5f, 0.9f, 9.9f));
+        restrictionBoxOnLine(new Vector3f(0.4f,0.5f, 10.2f), new Vector3f(0.5f,1f, 10.2f));
+
 
         exitBox(new Vector3f(-0.5f,1f, 10f));
 
@@ -112,6 +117,38 @@ public class RestrictedLineGrabMovement extends BaseAppState{
         });
         boxGeometry.addControl(grabControl);
         rootNodeDelegate.attachChild(boxGeometry);
+    }
+
+    /**
+     * This shows box based movement restriction (where the box itself can be grab moved, on a line)
+     * @param lineMinPosition
+     * @param lineMaxPosition
+     */
+    private void restrictionBoxOnLine(Vector3f lineMinPosition, Vector3f lineMaxPosition){
+        Geometry lineGeometry = line(lineMinPosition, lineMaxPosition, ColorRGBA.Red);
+        rootNodeDelegate.attachChild(lineGeometry);
+
+        Node firstMovableNode = new Node("firstMovableNode");
+        Geometry firstHandle = box(ColorRGBA.Blue, 0.05f);
+        firstMovableNode.attachChild(firstHandle);
+        firstMovableNode.setLocalTranslation(lineMinPosition);
+
+        ParentRelativeMovingGrabControl firstGrabControl = new ParentRelativeMovingGrabControl(firstMovableNode);
+        firstGrabControl.setGrabMoveRestriction(new RestrictToGlobalLine(lineMinPosition, lineMaxPosition));
+        firstHandle.addControl(firstGrabControl);
+
+        Vector3f localSecondRegionMin = new Vector3f(0.01f,0.01f,0.01f);
+        Vector3f localSecondRegionMax = new Vector3f(0.3f,0.3f,0.3f);
+        firstMovableNode.attachChild(containerBox(localSecondRegionMin, localSecondRegionMax, ColorRGBA.Blue));
+
+        Geometry secondHandle = box(ColorRGBA.Red, 0.05f);
+        secondHandle.setLocalTranslation(localSecondRegionMax);
+
+        firstMovableNode.attachChild(secondHandle);
+        RelativeMovingGrabControl secondGrabControl = new RelativeMovingGrabControl();
+        secondGrabControl.setGrabMoveRestriction(new RestrictToLocalBox(localSecondRegionMin, localSecondRegionMax));
+        secondHandle.addControl(secondGrabControl);
+        rootNodeDelegate.attachChild(firstMovableNode);
     }
 
     private void grabbableBoxOnLine(Vector3f location, Vector3f minPosition, Vector3f maxPosition, boolean canRotate, ColorRGBA colour){
@@ -218,6 +255,17 @@ public class RestrictedLineGrabMovement extends BaseAppState{
         Geometry lineGeometry = new Geometry("line", line);
         Material lineMat = new Material(getApplication().getAssetManager(),"Common/MatDefs/Misc/Unshaded.j3md");
         lineMat.setColor("Color", colour);
+        lineGeometry.setMaterial(lineMat);
+        return lineGeometry;
+    }
+
+    private Geometry containerBox(Vector3f localMin, Vector3f localMax, ColorRGBA colour){
+        Box line = new Box(localMin, localMax);
+        Geometry lineGeometry = new Geometry("box", line);
+        Material lineMat = new Material(getApplication().getAssetManager(),"Common/MatDefs/Misc/Unshaded.j3md");
+        lineMat.setColor("Color", colour);
+        lineMat.getAdditionalRenderState().setWireframe(true);
+        lineMat.getAdditionalRenderState().setFaceCullMode(RenderState.FaceCullMode.Off);
         lineGeometry.setMaterial(lineMat);
         return lineGeometry;
     }
