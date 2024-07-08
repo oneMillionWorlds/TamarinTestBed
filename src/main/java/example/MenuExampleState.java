@@ -105,6 +105,12 @@ public class MenuExampleState extends BaseAppState{
             app.getStateManager().attach(new RestrictedLineGrabMovement());
         });
 
+        lemurWindow.addChild(new Button("Gear Stick movement (advanced movement restrictions, snap to position)")).addClickCommands(source -> {
+            app.getStateManager().detach(this);
+            app.getStateManager().attach(new GearStickExample());
+        });
+
+
         lemurWindow.addChild(new Button("Item given to hand on hand clench example")).addClickCommands(source -> {
             app.getStateManager().detach(this);
             app.getStateManager().attach(new BlockCreateOnGrabExampleState());
