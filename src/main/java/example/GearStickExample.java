@@ -38,11 +38,15 @@ public class GearStickExample extends BaseAppState{
 
     List<FunctionRegistration> closeHandBindings = new ArrayList<>();
 
+    VRHandsAppState vrHandsAppState;
+
     @Override
     protected void initialize(Application app){
         ((SimpleApplication)app).getRootNode().attachChild(rootNodeDelegate);
 
-        getState(VRHandsAppState.ID, VRHandsAppState.class).getHandControls().forEach(boundHand ->
+        vrHandsAppState = getState(VRHandsAppState.ID, VRHandsAppState.class);
+
+        vrHandsAppState.getHandControls().forEach(boundHand ->
                 closeHandBindings.add(boundHand.setGrabAction(ActionHandles.GRIP, rootNodeDelegate)));
         initialiseScene();
     }
@@ -111,6 +115,18 @@ public class GearStickExample extends BaseAppState{
 
         float snapToDistance = 0.03f;
 
+        SnapToPoints.OnSnapCallback onSnapCallback = (handSide, globalPosition, localPosition) -> {
+            vrHandsAppState.getHandControl(handSide).ifPresent(h -> {
+                h.triggerHapticAction(ActionHandles.HAPTIC,0.05f, 20f, 0.25f);
+            });
+        };
+        SnapToPoints.OnUnSnapCallback onUnSnapCallback = (handSide, globalPosition, localPosition) -> {
+            vrHandsAppState.getHandControl(handSide).ifPresent(h -> {
+                h.triggerHapticAction(ActionHandles.HAPTIC,0.05f, 10f, 0.15f);
+            });
+        };
+
+
         RelativeMovingGrabControl grabControl = new RelativeMovingGrabControl();
         grabControl.setSnapToPoints(new SnapToPoints(false, List.of(
                 new SnapToPoint(first, snapToDistance),
@@ -118,7 +134,10 @@ public class GearStickExample extends BaseAppState{
                 new SnapToPoint(third, snapToDistance),
                 new SnapToPoint(fourth, snapToDistance),
                 new SnapToPoint(fifth, snapToDistance),
-                new SnapToPoint(sixth, snapToDistance))));
+                new SnapToPoint(sixth, snapToDistance)),
+                onSnapCallback,
+                onUnSnapCallback
+                ));
 
         grabControl.setGrabMoveRestriction(new GrabMoveRestriction(){
             final List<Line3f> linesToSnapTo = List.of(
