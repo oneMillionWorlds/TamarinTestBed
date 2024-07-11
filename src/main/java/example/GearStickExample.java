@@ -115,15 +115,12 @@ public class GearStickExample extends BaseAppState{
 
         float snapToDistance = 0.03f;
 
-        SnapToPoints.OnSnapCallback onSnapCallback = (handSide, globalPosition, localPosition) -> {
-            vrHandsAppState.getHandControl(handSide).ifPresent(h -> {
-                h.triggerHapticAction(ActionHandles.HAPTIC,0.05f, 20f, 0.25f);
-            });
+        SnapToPoints.OnSnapCallback onSnapCallback = (hand, globalPosition, localPosition) -> {
+            hand.triggerHapticAction(ActionHandles.HAPTIC,0.05f, 20f, 0.25f);
+
         };
-        SnapToPoints.OnUnSnapCallback onUnSnapCallback = (handSide, globalPosition, localPosition) -> {
-            vrHandsAppState.getHandControl(handSide).ifPresent(h -> {
-                h.triggerHapticAction(ActionHandles.HAPTIC,0.05f, 10f, 0.15f);
-            });
+        SnapToPoints.OnUnSnapCallback onUnSnapCallback = (hand, globalPosition, localPosition) -> {
+            hand.triggerHapticAction(ActionHandles.HAPTIC,0.05f, 10f, 0.15f);
         };
 
 
