@@ -23,8 +23,8 @@ import com.onemillionworlds.tamarin.vrhands.grabbing.GrabEventControl;
 import com.onemillionworlds.tamarin.vrhands.grabbing.RelativeMovingGrabControl;
 import com.onemillionworlds.tamarin.vrhands.grabbing.restrictions.GrabMoveRestriction;
 import com.onemillionworlds.tamarin.vrhands.grabbing.restrictions.RestrictionUtilities;
-import com.onemillionworlds.tamarin.vrhands.grabbing.snaptopoints.SnapToPoint;
-import com.onemillionworlds.tamarin.vrhands.grabbing.snaptopoints.SnapToPoints;
+import com.onemillionworlds.tamarin.vrhands.grabbing.snaptopoints.SnapToLocalPoint;
+import com.onemillionworlds.tamarin.vrhands.grabbing.snaptopoints.SnapToConfiguration;
 import com.simsilica.lemur.Container;
 import com.simsilica.lemur.Label;
 import example.actions.ActionHandles;
@@ -115,23 +115,23 @@ public class GearStickExample extends BaseAppState{
 
         float snapToDistance = 0.03f;
 
-        SnapToPoints.OnSnapCallback onSnapCallback = (hand, globalPosition, localPosition) -> {
+        SnapToConfiguration.OnSnapCallback onSnapCallback = (hand, globalPosition, localPosition) -> {
             hand.triggerHapticAction(ActionHandles.HAPTIC,0.05f, 20f, 0.25f);
 
         };
-        SnapToPoints.OnUnSnapCallback onUnSnapCallback = (hand, globalPosition, localPosition) -> {
+        SnapToConfiguration.OnUnSnapCallback onUnSnapCallback = (hand) -> {
             hand.triggerHapticAction(ActionHandles.HAPTIC,0.05f, 10f, 0.15f);
         };
 
 
         RelativeMovingGrabControl grabControl = new RelativeMovingGrabControl();
-        grabControl.setSnapToPoints(new SnapToPoints(false, List.of(
-                new SnapToPoint(first, snapToDistance),
-                new SnapToPoint(second, snapToDistance),
-                new SnapToPoint(third, snapToDistance),
-                new SnapToPoint(fourth, snapToDistance),
-                new SnapToPoint(fifth, snapToDistance),
-                new SnapToPoint(sixth, snapToDistance)),
+        grabControl.setSnapToPoints(new SnapToConfiguration(List.of(
+                new SnapToLocalPoint(first, snapToDistance),
+                new SnapToLocalPoint(second, snapToDistance),
+                new SnapToLocalPoint(third, snapToDistance),
+                new SnapToLocalPoint(fourth, snapToDistance),
+                new SnapToLocalPoint(fifth, snapToDistance),
+                new SnapToLocalPoint(sixth, snapToDistance)),
                 onSnapCallback,
                 onUnSnapCallback
                 ));
