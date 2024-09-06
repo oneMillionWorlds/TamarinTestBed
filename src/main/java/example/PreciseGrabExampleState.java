@@ -14,6 +14,7 @@ import com.jme3.scene.Node;
 import com.jme3.scene.shape.Box;
 import com.jme3.scene.shape.Quad;
 import com.jme3.texture.Texture;
+import com.onemillionworlds.tamarin.debug.TamarinDebugOverlayState;
 import com.onemillionworlds.tamarin.vrhands.VRHandsAppState;
 import com.onemillionworlds.tamarin.vrhands.functions.FunctionRegistration;
 import com.onemillionworlds.tamarin.vrhands.grabbing.GrabEventControl;
@@ -130,8 +131,9 @@ public class PreciseGrabExampleState extends BaseAppState{
         boxGeometry.setMaterial(boxMat);
         boxGeometry.setLocalTranslation(location);
         GrabEventControl grabControl = new GrabEventControl(() -> {
-            getState(VRHandsAppState.ID, VRHandsAppState.class).getHandControls().forEach(boundHand ->
-                    closeHandBindings.add(boundHand.debugPalmGrabPoints()));
+            TamarinDebugOverlayState debugState = new TamarinDebugOverlayState();
+            getStateManager().attach(debugState);
+            closeHandBindings.add(() -> getStateManager().detach(debugState));
         });
         boxGeometry.addControl(grabControl);
         rootNodeDelegate.attachChild(boxGeometry);
