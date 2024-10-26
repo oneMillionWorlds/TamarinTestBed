@@ -1,7 +1,14 @@
 package example;
 
+import com.jme3.app.DebugKeysAppState;
 import com.jme3.app.LostFocusBehavior;
 import com.jme3.app.SimpleApplication;
+import com.jme3.app.StatsAppState;
+import com.jme3.app.state.AppState;
+import com.jme3.app.state.ConstantVerifierState;
+import com.jme3.audio.AudioListenerState;
+import com.jme3.input.KeyInput;
+import com.jme3.input.controls.KeyTrigger;
 import com.jme3.light.AmbientLight;
 import com.jme3.light.DirectionalLight;
 import com.jme3.material.Material;
@@ -9,6 +16,7 @@ import com.jme3.math.ColorRGBA;
 import com.jme3.math.Vector3f;
 import com.jme3.system.AppSettings;
 import com.onemillionworlds.tamarin.actions.ActionType;
+import com.onemillionworlds.tamarin.actions.HandSide;
 import com.onemillionworlds.tamarin.actions.XrActionAppState;
 import com.onemillionworlds.tamarin.actions.actionprofile.Action;
 import com.onemillionworlds.tamarin.actions.actionprofile.ActionManifest;
@@ -37,32 +45,34 @@ public class Main extends SimpleApplication{
 
     public static void main(String[] args) {
         AppSettings settings = new AppSettings(true);
-        settings.put("Renderer", AppSettings.LWJGL_OPENGL45); // OpenXR only supports relatively modern OpenGL
-        settings.setTitle("Tamarin OpenXR Example");
-        settings.setVSync(false); // don't want to VSync to the monitor refresh rate, we want to VSync to the headset refresh rate (which tamarin implictly handles)
+        settings.put("Renderer", AppSettings.LWJGL_OPENGL45);
+        settings.setTitle("Tamarin OpenXR Simulation Example");
         settings.setSamples(4);
         settings.setWindowSize(1280, 720);
-        Main app = new Main();
+        XrSettings xrSettings = new XrSettings();
+        Main app = new Main(
+                new XrAppState(xrSettings),
+                new XrActionAppState(manifest(), ActionSets.MAIN),
+                new VRHandsAppState(handSpec()),
+                //these are just the default JME states (that we have to explicitly select because of using the constructor that takes states)
+                new StatsAppState(),
+                new ConstantVerifierState(),
+                new AudioListenerState(),
+                new DebugKeysAppState());
         app.setLostFocusBehavior(LostFocusBehavior.Disabled);
         app.setSettings(settings);
         app.setShowSettings(false);
         app.start();
     }
 
-    public Main() {
-        super();
+    public Main(AppState... initialStates) {
+        super(initialStates);
     }
 
     @Override
     public void simpleInitApp(){
 
         getViewPort().setBackgroundColor(ColorRGBA.Brown);
-
-        XrSettings xrSettings = new XrSettings();
-        //xrSettings.setDrawMode(DrawMode.BLITTED);
-        getStateManager().attach(new XrAppState(xrSettings));
-        getStateManager().attach(new XrActionAppState(manifest(), ActionSets.MAIN));
-        getStateManager().attach(new VRHandsAppState(handSpec()));
 
         XrBaseAppState vrAppState = getStateManager().getState(XrBaseAppState.ID, XrBaseAppState.class);
 
@@ -113,6 +123,8 @@ public class Main extends SimpleApplication{
                 .withSuggestedBinding(OculusTouchController.PROFILE, OculusTouchController.pathBuilder().rightHand().squeeze())
                 .withSuggestedBinding(ValveIndexController.PROFILE, ValveIndexController.pathBuilder().leftHand().squeezeValue())
                 .withSuggestedBinding(ValveIndexController.PROFILE, ValveIndexController.pathBuilder().rightHand().squeezeValue())
+                .withDesktopSimulationKeyTrigger(HandSide.LEFT, new KeyTrigger(KeyInput.KEY_F1), true)
+                .withDesktopSimulationKeyTrigger(HandSide.RIGHT, new KeyTrigger(KeyInput.KEY_F2), true)
                 .build();
 
         Action haptic = Action.builder()
@@ -138,6 +150,8 @@ public class Main extends SimpleApplication{
                 .withSuggestedBinding(OculusTouchController.PROFILE, OculusTouchController.pathBuilder().rightHand().triggerValue())
                 .withSuggestedBinding(ValveIndexController.PROFILE, ValveIndexController.pathBuilder().leftHand().triggerValue())
                 .withSuggestedBinding(ValveIndexController.PROFILE, ValveIndexController.pathBuilder().rightHand().triggerValue())
+                .withDesktopSimulationKeyTrigger(HandSide.LEFT, new KeyTrigger(KeyInput.KEY_F3), false)
+                .withDesktopSimulationKeyTrigger(HandSide.RIGHT, new KeyTrigger(KeyInput.KEY_F4), false)
                 .build();
 
         Action handPose = Action.builder()
@@ -195,6 +209,8 @@ public class Main extends SimpleApplication{
 
                 .withSuggestedBinding(ValveIndexController.PROFILE, ValveIndexController.pathBuilder().leftHand().thumbStickClick())
                 .withSuggestedBinding(ValveIndexController.PROFILE, ValveIndexController.pathBuilder().rightHand().thumbStickClick())
+                .withDesktopSimulationKeyTrigger(HandSide.LEFT, new KeyTrigger(KeyInput.KEY_F5), true)
+                .withDesktopSimulationKeyTrigger(HandSide.RIGHT, new KeyTrigger(KeyInput.KEY_F6), true)
                 .build();
 
         return ActionManifest.builder()
