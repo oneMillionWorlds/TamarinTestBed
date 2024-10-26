@@ -7,11 +7,7 @@ import com.jme3.app.StatsAppState;
 import com.jme3.app.state.ConstantVerifierState;
 import com.jme3.system.AppSettings;
 import com.onemillionworlds.tamarin.actions.DesktopSimulatingXrActionAppState;
-import com.onemillionworlds.tamarin.actions.XrActionAppState;
-import com.onemillionworlds.tamarin.actions.actionprofile.ActionHandle;
 import com.onemillionworlds.tamarin.openxr.DesktopSimulatingXrAppState;
-import com.onemillionworlds.tamarin.openxr.XrAppState;
-import com.onemillionworlds.tamarin.openxr.XrSettings;
 import com.onemillionworlds.tamarin.vrhands.VRHandsAppState;
 import example.actions.ActionHandles;
 import example.actions.ActionSets;
@@ -27,7 +23,7 @@ public class MainVrSimulationMode{
     public static void main(String[] args){
         AppSettings settings = new AppSettings(true);
         settings.put("Renderer", AppSettings.LWJGL_OPENGL45); // OpenXR only supports relatively modern OpenGL
-        settings.setTitle("Tamarin OpenXR Example");
+        settings.setTitle("Tamarin OpenXR Simulation Example");
         settings.setVSync(false); // don't want to VSync to the monitor refresh rate, we want to VSync to the headset refresh rate (which tamarin implictly handles)
         settings.setSamples(4);
         settings.setWindowSize(1280, 720);

@@ -46,7 +46,7 @@ public class Main extends SimpleApplication{
     public static void main(String[] args) {
         AppSettings settings = new AppSettings(true);
         settings.put("Renderer", AppSettings.LWJGL_OPENGL45);
-        settings.setTitle("Tamarin OpenXR Simulation Example");
+        settings.setTitle("Tamarin OpenXR Example");
         settings.setSamples(4);
         settings.setWindowSize(1280, 720);
         XrSettings xrSettings = new XrSettings();
