@@ -11,9 +11,9 @@ import com.jme3.scene.Geometry;
 import com.jme3.scene.Node;
 import com.jme3.scene.Spatial;
 import com.jme3.scene.shape.Box;
-import com.onemillionworlds.tamarin.actions.OpenXrActionState;
+import com.onemillionworlds.tamarin.actions.XrActionBaseAppState;
 import com.onemillionworlds.tamarin.math.RotationalVelocity;
-import com.onemillionworlds.tamarin.openxr.XrAppState;
+import com.onemillionworlds.tamarin.openxr.XrBaseAppState;
 import com.onemillionworlds.tamarin.vrhands.BoundHand;
 import com.onemillionworlds.tamarin.vrhands.VRHandsAppState;
 import com.onemillionworlds.tamarin.vrhands.functions.FunctionRegistration;
@@ -32,8 +32,8 @@ public class HandVelocityExampleState extends BaseAppState{
 
     Node rootNodeDelegate = new Node("HandVelocityExampleState");
 
-    XrAppState xrAppState;
-    OpenXrActionState openXrActionState;
+    XrBaseAppState xrAppState;
+    XrActionBaseAppState XrActionAppState;
     VRHandsAppState vrHands;
 
     Vector3f stoneCentre = new Vector3f(0,0.75f, 9.4f);
@@ -51,8 +51,8 @@ public class HandVelocityExampleState extends BaseAppState{
     @Override
     protected void initialize(Application app){
         ((SimpleApplication)app).getRootNode().attachChild(rootNodeDelegate);
-        xrAppState = getState(XrAppState.ID, XrAppState.class);
-        openXrActionState = getState(OpenXrActionState.ID, OpenXrActionState.class);
+        xrAppState = getState(XrBaseAppState.ID, XrBaseAppState.class);
+        XrActionAppState = getState(XrActionBaseAppState.ID, XrActionBaseAppState.class);
         vrHands = getState(VRHandsAppState.ID, VRHandsAppState.class);
 
         vrHands.getHandControls().forEach(boundHand ->

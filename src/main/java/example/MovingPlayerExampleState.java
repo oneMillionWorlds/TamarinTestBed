@@ -12,12 +12,12 @@ import com.jme3.scene.Node;
 import com.jme3.scene.shape.Box;
 import com.jme3.texture.Texture;
 import com.onemillionworlds.tamarin.actions.HandSide;
-import com.onemillionworlds.tamarin.actions.OpenXrActionState;
+import com.onemillionworlds.tamarin.actions.XrActionBaseAppState;
 import com.onemillionworlds.tamarin.actions.PhysicalBindingInterpretation;
 import com.onemillionworlds.tamarin.actions.compatibility.SyntheticDPad;
 import com.onemillionworlds.tamarin.actions.state.BooleanActionState;
 import com.onemillionworlds.tamarin.actions.state.Vector2fActionState;
-import com.onemillionworlds.tamarin.openxr.XrAppState;
+import com.onemillionworlds.tamarin.openxr.XrBaseAppState;
 import com.onemillionworlds.tamarin.vrhands.VRHandsAppState;
 import com.simsilica.lemur.Container;
 import com.simsilica.lemur.Label;
@@ -31,8 +31,8 @@ public class MovingPlayerExampleState extends BaseAppState{
 
     Node rootNodeDelegate = new Node("PlayerMovingExampleState");
 
-    XrAppState xrAppState;
-    OpenXrActionState openXrActionState;
+    XrBaseAppState xrAppState;
+    XrActionBaseAppState xrActionAppState;
     VRHandsAppState vrHands;
 
     Geometry observerBox;
@@ -45,8 +45,8 @@ public class MovingPlayerExampleState extends BaseAppState{
     @Override
     protected void initialize(Application app){
         ((SimpleApplication)app).getRootNode().attachChild(rootNodeDelegate);
-        xrAppState = getState(XrAppState.ID, XrAppState.class);
-        openXrActionState = getState(OpenXrActionState.ID, OpenXrActionState.class);
+        xrAppState = getState(XrBaseAppState.ID, XrBaseAppState.class);
+        xrActionAppState = getState(XrActionBaseAppState.ID, XrActionBaseAppState.class);
         vrHands = getState(VRHandsAppState.ID, VRHandsAppState.class);
         initialiseScene();
     }
@@ -80,10 +80,10 @@ public class MovingPlayerExampleState extends BaseAppState{
         /*
          * this is a temporary workaround until the XR_EXT_dpad_binding extension is better supported and we can use true dpads
          */
-        movementDpad.updateRawAction(openXrActionState.getVector2fActionState(ActionHandles.MOVEMENT_DPAD));
+        movementDpad.updateRawAction(xrActionAppState.getVector2fActionState(ActionHandles.MOVEMENT_DPAD));
 
         //this is a temporary workaround until LWJGL is upgraded to 3.3.3, and we can use true dpads
-        //syntheticDPad.updateRawAction(getStateManager().getState(OpenXrActionState.class).getVector2fActionState(ActionHandles.SYNTHETIC_D_PAD));
+        //syntheticDPad.updateRawAction(getStateManager().getState(XrActionAppState.class).getVector2fActionState(ActionHandles.SYNTHETIC_D_PAD));
 
         //the observer is the origin on the VR space (that the player then walks about in)
         Node observer = getObserver();
@@ -123,11 +123,11 @@ public class MovingPlayerExampleState extends BaseAppState{
         });
 
         //nausea inducing but nonetheless popular. Normal walking about
-        Vector2fActionState analogActionState = openXrActionState.getVector2fActionState(ActionHandles.WALK);
+        Vector2fActionState analogActionState = xrActionAppState.getVector2fActionState(ActionHandles.WALK);
         //we'll want the joystick to move the player relative to the head face direction, not the hand pointing direction
         Vector3f walkingDirectionRaw = new Vector3f(-analogActionState.getX(), 0, analogActionState.getY());
 
-        Vector3f playerRelativeWalkDirection = xrAppState.getLeftCamera().getRotation().mult(walkingDirectionRaw);
+        Vector3f playerRelativeWalkDirection = xrAppState.getVrCameraRotation().mult(walkingDirectionRaw);
         playerRelativeWalkDirection.y = 0;
         if (playerRelativeWalkDirection.length()>0.01){
             playerRelativeWalkDirection.normalizeLocal();
@@ -151,7 +151,7 @@ public class MovingPlayerExampleState extends BaseAppState{
         * Note that it dynamically produces some of the tutorial text based on what actions are bound to what buttons
         * (Dpad stuff it harder, so is hard coded
         */
-        PhysicalBindingInterpretation walkBinding = openXrActionState.getPhysicalBindingForAction(ActionHandles.WALK).get(0);
+        PhysicalBindingInterpretation walkBinding = xrActionAppState.getPhysicalBindingForAction(ActionHandles.WALK).get(0);
         String walkText = "Use " + walkBinding.handSide().map(h -> h.name().toLowerCase()).orElse("") + " " + walkBinding.fundamentalButton() +  " to walk (very nausea inducing)";
 
         Container lemurWindow = new Container();

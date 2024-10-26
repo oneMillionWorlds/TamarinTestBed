@@ -9,7 +9,7 @@ import com.jme3.math.ColorRGBA;
 import com.jme3.math.Vector3f;
 import com.jme3.system.AppSettings;
 import com.onemillionworlds.tamarin.actions.ActionType;
-import com.onemillionworlds.tamarin.actions.OpenXrActionState;
+import com.onemillionworlds.tamarin.actions.XrActionAppState;
 import com.onemillionworlds.tamarin.actions.actionprofile.Action;
 import com.onemillionworlds.tamarin.actions.actionprofile.ActionManifest;
 import com.onemillionworlds.tamarin.actions.actionprofile.ActionSet;
@@ -20,6 +20,7 @@ import com.onemillionworlds.tamarin.actions.controllerprofile.OculusGoController
 import com.onemillionworlds.tamarin.actions.controllerprofile.OculusTouchController;
 import com.onemillionworlds.tamarin.actions.controllerprofile.ValveIndexController;
 import com.onemillionworlds.tamarin.openxr.XrAppState;
+import com.onemillionworlds.tamarin.openxr.XrBaseAppState;
 import com.onemillionworlds.tamarin.openxr.XrSettings;
 import com.onemillionworlds.tamarin.vrhands.HandSpec;
 import com.onemillionworlds.tamarin.vrhands.VRHandsAppState;
@@ -60,10 +61,10 @@ public class Main extends SimpleApplication{
         XrSettings xrSettings = new XrSettings();
         //xrSettings.setDrawMode(DrawMode.BLITTED);
         getStateManager().attach(new XrAppState(xrSettings));
-        getStateManager().attach(new OpenXrActionState(manifest(), ActionSets.MAIN));
+        getStateManager().attach(new XrActionAppState(manifest(), ActionSets.MAIN));
         getStateManager().attach(new VRHandsAppState(handSpec()));
 
-        XrAppState vrAppState = getStateManager().getState(XrAppState.class);
+        XrBaseAppState vrAppState = getStateManager().getState(XrBaseAppState.ID, XrBaseAppState.class);
 
         vrAppState.movePlayersFeetToPosition(new Vector3f(0,0,10));
         vrAppState.playerLookAtPosition(new Vector3f(0,0,0));
@@ -77,7 +78,7 @@ public class Main extends SimpleApplication{
 
         getCamera().setFrustumPerspective(120f, (float)cam.getWidth() / cam.getHeight(), 0.01f, 1000f);
 
-        XrAppState xrAppState = getStateManager().getState(XrAppState.ID, XrAppState.class);
+        XrBaseAppState xrAppState = getStateManager().getState(XrBaseAppState.ID, XrBaseAppState.class);
         xrAppState.runAfterInitialisation(() -> LOGGER.info("System is: "+xrAppState.getSystemName()));
         xrAppState.setMainViewportConfiguration(vp -> {
             vp.setBackgroundColor(ColorRGBA.Brown);

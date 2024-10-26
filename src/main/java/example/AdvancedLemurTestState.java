@@ -14,8 +14,8 @@ import com.jme3.scene.Geometry;
 import com.jme3.scene.Node;
 import com.jme3.scene.Spatial;
 import com.jme3.scene.shape.Cylinder;
-import com.onemillionworlds.tamarin.actions.OpenXrActionState;
-import com.onemillionworlds.tamarin.openxr.XrAppState;
+import com.onemillionworlds.tamarin.actions.XrActionBaseAppState;
+import com.onemillionworlds.tamarin.openxr.XrBaseAppState;
 import com.onemillionworlds.tamarin.vrhands.VRHandsAppState;
 import com.onemillionworlds.tamarin.vrhands.functions.FunctionRegistration;
 import com.simsilica.lemur.Button;
@@ -39,7 +39,7 @@ import java.util.List;
 public class AdvancedLemurTestState extends BaseAppState{
 
     Node rootNodeDelegate = new Node("KeyboardExampleState");
-    OpenXrActionState openXrActionState;
+    XrActionBaseAppState XrActionAppState;
     VRHandsAppState vrHands;
 
     List<FunctionRegistration> functionsToCloseOnExit = new ArrayList<>();
@@ -49,7 +49,7 @@ public class AdvancedLemurTestState extends BaseAppState{
     @Override
     protected void initialize(Application app){
         ((SimpleApplication)app).getRootNode().attachChild(rootNodeDelegate);
-        openXrActionState = getState(OpenXrActionState.ID, OpenXrActionState.class);
+        XrActionAppState = getState(XrActionBaseAppState.ID, XrActionBaseAppState.class);
         vrHands = getState(VRHandsAppState.class);
 
         addPrimaryKeyboard();
@@ -136,7 +136,7 @@ public class AdvancedLemurTestState extends BaseAppState{
 
         vrHands.getHandControls().forEach(h -> functionsToCloseOnExit.add(h.setFingerTipPressDetection(lemurWindow, false, ActionHandles.HAPTIC, 0.5f)));
 
-        Vector3f playerCameraPosition = getStateManager().getState(XrAppState.ID,XrAppState.class).getVrCameraPosition();
+        Vector3f playerCameraPosition = getStateManager().getState(XrBaseAppState.ID,XrBaseAppState.class).getVrCameraPosition();
 
         lemurWindow.setLocalTranslation(playerCameraPosition.add(-0.45f,0,-0.25f));
         lemurWindow.lookAt(playerCameraPosition, Vector3f.UNIT_Y);

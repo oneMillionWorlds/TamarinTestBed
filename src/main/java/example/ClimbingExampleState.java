@@ -9,8 +9,8 @@ import com.jme3.math.Vector3f;
 import com.jme3.scene.Geometry;
 import com.jme3.scene.Node;
 import com.jme3.scene.shape.Box;
-import com.onemillionworlds.tamarin.actions.OpenXrActionState;
-import com.onemillionworlds.tamarin.openxr.XrAppState;
+import com.onemillionworlds.tamarin.actions.XrActionBaseAppState;
+import com.onemillionworlds.tamarin.openxr.XrBaseAppState;
 import com.onemillionworlds.tamarin.vrhands.VRHandsAppState;
 import com.onemillionworlds.tamarin.vrhands.functions.FunctionRegistration;
 import com.onemillionworlds.tamarin.vrhands.grabbing.ClimbingPointGrabControl;
@@ -32,8 +32,8 @@ public class ClimbingExampleState extends BaseAppState{
 
     Node rootNodeDelegate = new Node("ClimbingExampleState");
 
-    XrAppState xrAppState;
-    OpenXrActionState openXrActions;
+    XrBaseAppState xrAppState;
+    XrActionBaseAppState openXrActions;
     VRHandsAppState vrHands;
 
     List<FunctionRegistration> closeHandBindings = new ArrayList<>();
@@ -44,8 +44,8 @@ public class ClimbingExampleState extends BaseAppState{
     @Override
     protected void initialize(Application app){
         ((SimpleApplication)app).getRootNode().attachChild(rootNodeDelegate);
-        xrAppState = getState(XrAppState.ID, XrAppState.class);
-        openXrActions = getState(OpenXrActionState.ID, OpenXrActionState.class);
+        xrAppState = getState(XrBaseAppState.ID, XrBaseAppState.class);
+        openXrActions = getState(XrActionBaseAppState.ID, XrActionBaseAppState.class);
         vrHands = getState(VRHandsAppState.ID, VRHandsAppState.class);
 
         vrHands.getHandControls().forEach(boundHand ->

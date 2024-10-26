@@ -14,8 +14,10 @@ import com.jme3.scene.Node;
 import com.jme3.scene.shape.Box;
 import com.jme3.scene.shape.Quad;
 import com.jme3.texture.Texture;
-import com.onemillionworlds.tamarin.actions.OpenXrActionState;
+import com.onemillionworlds.tamarin.actions.XrActionAppState;
+import com.onemillionworlds.tamarin.actions.XrActionBaseAppState;
 import com.onemillionworlds.tamarin.openxr.XrAppState;
+import com.onemillionworlds.tamarin.openxr.XrBaseAppState;
 import com.onemillionworlds.tamarin.vrhands.HandSpec;
 import com.onemillionworlds.tamarin.vrhands.VRHandsAppState;
 import com.onemillionworlds.tamarin.vrhands.functions.FunctionRegistration;
@@ -96,11 +98,11 @@ public class DetachAndReattachExampleState extends BaseAppState{
                         .postBindLeft(hand -> hand.setGrabAction(ActionHandles.GRIP, rootNodeDelegate))
                         .postBindRight(hand -> hand.setGrabAction(ActionHandles.GRIP, rootNodeDelegate))
                         .build();
-                XrAppState xrAppState = new XrAppState();
+                XrBaseAppState xrAppState = new XrAppState();
                 xrAppState.movePlayersFeetToPosition(new Vector3f(0,0,10));
                 xrAppState.setMainViewportConfiguration(v -> v.setBackgroundColor(ColorRGBA.Brown));
                 getStateManager().attach(xrAppState);
-                getStateManager().attach(new OpenXrActionState(Main.manifest(), ActionSets.MAIN));
+                getStateManager().attach(new XrActionAppState(Main.manifest(), ActionSets.MAIN));
                 getStateManager().attach(new VRHandsAppState(handSpec));
 
                 getStateManager().getState(VRHandsAppState.ID, VRHandsAppState.class).getHandControls().forEach(boundHand ->
@@ -152,8 +154,8 @@ public class DetachAndReattachExampleState extends BaseAppState{
         boxGeometry.setMaterial(boxMat);
         boxGeometry.setLocalTranslation(location);
         GrabEventControl grabControl = new GrabEventControl(() -> {
-            getStateManager().detach(getState(XrAppState.ID, XrAppState.class));
-            getStateManager().detach(getState(OpenXrActionState.ID, OpenXrActionState.class));
+            getStateManager().detach(getState(XrBaseAppState.ID, XrBaseAppState.class));
+            getStateManager().detach(getState(XrActionBaseAppState.ID, XrActionBaseAppState.class));
             getStateManager().detach(getState(VRHandsAppState.ID, VRHandsAppState.class));
 
             reattachTimer = 5;

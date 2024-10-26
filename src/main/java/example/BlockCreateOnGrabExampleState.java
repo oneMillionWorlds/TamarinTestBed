@@ -14,7 +14,7 @@ import com.jme3.scene.Node;
 import com.jme3.scene.shape.Box;
 import com.jme3.scene.shape.Quad;
 import com.jme3.texture.Texture;
-import com.onemillionworlds.tamarin.actions.OpenXrActionState;
+import com.onemillionworlds.tamarin.actions.XrActionBaseAppState;
 import com.onemillionworlds.tamarin.vrhands.VRHandsAppState;
 import com.onemillionworlds.tamarin.vrhands.functions.FunctionRegistration;
 import com.onemillionworlds.tamarin.vrhands.functions.GrabPickingFunction;
@@ -37,7 +37,7 @@ public class BlockCreateOnGrabExampleState extends BaseAppState{
 
     VRHandsAppState vrHandsAppState;
 
-    OpenXrActionState openXrActionState;
+    XrActionBaseAppState XrActionAppState;
 
     List<FunctionRegistration> closeHandBindings = new ArrayList<>();
 
@@ -45,7 +45,7 @@ public class BlockCreateOnGrabExampleState extends BaseAppState{
     protected void initialize(Application app){
         ((SimpleApplication)app).getRootNode().attachChild(rootNodeDelegate);
         vrHandsAppState = getStateManager().getState(VRHandsAppState.ID, VRHandsAppState.class);
-        openXrActionState = getStateManager().getState(OpenXrActionState.ID, OpenXrActionState.class);
+        XrActionAppState = getStateManager().getState(XrActionBaseAppState.ID, XrActionBaseAppState.class);
 
         vrHandsAppState.getHandControls().forEach(boundHand ->
                 closeHandBindings.add(boundHand.setGrabAction(ActionHandles.GRIP, rootNodeDelegate)));

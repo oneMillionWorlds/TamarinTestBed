@@ -17,6 +17,7 @@ import com.jme3.scene.shape.Box;
 import com.jme3.scene.shape.Quad;
 import com.jme3.texture.Texture;
 import com.onemillionworlds.tamarin.openxr.XrAppState;
+import com.onemillionworlds.tamarin.openxr.XrBaseAppState;
 import com.onemillionworlds.tamarin.vrhands.VRHandsAppState;
 import com.onemillionworlds.tamarin.vrhands.functions.FunctionRegistration;
 import com.onemillionworlds.tamarin.vrhands.grabbing.GrabEventControl;
@@ -44,7 +45,7 @@ public class GlowTestState extends BaseAppState{
         getState(VRHandsAppState.ID, VRHandsAppState.class).getHandControls().forEach(boundHand ->
                 closeHandBindings.add(boundHand.setGrabAction(ActionHandles.GRIP, rootNodeDelegate)));
 
-        getState(XrAppState.ID, XrAppState.class).setMainViewportConfiguration(viewPort -> {
+        getState(XrBaseAppState.ID, XrBaseAppState.class).setMainViewportConfiguration(viewPort -> {
             AssetManager assetManager = getApplication().getAssetManager();
             FilterPostProcessor filterPostProcessor = buildPostProcessors(assetManager, app.getContext().getSettings().getSamples());
             viewPort.addProcessor(filterPostProcessor);

@@ -16,7 +16,7 @@ import com.jme3.scene.Spatial;
 import com.jme3.scene.control.AbstractControl;
 import com.jme3.scene.shape.Box;
 import com.jme3.texture.Texture;
-import com.onemillionworlds.tamarin.openxr.XrAppState;
+import com.onemillionworlds.tamarin.openxr.XrBaseAppState;
 import com.onemillionworlds.tamarin.vrhands.Haptic;
 import com.onemillionworlds.tamarin.vrhands.VRHandsAppState;
 import com.onemillionworlds.tamarin.vrhands.functions.FunctionRegistration;
@@ -60,7 +60,7 @@ public class MechanicalButtonExample extends BaseAppState{
         toggleButtons.setLocalTranslation(-0.4f, -0.1f, 0.07f);
         panelCenter.attachChild(toggleButtons);
 
-        XrAppState xrAppState = getState(XrAppState.ID, XrAppState.class);
+        XrBaseAppState xrAppState = getState(XrBaseAppState.ID, XrBaseAppState.class);
 
         xrAppState.movePlayersFeetToPosition(new Vector3f(0, 0, 0.75f));
         xrAppState.playerLookAtPosition(new Vector3f(0, 0, 0));

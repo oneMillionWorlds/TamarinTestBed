@@ -17,12 +17,12 @@ import com.jme3.scene.control.AbstractControl;
 import com.jme3.scene.shape.Box;
 import com.jme3.scene.shape.Cylinder;
 import com.onemillionworlds.tamarin.actions.HandSide;
-import com.onemillionworlds.tamarin.actions.OpenXrActionState;
+import com.onemillionworlds.tamarin.actions.XrActionBaseAppState;
 import com.onemillionworlds.tamarin.actions.compatibility.SyntheticDPad;
 import com.onemillionworlds.tamarin.actions.state.BooleanActionState;
 import com.onemillionworlds.tamarin.debug.HandDebugItems;
 import com.onemillionworlds.tamarin.debug.TamarinDebugOverlayState;
-import com.onemillionworlds.tamarin.openxr.XrAppState;
+import com.onemillionworlds.tamarin.openxr.XrBaseAppState;
 import com.onemillionworlds.tamarin.viewports.AdditionalViewportRequest;
 import com.onemillionworlds.tamarin.viewports.ViewportConfigurator;
 import com.onemillionworlds.tamarin.vrhands.VRHandsAppState;
@@ -43,8 +43,8 @@ public class AdditionalViewportExampleState extends BaseAppState{
 
     Node additionalRootNode = new Node("overlayRootNode");
 
-    XrAppState xrAppState;
-    OpenXrActionState openXrActionState;
+    XrBaseAppState xrAppState;
+    XrActionBaseAppState XrActionAppState;
     VRHandsAppState vrHands;
 
     SyntheticDPad movementDpad = new SyntheticDPad();
@@ -56,8 +56,8 @@ public class AdditionalViewportExampleState extends BaseAppState{
     @Override
     protected void initialize(Application app){
         ((SimpleApplication)app).getRootNode().attachChild(rootNodeDelegate);
-        xrAppState = getState(XrAppState.ID, XrAppState.class);
-        openXrActionState = getState(OpenXrActionState.ID, OpenXrActionState.class);
+        xrAppState = getState(XrBaseAppState.ID, XrBaseAppState.class);
+        XrActionAppState = getState(XrActionBaseAppState.ID, XrActionBaseAppState.class);
         vrHands = getState(VRHandsAppState.ID, VRHandsAppState.class);
         initialiseScene();
 
@@ -104,7 +104,7 @@ public class AdditionalViewportExampleState extends BaseAppState{
         /*
          * this is a temporary workaround until the XR_EXT_dpad_binding extension is better supported and we can use true dpads
          */
-        movementDpad.updateRawAction(openXrActionState.getVector2fActionState(ActionHandles.MOVEMENT_DPAD));
+        movementDpad.updateRawAction(XrActionAppState.getVector2fActionState(ActionHandles.MOVEMENT_DPAD));
 
         BooleanActionState teleportAction = movementDpad.north();
         // really we should be more understanding of the action being redefined to a different hand, but that is painful
