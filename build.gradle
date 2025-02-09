@@ -33,6 +33,7 @@ dependencies {
     implementation "com.simsilica:lemur-proto:1.13.0"
     implementation "com.google.guava:guava:19.0" // <-- I don't understand why this is necessary as lemur brings it in, but the Selector dropdown won't work with out this
     implementation group: 'org.codehaus.groovy', name: 'groovy-all', version: '3.0.19'
+    implementation 'com.github.stephengold:Minie:4.8.1'
 
     testImplementation 'org.junit.jupiter:junit-jupiter-api:5.7.0'
     testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.7.0'
