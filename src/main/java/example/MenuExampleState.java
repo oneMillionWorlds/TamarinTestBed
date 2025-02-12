@@ -150,7 +150,7 @@ public class MenuExampleState extends BaseAppState{
 
         lemurWindow.addChild(new Button("Start physics movement example")).addClickCommands(source -> {
             app.getStateManager().detach(this);
-            app.getStateManager().attach(new WorldPushbackPhysicsExampleState());
+            app.getStateManager().attach(new PhysicsExampleState());
         });
 
         lemurWindow.addChild(new Button("Exit")).addClickCommands(source ->

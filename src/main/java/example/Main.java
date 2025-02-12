@@ -49,6 +49,7 @@ public class Main extends SimpleApplication{
         settings.setTitle("Tamarin OpenXR Example");
         settings.setSamples(4);
         settings.setWindowSize(1280, 720);
+        settings.setVSync(false); // vr applications must not have v sync. Tamarin will sync for you
         XrSettings xrSettings = new XrSettings();
         Main app = new Main(
                 new XrAppState(xrSettings),
