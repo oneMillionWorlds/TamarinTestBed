@@ -26,6 +26,7 @@ import com.onemillionworlds.tamarin.miniesupport.PlayerVrPhysicsAppState;
 import com.onemillionworlds.tamarin.openxr.XrAppState;
 import com.onemillionworlds.tamarin.vrhands.VRHandsAppState;
 import com.onemillionworlds.tamarin.vrhands.functions.FunctionRegistration;
+import com.onemillionworlds.tamarin.vrhands.grabbing.GrabEventControl;
 import example.actions.ActionHandles;
 
 import java.util.ArrayList;
@@ -47,9 +48,9 @@ public class PhysicsExampleState extends BaseAppState{
 
     private final List<FunctionRegistration> functionRegistrations = new ArrayList<>();
 
-    private final PhysicsDebugVrAppState physicsDebugVrAppState = new PhysicsDebugVrAppState();
+    private PhysicsDebugVrAppState physicsDebugVrAppState;
 
-    private final PlayerVrPhysicsAppState playerVrPhysicsAppState = new PlayerVrPhysicsAppState();
+    private final PlayerVrPhysicsAppState playerVrPhysicsAppState =  new PlayerVrPhysicsAppState();
 
     @Override
     protected void initialize(Application app){
@@ -61,12 +62,14 @@ public class PhysicsExampleState extends BaseAppState{
 
         bulletAppState = new BulletAppState();
         getStateManager().attach(bulletAppState);
-        getStateManager().attach(physicsDebugVrAppState);
         getStateManager().attach(playerVrPhysicsAppState);
         initialiseScene();
 
-        vrHands.getHandControls().forEach(hand
-                -> functionRegistrations.add(hand.addFunction(new KinematicHandPhysics(bulletAppState.getPhysicsSpace()))));
+        vrHands.getHandControls().forEach(hand -> {
+                functionRegistrations.add(hand.addFunction(new KinematicHandPhysics(bulletAppState.getPhysicsSpace())));
+                // this is just for non physics interaction, like the grab to exit
+                functionRegistrations.add(hand.setGrabAction(ActionHandles.GRIP, rootNodeDelegate));
+        });
 
     }
 
@@ -74,7 +77,9 @@ public class PhysicsExampleState extends BaseAppState{
     protected void cleanup(Application app){
         rootNodeDelegate.removeFromParent();
         functionRegistrations.forEach(FunctionRegistration::endFunction);
-        getStateManager().detach(physicsDebugVrAppState);
+        if(physicsDebugVrAppState!=null){
+            getStateManager().detach(physicsDebugVrAppState);
+        }
         getStateManager().detach(playerVrPhysicsAppState);
         getStateManager().detach(bulletAppState);
     }
@@ -100,6 +105,8 @@ public class PhysicsExampleState extends BaseAppState{
         grabbableBox(new Vector3f(2, 0.6f, 10.1f), physicsSpace);
         grabbableBox(new Vector3f(2.1f, 0.6f, 10), physicsSpace);
 
+        toggleDebugBox(new Vector3f(2, 0.8f, 9));
+
         wall(new Vector3f(-1, 5, 10), new Vector3f(0.1f, 5, 0.5f), physicsSpace);
 
         //add some stairs to walk up
@@ -116,6 +123,27 @@ public class PhysicsExampleState extends BaseAppState{
     public void update(float tpf){
         super.update(tpf);
         moveViaControls(tpf);
+    }
+
+    private void toggleDebugBox(Vector3f location){
+        Box box = new Box(0.05f, 0.05f, 0.05f);
+        Geometry boxGeometry = new Geometry("box", box);
+        Texture exitTexture = getApplication().getAssetManager().loadTexture("Textures/grabToTogglePhysicsDebug.png");
+        Material boxMat = new Material(getApplication().getAssetManager(),"Common/MatDefs/Misc/Unshaded.j3md");
+        boxMat.setTexture("ColorMap", exitTexture);
+        boxGeometry.setMaterial(boxMat);
+        boxGeometry.setLocalTranslation(location);
+        GrabEventControl grabControl = new GrabEventControl(() -> {
+            if(physicsDebugVrAppState == null){
+                physicsDebugVrAppState = new PhysicsDebugVrAppState();
+                getStateManager().attach(physicsDebugVrAppState);
+            }else{
+                getStateManager().detach(physicsDebugVrAppState);
+                physicsDebugVrAppState = null;
+            }
+        });
+        boxGeometry.addControl(grabControl);
+        rootNodeDelegate.attachChild(boxGeometry);
     }
 
     public void moveViaControls(float timeslice){
