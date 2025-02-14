@@ -66,7 +66,7 @@ public class PhysicsExampleState extends BaseAppState{
         initialiseScene();
 
         vrHands.getHandControls().forEach(hand -> {
-                functionRegistrations.add(hand.addFunction(new KinematicHandPhysics(bulletAppState.getPhysicsSpace())));
+                functionRegistrations.add(hand.addFunction(new KinematicHandPhysics(bulletAppState.getPhysicsSpace(), ActionHandles.GRIP)));
                 // this is just for non physics interaction, like the grab to exit
                 functionRegistrations.add(hand.setGrabAction(ActionHandles.GRIP, rootNodeDelegate));
         });
