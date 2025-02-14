@@ -106,6 +106,7 @@ public class PhysicsExampleState extends BaseAppState{
         grabbableBox(new Vector3f(2.1f, 0.6f, 10), physicsSpace);
 
         toggleDebugBox(new Vector3f(2, 0.8f, 9));
+        exitBox(new Vector3f(2, 0.8f, 8.5f));
 
         wall(new Vector3f(-1, 5, 10), new Vector3f(0.1f, 5, 0.5f), physicsSpace);
 
@@ -145,6 +146,23 @@ public class PhysicsExampleState extends BaseAppState{
         boxGeometry.addControl(grabControl);
         rootNodeDelegate.attachChild(boxGeometry);
     }
+
+    private void exitBox(Vector3f location){
+        Box box = new Box(0.05f, 0.05f, 0.05f);
+        Geometry boxGeometry = new Geometry("box", box);
+        Texture exitTexture = getApplication().getAssetManager().loadTexture("Textures/grabToExit.png");
+        Material boxMat = new Material(getApplication().getAssetManager(),"Common/MatDefs/Misc/Unshaded.j3md");
+        boxMat.setTexture("ColorMap", exitTexture);
+        boxGeometry.setMaterial(boxMat);
+        boxGeometry.setLocalTranslation(location);
+        GrabEventControl grabControl = new GrabEventControl(() -> {
+            getStateManager().detach(this);
+            getStateManager().attach(new MenuExampleState());
+        });
+        boxGeometry.addControl(grabControl);
+        rootNodeDelegate.attachChild(boxGeometry);
+    }
+
 
     public void moveViaControls(float timeslice){
 
@@ -188,10 +206,6 @@ public class PhysicsExampleState extends BaseAppState{
         return floor;
     }
 
-
-    /**
-     * TODO; need hand physics and ability to pick up box
-     */
     private void grabbableBox(Vector3f location, PhysicsSpace physicsSpace){
         Box box = new Box(0.05f, 0.05f, 0.05f);
         Geometry boxGeometry = new Geometry("box", box);
