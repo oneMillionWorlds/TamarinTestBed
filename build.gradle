@@ -18,7 +18,7 @@ ext {
 }
 
 dependencies {
-    implementation 'com.onemillionworlds:tamarin:2.7.0'
+    implementation 'com.onemillionworlds:tamarin:2.8.0'
     implementation "org.jmonkeyengine:jme3-effects:$jmonkeyengine_version"
     implementation "org.jmonkeyengine:jme3-core:$jmonkeyengine_version"
     implementation "org.jmonkeyengine:jme3-lwjgl3:$jmonkeyengine_version"
