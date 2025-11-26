@@ -62,6 +62,7 @@ public class SkeletonPositionRecorder extends BaseAppState {
         Quaternion rotation;
         float actualGrip;
         float actualTrigger;
+        float radius;
         // smaller is better (max of individual diffs)
         float errorMagnitude;
     }
@@ -216,6 +217,7 @@ public class SkeletonPositionRecorder extends BaseAppState {
                         js.rotation = pose.orientation();
                         js.actualGrip = grip;
                         js.actualTrigger = trigger;
+                        js.radius = pose.radius();
                         js.errorMagnitude = thisError;
                         tc.joints.put(joint, js);
                     }
@@ -253,7 +255,7 @@ public class SkeletonPositionRecorder extends BaseAppState {
     private void writeCsv() {
         File out = new File("simulatedJointValues.csv");
         try (PrintWriter pw = new PrintWriter(new FileWriter(out))) {
-            pw.println("handSide,targetGrip,targetTrigger,joint,positionX,positionY,positionZ,rotationX,rotationY,rotationZ,rotationW");
+            pw.println("handSide,targetGrip,targetTrigger,joint,positionX,positionY,positionZ,rotationX,rotationY,rotationZ,rotationW,radius");
             // Deterministic ordering: hand LEFT then RIGHT, then targets in insertion order, then joints by enum order
             for (HandSide side : List.of(HandSide.LEFT, HandSide.RIGHT)) {
                 HandRecording hr = recordings.get(side);
@@ -264,9 +266,9 @@ public class SkeletonPositionRecorder extends BaseAppState {
                         if (js == null) continue; // should not happen if complete
                         Vector3f p = js.position;
                         Quaternion r = js.rotation;
-                        pw.printf("%s,%.2f,%.2f,%s,%.8f,%.8f,%.8f,%.8f,%.8f,%.8f,%.8f%n",
+                        pw.printf("%s,%.2f,%.2f,%s,%.8f,%.8f,%.8f,%.8f,%.8f,%.8f,%.8f,%.8f%n",
                                 side.name(), tc.key.targetGrip, tc.key.targetTrigger, joint.name(),
-                                p.x, p.y, p.z, r.getX(), r.getY(), r.getZ(), r.getW());
+                                p.x, p.y, p.z, r.getX(), r.getY(), r.getZ(), r.getW(), js.radius);
                     }
                 }
             }
