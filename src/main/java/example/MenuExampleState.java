@@ -25,6 +25,7 @@ import com.simsilica.lemur.Container;
 import com.simsilica.lemur.Label;
 import com.simsilica.lemur.event.MouseListener;
 import example.actions.ActionHandles;
+import utilities.SkeletonPositionRecorder;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -152,6 +153,15 @@ public class MenuExampleState extends BaseAppState{
             app.getStateManager().detach(this);
             app.getStateManager().attach(new PhysicsExampleState());
         });
+
+        lemurWindow.addChild(new Label("Utilities"));
+
+        lemurWindow.addChild(new Button("Skeleton position recorder")).addClickCommands(source -> {
+            app.getStateManager().detach(this);
+            app.getStateManager().attach(new SkeletonPositionRecorder());
+        });
+
+        lemurWindow.addChild(new Label(""));
 
         lemurWindow.addChild(new Button("Exit")).addClickCommands(source ->
             getApplication().stop()
