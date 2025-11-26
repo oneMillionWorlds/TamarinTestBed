@@ -35,8 +35,8 @@ import java.util.Optional;
  */
 public class SkeletonPositionRecorder extends BaseAppState {
 
-    public static final float[] TARGET_GRIPS = new float[]{0.0f, 0.2f, 0.5f, 0.8f, 1.0f};
-    public static final float[] TARGET_TRIGGERS = new float[]{0.0f, 0.2f, 0.5f, 0.8f, 1.0f};
+    public static final float[] TARGET_GRIPS = new float[]{0.0f, 0.1f, 0.2f, 0.35f, 0.5f, 0.8f, 1.0f};
+    public static final float[] TARGET_TRIGGERS = new float[]{0.0f, 0.02f, 0.1f, 0.2f, 0.35f, 0.5f, 0.8f, 1.0f};
 
     public static final float PERMITTED_ERROR = 0.01f;
 
@@ -55,6 +55,11 @@ public class SkeletonPositionRecorder extends BaseAppState {
     private final Map<HandSide, HandRecording> recordings = new EnumMap<>(HandSide.class);
 
     private boolean writtenCsv = false;
+
+    /**
+     * Don't start recording immediately to allow the initial click in to dissipate
+     */
+    private float countInTime = 1.5f;
 
     // Represents a joint sample for a specific target
     private static class JointSample {
@@ -155,7 +160,8 @@ public class SkeletonPositionRecorder extends BaseAppState {
     @Override
     public void update(float tpf) {
         super.update(tpf);
-        if (xrActions == null || !xrActions.isReady()) {
+        countInTime-=tpf;
+        if (xrActions == null || !xrActions.isReady() || countInTime > 0) {
             return;
         }
 
