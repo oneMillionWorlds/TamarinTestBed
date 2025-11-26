@@ -17,12 +17,14 @@ import com.jme3.scene.shape.Quad;
 import com.jme3.scene.shape.Sphere;
 import com.jme3.texture.Texture;
 import com.onemillionworlds.tamarin.math.Line3f;
+import com.onemillionworlds.tamarin.vrhands.BoundHand;
 import com.onemillionworlds.tamarin.vrhands.VRHandsAppState;
 import com.onemillionworlds.tamarin.vrhands.functions.FunctionRegistration;
 import com.onemillionworlds.tamarin.vrhands.grabbing.GrabEventControl;
 import com.onemillionworlds.tamarin.vrhands.grabbing.RelativeMovingGrabControl;
 import com.onemillionworlds.tamarin.vrhands.grabbing.restrictions.GrabMoveRestriction;
 import com.onemillionworlds.tamarin.vrhands.grabbing.restrictions.RestrictionUtilities;
+import com.onemillionworlds.tamarin.vrhands.grabbing.snaptopoints.SnapChangeCallback;
 import com.onemillionworlds.tamarin.vrhands.grabbing.snaptopoints.SnapToLocalPoint;
 import com.onemillionworlds.tamarin.vrhands.grabbing.snaptopoints.SnapToConfiguration;
 import com.simsilica.lemur.Container;
@@ -115,12 +117,18 @@ public class GearStickExample extends BaseAppState{
 
         float snapToDistance = 0.03f;
 
-        SnapToConfiguration.OnSnapCallback onSnapCallback = (hand, globalPosition, localPosition) -> {
-            hand.triggerHapticAction(ActionHandles.HAPTIC,0.05f, 20f, 0.25f);
+        SnapChangeCallback snapChangeCallback = new SnapChangeCallback() {
+            @Override
+            public void onUnsnapFromSnapped(BoundHand handGrabbing) {
+                super.onUnsnapFromSnapped(handGrabbing);
+                handGrabbing.triggerHapticAction(ActionHandles.HAPTIC,0.05f, 20f, 0.25f);
+            }
 
-        };
-        SnapToConfiguration.OnUnSnapCallback onUnSnapCallback = (hand) -> {
-            hand.triggerHapticAction(ActionHandles.HAPTIC,0.05f, 10f, 0.15f);
+            @Override
+            public void onSnapFromUnsnapped(BoundHand handGrabbing, Vector3f snappedToLocal, Vector3f snappedToGlobal) {
+                super.onSnapFromUnsnapped(handGrabbing, snappedToLocal, snappedToGlobal);
+                handGrabbing.triggerHapticAction(ActionHandles.HAPTIC,0.05f, 10f, 0.15f);
+            }
         };
 
 
@@ -132,8 +140,7 @@ public class GearStickExample extends BaseAppState{
                 new SnapToLocalPoint(fourth, snapToDistance),
                 new SnapToLocalPoint(fifth, snapToDistance),
                 new SnapToLocalPoint(sixth, snapToDistance)),
-                onSnapCallback,
-                onUnSnapCallback
+                snapChangeCallback
                 ));
 
         grabControl.setGrabMoveRestriction(new GrabMoveRestriction(){

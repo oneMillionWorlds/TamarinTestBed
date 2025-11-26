@@ -151,8 +151,8 @@ public class MovingPlayerExampleState extends BaseAppState{
         * Note that it dynamically produces some of the tutorial text based on what actions are bound to what buttons
         * (Dpad stuff it harder, so is hard coded
         */
-        PhysicalBindingInterpretation walkBinding = xrActionAppState.getPhysicalBindingForAction(ActionHandles.WALK).get(0);
-        String walkText = "Use " + walkBinding.handSide().map(h -> h.name().toLowerCase()).orElse("") + " " + walkBinding.fundamentalButton() +  " to walk (very nausea inducing)";
+        String walkBinding = xrActionAppState.getLocalisedButtonNameForAction(ActionHandles.WALK).get(0);
+        String walkText = "Use " + walkBinding + " to walk (very nausea inducing)";
 
         Container lemurWindow = new Container();
         lemurWindow.setLocalScale(0.02f); //lemur defaults to 1 meter == 1 pixel (because that make sense for 2D, scale it down, so it's not huge in 3d)

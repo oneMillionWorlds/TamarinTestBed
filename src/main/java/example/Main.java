@@ -32,6 +32,8 @@ import com.onemillionworlds.tamarin.openxr.XrBaseAppState;
 import com.onemillionworlds.tamarin.openxr.XrSettings;
 import com.onemillionworlds.tamarin.vrhands.HandSpec;
 import com.onemillionworlds.tamarin.vrhands.VRHandsAppState;
+import com.onemillionworlds.tamarin.vrhands.skeletonsynthesis.DefaultSkeletonSynthesiser;
+import com.onemillionworlds.tamarin.vrhands.skeletonsynthesis.SkeletonSynthesiser;
 import com.simsilica.lemur.GuiGlobals;
 import com.simsilica.lemur.style.BaseStyles;
 import example.actions.ActionHandles;
@@ -51,10 +53,13 @@ public class Main extends SimpleApplication{
         settings.setWindowSize(1280, 720);
         settings.setVSync(false); // vr applications must not have v sync. Tamarin will sync for you
         XrSettings xrSettings = new XrSettings();
+
+        VRHandsAppState vrHands = new VRHandsAppState(handSpec());
+        vrHands.setSkeletonSynthesiser(new DefaultSkeletonSynthesiser(ActionHandles.TRIGGER, ActionHandles.GRIP, SkeletonSynthesiser.SynthesiseMode.FALLBACK_ONLY));
         Main app = new Main(
                 new XrAppState(xrSettings),
                 new XrActionAppState(manifest(), ActionSets.MAIN),
-                new VRHandsAppState(handSpec()),
+                vrHands,
                 //these are just the default JME states (that we have to explicitly select because of using the constructor that takes states)
                 new StatsAppState(),
                 new ConstantVerifierState(),
