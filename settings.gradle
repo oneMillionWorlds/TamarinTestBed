@@ -1,4 +1,12 @@
 rootProject.name = 'TamarinTestBed'
 
-
-//includeBuild('../Tamarin')
+/*
+includeBuild('../Tamarin') { build ->
+    dependencySubstitution {
+        substitute(module('com.onemillionworlds:tamarin'))
+                .using(project(':tamarin-desktop'))
+        substitute(module('com.onemillionworlds:tamarin-core'))
+                .using(project(':tamarin-core'))
+    }
+}
+*/
