@@ -7,6 +7,7 @@ import com.jme3.app.StatsAppState;
 import com.jme3.app.state.ConstantVerifierState;
 import com.jme3.system.AppSettings;
 import com.onemillionworlds.tamarin.actions.DesktopSimulatingXrActionAppState;
+import com.onemillionworlds.tamarin.debugwindow.DebugWindowState;
 import com.onemillionworlds.tamarin.openxr.DesktopSimulatingXrAppState;
 import com.onemillionworlds.tamarin.vrhands.VRHandsAppState;
 import example.actions.ActionHandles;
@@ -31,6 +32,7 @@ public class MainVrSimulationMode{
                 new DesktopSimulatingXrAppState(),
                 new DesktopSimulatingXrActionAppState(Main.manifest(), ActionHandles.HAND_POSE, ActionSets.MAIN),
                 new VRHandsAppState(Main.handSpec()),
+                new DebugWindowState(ActionHandles.HAPTIC, ActionHandles.GRIP).showStats(),
                 //these are just the default JME states (that we have to explicitly select because of using the constructor that takes states)
                 new FlyCamAppState(),
                 new StatsAppState(),
