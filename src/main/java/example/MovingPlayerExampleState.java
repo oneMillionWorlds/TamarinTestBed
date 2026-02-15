@@ -131,8 +131,8 @@ public class MovingPlayerExampleState extends BaseAppState{
         playerRelativeWalkDirection.y = 0;
         if (playerRelativeWalkDirection.length()>0.01){
             playerRelativeWalkDirection.normalizeLocal();
+            xrAppState.movePlayersFeetToPosition(xrAppState.getPlayerFeetPosition().add(playerRelativeWalkDirection.mult(tpf)));
         }
-        observer.setLocalTranslation(observer.getWorldTranslation().add(playerRelativeWalkDirection.mult(2f*tpf)));
 
     }
 
