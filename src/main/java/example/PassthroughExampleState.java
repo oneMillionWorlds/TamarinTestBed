@@ -74,9 +74,9 @@ public class PassthroughExampleState extends BaseAppState{
         lemurWindow.setLocalTranslation(-0.6f,1.6f,8.5f);
         rootNodeDelegate.attachChild(lemurWindow);
 
-        rootNodeDelegate.attachChild(box(new Vector3f(-0.4f, 1f, 8.6f), ColorRGBA.Red));
-        rootNodeDelegate.attachChild(box(new Vector3f(0.4f, 1f, 8.6f), ColorRGBA.Blue));
-        spinningBox = box(new Vector3f(0f, 0.8f, 8.8f), ColorRGBA.Green);
+        rootNodeDelegate.attachChild(box(new Vector3f(-0.4f, 0.2f, 8.6f), ColorRGBA.Red));
+        rootNodeDelegate.attachChild(box(new Vector3f(0.4f, 0.2f, 8.6f), ColorRGBA.Blue));
+        spinningBox = box(new Vector3f(0f, 0.1f, 8.8f), ColorRGBA.Green);
         rootNodeDelegate.attachChild(spinningBox);
 
         VRHandsAppState vrHands = getState(VRHandsAppState.ID, VRHandsAppState.class);
