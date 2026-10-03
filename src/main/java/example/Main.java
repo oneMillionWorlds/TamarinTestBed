@@ -53,6 +53,7 @@ public class Main extends SimpleApplication{
         settings.setWindowSize(1280, 720);
         settings.setVSync(false); // vr applications must not have v sync. Tamarin will sync for you
         XrSettings xrSettings = new XrSettings();
+        xrSettings.setPassthroughSupport(true); // allows passthrough to be turned on at runtime (see PassthroughExampleState)
 
         VRHandsAppState vrHands = new VRHandsAppState(handSpec());
         vrHands.setSkeletonSynthesiser(new DefaultSkeletonSynthesiser(ActionHandles.TRIGGER, ActionHandles.GRIP, SkeletonSynthesiser.SynthesiseMode.FALLBACK_ONLY));

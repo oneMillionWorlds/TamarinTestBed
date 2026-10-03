@@ -1,5 +1,5 @@
 [versions]
-tamarin = "3.1.0"
+tamarin = "3.2.0"
 jmonkeyengine = "3.9.0-stable"
 deeptokens = "1.0.4"
 lemur = "1.16.0"
