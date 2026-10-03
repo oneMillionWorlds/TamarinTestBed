@@ -5,38 +5,34 @@ plugins {
     id 'java'
 }
 
-group 'org.example'
-version '1.0-SNAPSHOT'
+group = 'org.example'
+version = '1.0-SNAPSHOT'
 
 repositories {
-    jcenter()
     mavenCentral()
 }
 
-ext {
-    jmonkeyengine_version = '3.9.0-stable'
-}
-
 dependencies {
-    implementation 'com.onemillionworlds:tamarin:3.1.0'
-    implementation "org.jmonkeyengine:jme3-effects:$jmonkeyengine_version"
-    implementation "org.jmonkeyengine:jme3-core:$jmonkeyengine_version"
-    implementation "org.jmonkeyengine:jme3-lwjgl3:$jmonkeyengine_version"
-    implementation "org.jmonkeyengine:jme3-desktop:$jmonkeyengine_version"
-    implementation "org.jmonkeyengine:jme3-plugins:$jmonkeyengine_version"
-    implementation "org.jmonkeyengine:jme3-testdata:$jmonkeyengine_version"
-    implementation 'com.onemillionworlds:deeptokens:1.0.4'
+    implementation libs.tamarin
+    implementation libs.jme3.effects
+    implementation libs.jme3.core
+    implementation libs.jme3.lwjgl3
+    implementation libs.jme3.desktop
+    implementation libs.jme3.plugins
+    implementation libs.jme3.testdata
+    implementation libs.deeptokens
 
-    runtimeOnly "org.jmonkeyengine:jme3-jogg:$jmonkeyengine_version"
+    runtimeOnly libs.jme3.jogg
 
-    implementation "com.simsilica:lemur:1.16.0"
-    implementation "com.simsilica:lemur-proto:1.13.0"
-    implementation "com.google.guava:guava:19.0" // <-- I don't understand why this is necessary as lemur brings it in, but the Selector dropdown won't work with out this
-    implementation group: 'org.codehaus.groovy', name: 'groovy-all', version: '3.0.19'
-    implementation 'com.github.stephengold:Minie:8.2.0'
+    implementation libs.lemur
+    implementation libs.lemur.proto
+    implementation libs.guava // <-- I don't understand why this is necessary as lemur brings it in, but the Selector dropdown won't work with out this
+    implementation libs.groovy.all
+    implementation libs.minie
 
-    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.7.0'
-    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.7.0'
+    testImplementation libs.junit.jupiter.api
+    testRuntimeOnly libs.junit.jupiter.engine
+    testRuntimeOnly libs.junit.platform.launcher
 }
 
 tasks.register("generateButtonPanel", DeepTokenifyFile){

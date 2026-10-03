@@ -1,0 +1,30 @@
+[versions]
+tamarin = "3.1.0"
+jmonkeyengine = "3.9.0-stable"
+deeptokens = "1.0.4"
+lemur = "1.16.0"
+lemur-proto = "1.13.0"
+guava = "19.0"
+groovy = "3.0.19"
+minie = "8.2.0"
+junit-jupiter = "5.7.0"
+junit-platform = "1.7.0"
+
+[libraries]
+tamarin = { module = "com.onemillionworlds:tamarin", version.ref = "tamarin" }
+deeptokens = { module = "com.onemillionworlds:deeptokens", version.ref = "deeptokens" }
+jme3-core = { module = "org.jmonkeyengine:jme3-core", version.ref = "jmonkeyengine" }
+jme3-desktop = { module = "org.jmonkeyengine:jme3-desktop", version.ref = "jmonkeyengine" }
+jme3-effects = { module = "org.jmonkeyengine:jme3-effects", version.ref = "jmonkeyengine" }
+jme3-lwjgl3 = { module = "org.jmonkeyengine:jme3-lwjgl3", version.ref = "jmonkeyengine" }
+jme3-plugins = { module = "org.jmonkeyengine:jme3-plugins", version.ref = "jmonkeyengine" }
+jme3-testdata = { module = "org.jmonkeyengine:jme3-testdata", version.ref = "jmonkeyengine" }
+jme3-jogg = { module = "org.jmonkeyengine:jme3-jogg", version.ref = "jmonkeyengine" }
+lemur = { module = "com.simsilica:lemur", version.ref = "lemur" }
+lemur-proto = { module = "com.simsilica:lemur-proto", version.ref = "lemur-proto" }
+guava = { module = "com.google.guava:guava", version.ref = "guava" }
+groovy-all = { module = "org.codehaus.groovy:groovy-all", version.ref = "groovy" }
+minie = { module = "com.github.stephengold:Minie", version.ref = "minie" }
+junit-jupiter-api = { module = "org.junit.jupiter:junit-jupiter-api", version.ref = "junit-jupiter" }
+junit-jupiter-engine = { module = "org.junit.jupiter:junit-jupiter-engine", version.ref = "junit-jupiter" }
+junit-platform-launcher = { module = "org.junit.platform:junit-platform-launcher", version.ref = "junit-platform" }

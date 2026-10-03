@@ -5,12 +5,10 @@ repositories {
     mavenCentral()
 }
 
-apply plugin: 'java'
-
 dependencies {
     implementation gradleApi()
-    implementation 'com.onemillionworlds:deeptokens:1.0.4'
-    implementation 'org.jmonkeyengine:jme3-core:3.6.1-stable'
-    implementation 'org.jmonkeyengine:jme3-desktop:3.6.1-stable'
+    implementation libs.deeptokens
+    implementation libs.jme3.core
+    implementation libs.jme3.desktop
 
 }
