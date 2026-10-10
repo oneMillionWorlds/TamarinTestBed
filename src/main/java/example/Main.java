@@ -19,14 +19,17 @@ import com.onemillionworlds.tamarin.actions.ActionType;
 import com.onemillionworlds.tamarin.actions.HandSide;
 import com.onemillionworlds.tamarin.actions.XrActionAppState;
 import com.onemillionworlds.tamarin.actions.actionprofile.Action;
+import com.onemillionworlds.tamarin.actions.actionprofile.ActionHandle;
 import com.onemillionworlds.tamarin.actions.actionprofile.ActionManifest;
 import com.onemillionworlds.tamarin.actions.actionprofile.ActionSet;
 import com.onemillionworlds.tamarin.actions.controllerprofile.GoogleDaydreamController;
 import com.onemillionworlds.tamarin.actions.controllerprofile.HtcViveController;
+import com.onemillionworlds.tamarin.actions.controllerprofile.MetaHandMicrogestures;
 import com.onemillionworlds.tamarin.actions.controllerprofile.MixedRealityMotionController;
 import com.onemillionworlds.tamarin.actions.controllerprofile.OculusGoController;
 import com.onemillionworlds.tamarin.actions.controllerprofile.OculusTouchController;
 import com.onemillionworlds.tamarin.actions.controllerprofile.ValveIndexController;
+import com.onemillionworlds.tamarin.actions.gestures.Gesture;
 import com.onemillionworlds.tamarin.openxr.XrAppState;
 import com.onemillionworlds.tamarin.openxr.XrBaseAppState;
 import com.onemillionworlds.tamarin.openxr.XrSettings;
@@ -39,6 +42,7 @@ import com.simsilica.lemur.style.BaseStyles;
 import example.actions.ActionHandles;
 import example.actions.ActionSets;
 
+import java.util.function.Function;
 import java.util.logging.Logger;
 
 public class Main extends SimpleApplication{
@@ -54,6 +58,7 @@ public class Main extends SimpleApplication{
         settings.setVSync(false); // vr applications must not have v sync. Tamarin will sync for you
         XrSettings xrSettings = new XrSettings();
         xrSettings.setPassthroughSupport(true); // allows passthrough to be turned on at runtime (see PassthroughExampleState)
+        //settings.setGraphicsDebug(true);
 
         VRHandsAppState vrHands = new VRHandsAppState(handSpec());
         vrHands.setSkeletonSynthesiser(new DefaultSkeletonSynthesiser(ActionHandles.TRIGGER, ActionHandles.GRIP, SkeletonSynthesiser.SynthesiseMode.FALLBACK_ONLY));
@@ -157,6 +162,10 @@ public class Main extends SimpleApplication{
                 .withSuggestedBinding(OculusTouchController.PROFILE, OculusTouchController.pathBuilder().rightHand().triggerValue())
                 .withSuggestedBinding(ValveIndexController.PROFILE, ValveIndexController.pathBuilder().leftHand().triggerValue())
                 .withSuggestedBinding(ValveIndexController.PROFILE, ValveIndexController.pathBuilder().rightHand().triggerValue())
+                // hand tracking: thumb and index finger pinch. This also suggests the runtime's own pinch binding
+                // (HandInteractionExt), which is used where the runtime supports it, otherwise Tamarin detects the pinch
+                .withGestureBinding(HandSide.LEFT, Gesture.PINCH_INDEX)
+                .withGestureBinding(HandSide.RIGHT, Gesture.PINCH_INDEX)
                 .withDesktopSimulationKeyTrigger(HandSide.LEFT, new KeyTrigger(KeyInput.KEY_F3), false)
                 .withDesktopSimulationKeyTrigger(HandSide.RIGHT, new KeyTrigger(KeyInput.KEY_F4), false)
                 .build();
@@ -220,6 +229,74 @@ public class Main extends SimpleApplication{
                 .withDesktopSimulationKeyTrigger(HandSide.RIGHT, new KeyTrigger(KeyInput.KEY_F6), true)
                 .build();
 
+        /*
+         * META ONLY thumb microgestures (bare hands). On other runtimes these bindings are skipped and the actions
+         * never fire. Used by MetaOnlyHandGesturesExampleState. The numpad keys simulate them in desktop simulation mode.
+         */
+        Action microgestureTap = microgestureAction(ActionHandles.MICROGESTURE_TAP, "Thumb tap", MetaHandMicrogestures.BindingPathBuilderHand::tapThumb, KeyInput.KEY_NUMPAD5);
+        Action microgestureSwipeLeft = microgestureAction(ActionHandles.MICROGESTURE_SWIPE_LEFT, "Thumb swipe left", MetaHandMicrogestures.BindingPathBuilderHand::swipeLeft, KeyInput.KEY_NUMPAD4);
+        Action microgestureSwipeRight = microgestureAction(ActionHandles.MICROGESTURE_SWIPE_RIGHT, "Thumb swipe right", MetaHandMicrogestures.BindingPathBuilderHand::swipeRight, KeyInput.KEY_NUMPAD6);
+        Action microgestureSwipeForward = microgestureAction(ActionHandles.MICROGESTURE_SWIPE_FORWARD, "Thumb swipe forward", MetaHandMicrogestures.BindingPathBuilderHand::swipeForward, KeyInput.KEY_NUMPAD8);
+        Action microgestureSwipeBackward = microgestureAction(ActionHandles.MICROGESTURE_SWIPE_BACKWARD, "Thumb swipe backward", MetaHandMicrogestures.BindingPathBuilderHand::swipeBackward, KeyInput.KEY_NUMPAD2);
+
+        /*
+         * A Tamarin side (synthetic) gesture binding. Tamarin detects the thumbs up from the hand joints, so this works on
+         * any runtime with hand tracking (not just Meta). Used by MetaOnlyHandGesturesExampleState. Numpad 0 simulates it.
+         */
+        Action resetCube = Action.builder()
+                .actionHandle(ActionHandles.RESET_CUBE)
+                .translatedName("Reset cube")
+                .actionType(ActionType.BOOLEAN)
+                .withSuggestedBinding(OculusTouchController.PROFILE, OculusTouchController.pathBuilder().leftHand().xClick())
+                .withSuggestedBinding(ValveIndexController.PROFILE, ValveIndexController.pathBuilder().leftHand().aClick())
+                .withSuggestedBinding(ValveIndexController.PROFILE, ValveIndexController.pathBuilder().rightHand().aClick())
+                .withGestureBinding(HandSide.LEFT, Gesture.THUMBS_UP)
+                .withGestureBinding(HandSide.RIGHT, Gesture.THUMBS_UP)
+                .withDesktopSimulationKeyTrigger(HandSide.RIGHT, new KeyTrigger(KeyInput.KEY_NUMPAD0), false)
+                .build();
+
+        /*
+         * Spins the cube while held. Thumb and ring finger pinch (no OpenXR binding exists for that, so it is a gesture
+         * binding) or the B/Y buttons. Used by MetaOnlyHandGesturesExampleState. Numpad 7 simulates it.
+         */
+        Action spinCube = Action.builder()
+                .actionHandle(ActionHandles.SPIN_CUBE)
+                .translatedName("Spin cube")
+                .actionType(ActionType.BOOLEAN)
+                .withSuggestedBinding(OculusTouchController.PROFILE, OculusTouchController.pathBuilder().leftHand().yClick())
+                .withSuggestedBinding(OculusTouchController.PROFILE, OculusTouchController.pathBuilder().rightHand().bClick())
+                .withSuggestedBinding(ValveIndexController.PROFILE, ValveIndexController.pathBuilder().leftHand().bClick())
+                .withSuggestedBinding(ValveIndexController.PROFILE, ValveIndexController.pathBuilder().rightHand().bClick())
+                .withGestureBinding(HandSide.LEFT, Gesture.PINCH_RING)
+                .withGestureBinding(HandSide.RIGHT, Gesture.PINCH_RING)
+                .withDesktopSimulationKeyTrigger(HandSide.RIGHT, new KeyTrigger(KeyInput.KEY_NUMPAD7), false)
+                .build();
+
+        /*
+         * A float action, the cube grows with its value. Thumb and middle finger pinch strength (a gesture binding) or the
+         * grip. Used by MetaOnlyHandGesturesExampleState. Numpad 9 simulates it.
+         */
+        Action growCube = Action.builder()
+                .actionHandle(ActionHandles.GROW_CUBE)
+                .translatedName("Grow cube")
+                .actionType(ActionType.FLOAT)
+                .withSuggestedBinding(OculusTouchController.PROFILE, OculusTouchController.pathBuilder().leftHand().squeeze())
+                .withSuggestedBinding(OculusTouchController.PROFILE, OculusTouchController.pathBuilder().rightHand().squeeze())
+                .withSuggestedBinding(ValveIndexController.PROFILE, ValveIndexController.pathBuilder().leftHand().squeezeValue())
+                .withSuggestedBinding(ValveIndexController.PROFILE, ValveIndexController.pathBuilder().rightHand().squeezeValue())
+                .withGestureBinding(HandSide.LEFT, Gesture.PINCH_MIDDLE)
+                .withGestureBinding(HandSide.RIGHT, Gesture.PINCH_MIDDLE)
+                .withDesktopSimulationKeyTrigger(HandSide.RIGHT, new KeyTrigger(KeyInput.KEY_NUMPAD9), false)
+                .build();
+
+        /*
+         * Actions bound only to a hand gesture (no controller bindings at all). Nothing uses these other than
+         * MetaOnlyHandGesturesExampleState showing when they are active. Only Tamarin detects these gestures.
+         */
+        Action fist = gestureOnlyAction(ActionHandles.FIST, "Fist", Gesture.FIST);
+        Action point = gestureOnlyAction(ActionHandles.POINT, "Point", Gesture.POINT);
+        Action thumbsUp = gestureOnlyAction(ActionHandles.THUMBS_UP, "Thumbs up", Gesture.THUMBS_UP);
+
         return ActionManifest.builder()
                 .withActionSet(ActionSet
                         .builder()
@@ -233,8 +310,46 @@ public class Main extends SimpleApplication{
                         .withAction(movementDPad)
                         .withAction(walk)
                         .withAction(openHandMenu)
+                        .withAction(microgestureTap)
+                        .withAction(microgestureSwipeLeft)
+                        .withAction(microgestureSwipeRight)
+                        .withAction(microgestureSwipeForward)
+                        .withAction(microgestureSwipeBackward)
+                        .withAction(resetCube)
+                        .withAction(spinCube)
+                        .withAction(growCube)
+                        .withAction(fist)
+                        .withAction(point)
+                        .withAction(thumbsUp)
                         .build()
                 ).build();
+    }
+
+    /**
+     * META ONLY. A boolean action bound to a thumb microgesture on either hand.
+     */
+    private static Action microgestureAction(ActionHandle actionHandle, String translatedName, Function<MetaHandMicrogestures.BindingPathBuilderHand, String> gesture, int simulationKey){
+        return Action.builder()
+                .actionHandle(actionHandle)
+                .translatedName(translatedName)
+                .actionType(ActionType.BOOLEAN)
+                .withSuggestedBinding(MetaHandMicrogestures.PROFILE, gesture.apply(MetaHandMicrogestures.pathBuilder().leftHand()))
+                .withSuggestedBinding(MetaHandMicrogestures.PROFILE, gesture.apply(MetaHandMicrogestures.pathBuilder().rightHand()))
+                .withDesktopSimulationKeyTrigger(HandSide.RIGHT, new KeyTrigger(simulationKey), false)
+                .build();
+    }
+
+    /**
+     * A boolean action bound only to a hand gesture (on either hand).
+     */
+    private static Action gestureOnlyAction(ActionHandle actionHandle, String translatedName, Gesture gesture){
+        return Action.builder()
+                .actionHandle(actionHandle)
+                .translatedName(translatedName)
+                .actionType(ActionType.BOOLEAN)
+                .withGestureBinding(HandSide.LEFT, gesture)
+                .withGestureBinding(HandSide.RIGHT, gesture)
+                .build();
     }
 
     public static HandSpec handSpec(){

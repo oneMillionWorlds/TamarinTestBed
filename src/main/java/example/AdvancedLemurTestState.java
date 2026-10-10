@@ -15,6 +15,8 @@ import com.jme3.scene.Node;
 import com.jme3.scene.Spatial;
 import com.jme3.scene.shape.Cylinder;
 import com.onemillionworlds.tamarin.actions.XrActionBaseAppState;
+import com.onemillionworlds.tamarin.lemursupport.LemurSupport;
+import com.onemillionworlds.tamarin.lemursupport.keyboardstyles.bundledkeyboards.NumericStyle;
 import com.onemillionworlds.tamarin.openxr.XrBaseAppState;
 import com.onemillionworlds.tamarin.vrhands.VRHandsAppState;
 import com.onemillionworlds.tamarin.vrhands.functions.FunctionRegistration;
@@ -81,6 +83,30 @@ public class AdvancedLemurTestState extends BaseAppState{
                 if (textField.getText().trim().equalsIgnoreCase("exit")){
                     getStateManager().detach(AdvancedLemurTestState.this);
                     getStateManager().attach(new MenuExampleState());
+                }
+            }
+        });
+
+        lemurWindow.addChild(new Label("This text field only takes numbers. It opens a number pad rather than the full keyboard"));
+        TextField numericField = lemurWindow.addChild(new TextField(""));
+        // Each text field can have its own keyboard, overriding the global LemurSupport.keyboardStyle.
+        // NumericStyle also rejects key presses that wouldn't make a number (e.g. a second decimal point), and its "-"
+        // key flips the sign of the whole value rather than typing a "-"
+        LemurSupport.setKeyboardStyle(numericField, NumericStyle.INSTANCE);
+        Label numericValueLabel = lemurWindow.addChild(new Label("Value: (none)"));
+
+        numericField.getControl(GuiControl.class).addListener(new GuiControlListener(){
+            @Override public void reshape(GuiControl source, Vector3f pos, Vector3f size){}
+            @Override public void focusGained(GuiControl source){}
+
+            @Override
+            public void focusLost(GuiControl source){
+                // focus is lost when the keyboard is closed. The keyboard stops nonsense like "1.2.3" but partly typed
+                // numbers like "-" or "1." are allowed, so the text should still be checked before being used
+                try{
+                    numericValueLabel.setText("Value: " + Double.parseDouble(numericField.getText()));
+                }catch(NumberFormatException e){
+                    numericValueLabel.setText("Value: (not a complete number)");
                 }
             }
         });
